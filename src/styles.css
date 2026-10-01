@@ -1,0 +1,70 @@
+/* Exercise-book page: blue rules, red margin, ballpoint ink, red pen for strikes. */
+:root {
+  --paper: #fdfcf6;
+  --ink: #1e2747;
+  --ink-soft: #7b8094;
+  --done-ink: #a5a9b6;
+  --rule: #bcd0e6;
+  --margin-rule: #e3908a;
+  --pen: #c62f2a;
+  --line-h: 2.25rem;
+  --margin-w: 2.75rem;
+  --hand: 'Caveat', 'Segoe Print', 'Bradley Hand', cursive;
+  color-scheme: light;
+}
+
+* {
+  box-sizing: border-box;
+}
+
+html,
+body {
+  margin: 0;
+  background: var(--paper);
+}
+
+body {
+  color: var(--ink);
+  font-family: var(--hand);
+  font-size: 1.5rem;
+  -webkit-tap-highlight-color: transparent;
+}
+
+.page {
+  position: relative;
+  max-width: 40rem;
+  min-height: 100dvh;
+  margin: 0 auto;
+  padding: env(safe-area-inset-top) 1rem calc(env(safe-area-inset-bottom) + 6rem) 0;
+  background-image:
+    linear-gradient(var(--margin-rule), var(--margin-rule)),
+    repeating-linear-gradient(
+      to bottom,
+      transparent 0 calc(var(--line-h) - 1px),
+      var(--rule) calc(var(--line-h) - 1px) var(--line-h)
+    );
+  background-size: 2px 100%, 100% 100%;
+  background-position: var(--margin-w) 0, 0 env(safe-area-inset-top);
+  background-repeat: no-repeat, repeat;
+}
+
+.day-header {
+  display: flex;
+  align-items: baseline;
+  gap: 0.75rem;
+  height: calc(var(--line-h) * 2);
+  padding-left: calc(var(--margin-w) + 0.75rem);
+}
+
+.day-header h1 {
+  margin: 0;
+  font-size: 2.25rem;
+  font-weight: 700;
+  line-height: calc(var(--line-h) * 2);
+}
+
+.day-header p {
+  margin: 0;
+  color: var(--ink-soft);
+  font-size: 1.25rem;
+}
