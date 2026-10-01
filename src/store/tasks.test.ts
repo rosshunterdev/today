@@ -1,0 +1,70 @@
+import { describe, it, expect, beforeEach, afterEach, vi } from 'vitest';
+import { db } from './db';
+import { listDay, addTask, updateText, setIndent, setMark, setDone, deleteTask, moveTask } from './tasks';
+
+const DAY = '2026-10-02';
+const texts = async () => (await listDay(DAY)).map((t) => t.text);
+
+beforeEach(async () => {
+  await db.tasks.clear();
+  await db.days.clear();
+});
+afterEach(() => {
+  vi.useRealTimers();
+});
+
+describe('tasks store', () => {
+  it('appends tasks in order', async () => {
+    await addTask(DAY, { text: 'a' });
+    await addTask(DAY, { text: 'b' });
+    expect(await texts()).toEqual(['a', 'b']);
+  });
+
+  it('inserts after a given task', async () => {
+    const a = await addTask(DAY, { text: 'a' });
+    await addTask(DAY, { text: 'c' });
+    await addTask(DAY, { afterId: a.id, text: 'b', indent: 1 });
+    expect(await texts()).toEqual(['a', 'b', 'c']);
+    expect((await listDay(DAY))[1].indent).toBe(1);
+  });
+
+  it('lists only the given day and hides deleted tasks', async () => {
+    const a = await addTask(DAY, { text: 'a' });
+    await addTask('2026-10-01', { text: 'other day' });
+    await addTask(DAY, { text: 'b' });
+    await deleteTask(a.id);
+    expect(await texts()).toEqual(['b']);
+    expect((await db.tasks.get(a.id))?.deleted).toBe(true);
+  });
+
+  it('records done time and bumps updatedAt', async () => {
+    vi.useFakeTimers({ toFake: ['Date'] });
+    vi.setSystemTime(new Date('2026-10-02T09:00:00.000Z'));
+    const a = await addTask(DAY, { text: 'a' });
+    vi.setSystemTime(new Date('2026-10-02T10:00:00.000Z'));
+    await setDone(a.id, true);
+    let row = await db.tasks.get(a.id);
+    expect(row).toMatchObject({ done: true, doneAt: '2026-10-02T10:00:00.000Z', updatedAt: '2026-10-02T10:00:00.000Z' });
+    await setDone(a.id, false);
+    row = await db.tasks.get(a.id);
+    expect(row).toMatchObject({ done: false, doneAt: null });
+  });
+
+  it('updates text, indent and mark', async () => {
+    const a = await addTask(DAY, { text: 'a' });
+    await updateText(a.id, 'abc');
+    await setIndent(a.id, 1);
+    await setMark(a.id, 'star');
+    expect(await db.tasks.get(a.id)).toMatchObject({ text: 'abc', indent: 1, mark: 'star' });
+  });
+
+  it('moves a task between two others', async () => {
+    const a = await addTask(DAY, { text: 'a' });
+    const b = await addTask(DAY, { text: 'b' });
+    const c = await addTask(DAY, { text: 'c' });
+    await moveTask(c.id, a.id, b.id);
+    expect(await texts()).toEqual(['a', 'c', 'b']);
+    await moveTask(a.id, b.id, null);
+    expect(await texts()).toEqual(['c', 'b', 'a']);
+  });
+});
