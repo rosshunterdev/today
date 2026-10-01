@@ -31,16 +31,17 @@ Layout: notebook page (D-001). Lined paper, margin line, handwritten-style font,
 |---|---|---|
 | Open | Lands on today's page, cursor on first empty line. No splash, no menu. | Same |
 | Write a task | Type, Enter for next line | Type, Return for next line |
-| Make a sub-step | Tab (Shift+Tab to undo) | Swipe line right (left to undo) |
-| Cross off / undo | Click the task text | Tap the task text |
-| Reorder | Drag the line | Long-press, then drag |
+| Edit a task | Click the text | Tap the text |
+| Make a sub-step | Tab (Shift+Tab to undo) | ⇥ / ⇤ buttons in a bar above the keyboard while editing |
+| Cross off / undo | Drag the mouse across the line | Swipe a finger across the line |
+| Reorder | Drag the ⠿ handle that appears on hover at the line's left edge | Long-press, then drag |
 | Margin mark | Click margin to cycle: none, ★, !, ? | Tap margin |
-| Delete | Backspace on an empty line | Swipe line away, or empty it |
+| Delete | Backspace on an empty line | Backspace on an empty line |
 
 - Crossing off animates a red hand-drawn pen stroke across the text. Crossed-off tasks stay on the page, greyed.
 - Sub-steps are one level deep only (indent 0 or 1).
 - Marks are hand-drawn style glyphs. Freehand drawing is not in v1 (see D-002).
-- Editing an existing task's text: double-click (desktop) or long-press without dragging (phone). Single click/tap is reserved for crossing off. **Proposed in spec review, needs user confirmation** (see section 9).
+- Crossing off is a horizontal stroke across the line, like running a pen through it (D-008). The same stroke across a crossed-off task un-crosses it. Tap/click only ever places the cursor for editing.
 
 **Leftovers (D-003).** When the page for a new day opens and an earlier day has unfinished tasks, a small note shows at the top: "Thursday: 3 left". Tapping it opens a short list with a checkbox per task; confirming copies the chosen tasks onto today. A dismiss control hides the note. Shown until used or dismissed, once per day.
 
@@ -133,11 +134,10 @@ Rule: nothing ever stops the user writing.
 ## 8. Testing
 
 1. **Unit (Vitest):** `day` (04:00 boundary both sides, leftovers source across skipped days, copy-over fields), `order` (positions between, before first, after last, many inserts), `sync` merge (newer wins, deletes propagate).
-2. **Component (Vitest + Testing Library):** Enter creates a line, Tab/Shift+Tab indents, Backspace on empty line deletes, click toggles crossed-off, leftovers confirm/dismiss.
+2. **Component (Vitest + Testing Library):** Enter creates a line, Tab/Shift+Tab indents, Backspace on empty line deletes, horizontal drag/swipe toggles crossed-off, click places cursor, leftovers confirm/dismiss.
 3. **End-to-end (Playwright):** write tasks, cross one off, reload, state persists. Also used for screenshot verification. To be added once there is UI (user to confirm).
 4. **Manual device pass:** install on phone and laptop; airplane mode, edit, reconnect; both devices match.
 
 ## 9. Open questions
 
-- **Edit vs cross-off gesture.** Single tap crosses off, so editing text needs a different gesture. Proposed: double-click / long-press. Conflict on phone: long-press is also the reorder gesture (long-press then drag); distinguished by whether the finger moves. Needs user confirmation before planning.
 - Parked: D-002 (layouts), D-005 (native widget).
