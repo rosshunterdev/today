@@ -68,3 +68,40 @@ body {
   color: var(--ink-soft);
   font-size: 1.25rem;
 }
+
+.lines {
+  margin: 0;
+  padding: 0;
+  list-style: none;
+}
+
+.line {
+  position: relative;
+  display: flex;
+  align-items: center;
+  height: var(--line-h);
+  padding-left: calc(var(--margin-w) + 0.75rem);
+  touch-action: pan-y;
+}
+
+.line[data-indent='1'] {
+  padding-left: calc(var(--margin-w) + 2.5rem);
+}
+
+.line-text {
+  flex: 1;
+  min-width: 0;
+  height: 100%;
+  padding: 0;
+  border: 0;
+  background: transparent;
+  color: inherit;
+  font: inherit;
+  line-height: var(--line-h);
+  outline: none;
+}
+
+.line-text::placeholder {
+  color: var(--ink-soft);
+  opacity: 0.6;
+}
