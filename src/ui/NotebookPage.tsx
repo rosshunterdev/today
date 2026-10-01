@@ -1,9 +1,14 @@
 import { useCallback, useState } from 'react';
 import { useLiveQuery } from 'dexie-react-hooks';
-import { addTask, deleteTask, listDay, setDone, setIndent, setMark, updateText } from '../store/tasks';
+import { DndContext, KeyboardSensor, MouseSensor, TouchSensor, closestCenter, useSensor, useSensors, type DragEndEvent } from '@dnd-kit/core';
+import { SortableContext, sortableKeyboardCoordinates, verticalListSortingStrategy } from '@dnd-kit/sortable';
+import { restrictToVerticalAxis } from '@dnd-kit/modifiers';
+import { addTask, deleteTask, listDay, moveTask, setDone, setIndent, setMark, updateText } from '../store/tasks';
 import { nextMark } from '../marks';
+import { neighboursAfterMove } from '../order/reorder';
 import { TaskLine } from './TaskLine';
 import { GhostLine } from './GhostLine';
+import { usePointerCoarse } from './usePointerCoarse';
 
 export const GHOST = 'ghost';
 
@@ -13,6 +18,12 @@ export function NotebookPage({ day }: { day: string }) {
   const [activeId, setActiveId] = useState<string | null>(null);
   const [ghostIndent, setGhostIndent] = useState<0 | 1>(0);
   const clearFocus = useCallback(() => setFocusId(null), []);
+  const coarse = usePointerCoarse();
+  const sensors = useSensors(
+    useSensor(MouseSensor, { activationConstraint: { distance: 4 } }),
+    useSensor(TouchSensor, { activationConstraint: { delay: 300, tolerance: 8 } }),
+    useSensor(KeyboardSensor, { coordinateGetter: sortableKeyboardCoordinates }),
+  );
 
   if (!tasks) return null;
 
@@ -39,33 +50,44 @@ export function NotebookPage({ day }: { day: string }) {
     if (last) setFocusId(last.id);
   }
 
+  function handleDragEnd({ active, over }: DragEndEvent) {
+    if (!over || active.id === over.id) return;
+    const { prevId, nextId } = neighboursAfterMove(tasks!.map((t) => t.id), String(active.id), String(over.id));
+    void moveTask(String(active.id), prevId, nextId);
+  }
+
   return (
-    <ol className="lines">
-      {tasks.map((task, i) => (
-        <TaskLine
-          key={task.id}
-          task={task}
-          focusRequested={focusId === task.id}
-          onFocusHandled={clearFocus}
-          onFocusChange={trackFocus(task.id)}
-          onText={(text) => void updateText(task.id, text)}
-          onEnter={() => void handleEnter(i)}
-          onBackspaceEmpty={() => void handleBackspaceEmpty(i)}
-          onIndent={(indent) => void setIndent(task.id, indent)}
-          onToggleDone={() => void setDone(task.id, !task.done)}
-          onCycleMark={() => void setMark(task.id, nextMark(task.mark))}
-        />
-      ))}
-      <GhostLine
-        indent={ghostIndent}
-        placeholder={tasks.length === 0 ? "what's on today?" : ''}
-        focusRequested={focusId === GHOST}
-        onFocusHandled={clearFocus}
-        onFocusChange={trackFocus(GHOST)}
-        onIndent={setGhostIndent}
-        onCommit={(text) => void addTask(day, { text, indent: ghostIndent })}
-        onBackspaceEmpty={handleGhostBackspace}
-      />
-    </ol>
+    <DndContext sensors={sensors} collisionDetection={closestCenter} modifiers={[restrictToVerticalAxis]} onDragEnd={handleDragEnd}>
+      <SortableContext items={tasks.map((t) => t.id)} strategy={verticalListSortingStrategy}>
+        <ol className="lines">
+          {tasks.map((task, i) => (
+            <TaskLine
+              key={task.id}
+              task={task}
+              coarse={coarse}
+              focusRequested={focusId === task.id}
+              onFocusHandled={clearFocus}
+              onFocusChange={trackFocus(task.id)}
+              onText={(text) => void updateText(task.id, text)}
+              onEnter={() => void handleEnter(i)}
+              onBackspaceEmpty={() => void handleBackspaceEmpty(i)}
+              onIndent={(indent) => void setIndent(task.id, indent)}
+              onToggleDone={() => void setDone(task.id, !task.done)}
+              onCycleMark={() => void setMark(task.id, nextMark(task.mark))}
+            />
+          ))}
+          <GhostLine
+            indent={ghostIndent}
+            placeholder={tasks.length === 0 ? "what's on today?" : ''}
+            focusRequested={focusId === GHOST}
+            onFocusHandled={clearFocus}
+            onFocusChange={trackFocus(GHOST)}
+            onIndent={setGhostIndent}
+            onCommit={(text) => void addTask(day, { text, indent: ghostIndent })}
+            onBackspaceEmpty={handleGhostBackspace}
+          />
+        </ol>
+      </SortableContext>
+    </DndContext>
   );
 }

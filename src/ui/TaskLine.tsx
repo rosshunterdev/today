@@ -1,10 +1,13 @@
-import { useEffect, useLayoutEffect, useRef, useState, type KeyboardEvent, type PointerEvent as ReactPointerEvent } from 'react';
+import { useEffect, useLayoutEffect, useRef, useState, type KeyboardEvent, type PointerEvent as ReactPointerEvent, type TouchEventHandler } from 'react';
+import { useSortable } from '@dnd-kit/sortable';
+import { CSS } from '@dnd-kit/utilities';
 import type { Task } from '../model';
 import { isStrike } from './stroke';
 import { MARK_GLYPH } from '../marks';
 
 export interface TaskLineProps {
   task: Task;
+  coarse: boolean;
   focusRequested: boolean;
   onFocusHandled: () => void;
   onFocusChange: (focused: boolean) => void;
@@ -17,11 +20,14 @@ export interface TaskLineProps {
 }
 
 export function TaskLine(props: TaskLineProps) {
-  const { task, focusRequested, onFocusHandled, onFocusChange, onText, onEnter, onBackspaceEmpty, onIndent, onToggleDone, onCycleMark } = props;
+  const { task, coarse, focusRequested, onFocusHandled, onFocusChange, onText, onEnter, onBackspaceEmpty, onIndent, onToggleDone, onCycleMark } = props;
   const inputRef = useRef<HTMLInputElement>(null);
   const measureRef = useRef<HTMLSpanElement>(null);
   const [text, setText] = useState(task.text);
   const [textWidth, setTextWidth] = useState(0);
+  const { attributes, listeners, setNodeRef, setActivatorNodeRef, transform, transition, isDragging } = useSortable({ id: task.id });
+  const draggingRef = useRef(false);
+  draggingRef.current = isDragging;
 
   useEffect(() => {
     if (document.activeElement !== inputRef.current) setText(task.text);
@@ -61,6 +67,7 @@ export function TaskLine(props: TaskLineProps) {
     const width = e.currentTarget.getBoundingClientRect().width;
     const onUp = (up: PointerEvent) => {
       window.removeEventListener('pointerup', onUp);
+      if (draggingRef.current) return;
       if (!isStrike(up.clientX - startX, up.clientY - startY, width)) return;
       onToggleDone();
       inputRef.current?.blur();
@@ -70,10 +77,24 @@ export function TaskLine(props: TaskLineProps) {
   }
 
   return (
-    <li className="line" data-indent={task.indent} data-done={task.done} onPointerDown={onPointerDown}>
+    <li
+      ref={setNodeRef}
+      className="line"
+      data-indent={task.indent}
+      data-done={task.done}
+      data-dragging={isDragging}
+      style={{ transform: CSS.Transform.toString(transform), transition }}
+      onPointerDown={onPointerDown}
+      onTouchStart={coarse ? (listeners?.onTouchStart as TouchEventHandler<HTMLLIElement> | undefined) : undefined}
+    >
       <button type="button" className="mark" aria-label={`Mark: ${task.mark ?? 'none'}`} onClick={onCycleMark}>
         {task.mark ? MARK_GLYPH[task.mark] : ''}
       </button>
+      {!coarse && (
+        <button type="button" className="handle" ref={setActivatorNodeRef} {...attributes} {...listeners} aria-label="Reorder">
+          ⠿
+        </button>
+      )}
       <div className="ink">
         <input
           ref={inputRef}

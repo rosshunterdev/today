@@ -176,3 +176,40 @@ body {
     animation: none;
   }
 }
+
+.handle {
+  position: absolute;
+  left: calc(var(--margin-w) - 1.6rem);
+  top: 0;
+  width: 1.4rem;
+  height: var(--line-h);
+  padding: 0;
+  border: 0;
+  background: transparent;
+  color: var(--ink-soft);
+  font-size: 1rem;
+  cursor: grab;
+  opacity: 0;
+  transition: opacity 120ms ease-out;
+}
+
+.line:hover .handle,
+.handle:focus-visible {
+  opacity: 1;
+}
+
+.line[data-dragging='true'] {
+  z-index: 1;
+  background: var(--paper);
+  box-shadow: 0 2px 8px rgb(30 39 71 / 0.14);
+}
+
+.line[data-dragging='true'] .handle {
+  cursor: grabbing;
+}
+
+@media (pointer: coarse) {
+  .line {
+    -webkit-touch-callout: none;
+  }
+}
