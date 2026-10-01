@@ -9,6 +9,7 @@ import { neighboursAfterMove } from '../order/reorder';
 import { TaskLine } from './TaskLine';
 import { GhostLine } from './GhostLine';
 import { usePointerCoarse } from './usePointerCoarse';
+import { KeyboardBar } from './KeyboardBar';
 
 export const GHOST = 'ghost';
 
@@ -50,6 +51,11 @@ export function NotebookPage({ day }: { day: string }) {
     if (last) setFocusId(last.id);
   }
 
+  function indentActive(indent: 0 | 1) {
+    if (activeId === GHOST) setGhostIndent(indent);
+    else if (activeId) void setIndent(activeId, indent);
+  }
+
   function handleDragEnd({ active, over }: DragEndEvent) {
     if (!over || active.id === over.id) return;
     const { prevId, nextId } = neighboursAfterMove(tasks!.map((t) => t.id), String(active.id), String(over.id));
@@ -88,6 +94,7 @@ export function NotebookPage({ day }: { day: string }) {
           />
         </ol>
       </SortableContext>
+      {coarse && activeId && <KeyboardBar onIndent={indentActive} />}
     </DndContext>
   );
 }

@@ -288,3 +288,30 @@ body {
   opacity: 0.4;
   cursor: default;
 }
+
+.kbd-bar {
+  position: fixed;
+  left: 0;
+  right: 0;
+  bottom: 0;
+  z-index: 2;
+  display: flex;
+  gap: 0.5rem;
+  padding: 0.25rem 0.75rem calc(env(safe-area-inset-bottom) + 0.25rem);
+  background: var(--paper);
+  border-top: 1px solid var(--rule);
+}
+
+.kbd-bar button {
+  min-width: 2.75rem;
+  min-height: 2.75rem;
+  border: 0;
+  border-radius: 0.5rem;
+  background: transparent;
+  color: var(--ink);
+  font-size: 1.4rem;
+}
+
+.kbd-bar button:active {
+  background: var(--rule);
+}
