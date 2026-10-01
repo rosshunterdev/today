@@ -213,3 +213,78 @@ body {
     -webkit-touch-callout: none;
   }
 }
+
+.leftovers {
+  display: flex;
+  align-items: center;
+  gap: 0.5rem;
+  min-height: var(--line-h);
+  padding-left: calc(var(--margin-w) + 0.75rem);
+  color: var(--ink-soft);
+  font-size: 1.25rem;
+}
+
+.leftovers button {
+  padding: 0 0.25rem;
+  border: 0;
+  background: transparent;
+  color: inherit;
+  font: inherit;
+  cursor: pointer;
+}
+
+.leftovers button:focus-visible {
+  outline: 2px solid var(--rule);
+  outline-offset: 2px;
+}
+
+.leftovers-open {
+  text-decoration: underline dotted;
+  text-underline-offset: 0.2em;
+}
+
+.leftovers-panel {
+  flex-direction: column;
+  align-items: flex-start;
+  gap: 0;
+}
+
+.leftovers-panel p,
+.leftovers-panel ul {
+  margin: 0;
+  padding: 0;
+  list-style: none;
+}
+
+.leftovers-panel li,
+.leftovers-panel p,
+.leftovers-actions {
+  min-height: var(--line-h);
+  line-height: var(--line-h);
+}
+
+.leftovers-panel label {
+  display: flex;
+  align-items: center;
+  gap: 0.5rem;
+  color: var(--ink);
+}
+
+.leftovers-panel input[type='checkbox'] {
+  accent-color: var(--pen);
+}
+
+.leftovers-actions {
+  display: flex;
+  gap: 1rem;
+}
+
+.leftovers-actions button:first-child {
+  color: var(--pen);
+  font-weight: 700;
+}
+
+.leftovers-actions button:disabled {
+  opacity: 0.4;
+  cursor: default;
+}

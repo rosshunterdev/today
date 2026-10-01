@@ -22,3 +22,7 @@ export function dayLabel(day: string): { weekday: string; date: string } {
     date: date.toLocaleDateString('en-NZ', { day: 'numeric', month: 'short' }),
   };
 }
+
+export function daysBetween(from: string, to: string): number {
+  return Math.round((dayToDate(to).getTime() - dayToDate(from).getTime()) / 86_400_000);
+}
