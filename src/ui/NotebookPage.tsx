@@ -1,6 +1,7 @@
 import { useCallback, useState } from 'react';
 import { useLiveQuery } from 'dexie-react-hooks';
-import { addTask, deleteTask, listDay, setIndent, updateText } from '../store/tasks';
+import { addTask, deleteTask, listDay, setDone, setIndent, setMark, updateText } from '../store/tasks';
+import { nextMark } from '../marks';
 import { TaskLine } from './TaskLine';
 import { GhostLine } from './GhostLine';
 
@@ -51,6 +52,8 @@ export function NotebookPage({ day }: { day: string }) {
           onEnter={() => void handleEnter(i)}
           onBackspaceEmpty={() => void handleBackspaceEmpty(i)}
           onIndent={(indent) => void setIndent(task.id, indent)}
+          onToggleDone={() => void setDone(task.id, !task.done)}
+          onCycleMark={() => void setMark(task.id, nextMark(task.mark))}
         />
       ))}
       <GhostLine

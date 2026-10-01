@@ -105,3 +105,74 @@ body {
   color: var(--ink-soft);
   opacity: 0.6;
 }
+
+.mark {
+  position: absolute;
+  left: 0;
+  top: 0;
+  width: var(--margin-w);
+  height: var(--line-h);
+  padding: 0;
+  border: 0;
+  background: transparent;
+  color: var(--pen);
+  font: 700 1.5rem/var(--line-h) var(--hand);
+  cursor: pointer;
+}
+
+.mark:focus-visible {
+  outline: 2px solid var(--rule);
+  outline-offset: -4px;
+}
+
+.ink {
+  position: relative;
+  flex: 1;
+  display: flex;
+  min-width: 0;
+  height: 100%;
+}
+
+.measure {
+  position: absolute;
+  visibility: hidden;
+  white-space: pre;
+  pointer-events: none;
+}
+
+.line[data-done='true'] .line-text {
+  color: var(--done-ink);
+}
+
+.strike {
+  position: absolute;
+  left: -4px;
+  top: 50%;
+  height: 0.6rem;
+  overflow: visible;
+  pointer-events: none;
+  translate: 0 -50%;
+}
+
+.strike path {
+  fill: none;
+  stroke: var(--pen);
+  stroke-width: 2.5px;
+  stroke-linecap: round;
+  vector-effect: non-scaling-stroke;
+  stroke-dasharray: 1;
+  stroke-dashoffset: 0;
+  animation: draw-strike 280ms ease-out;
+}
+
+@keyframes draw-strike {
+  from {
+    stroke-dashoffset: 1;
+  }
+}
+
+@media (prefers-reduced-motion: reduce) {
+  .strike path {
+    animation: none;
+  }
+}
