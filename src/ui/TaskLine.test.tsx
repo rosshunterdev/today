@@ -47,6 +47,36 @@ describe('crossing off', () => {
   });
 });
 
+describe('stroke edge cases', () => {
+  it('a cancelled stroke (browser took over to scroll) never crosses off later', async () => {
+    await renderWith('gym');
+    fireEvent.pointerDown(li(0), { clientX: 10, clientY: 10 });
+    fireEvent.pointerCancel(window, { clientX: 10, clientY: 60 });
+    fireEvent.pointerUp(window, { clientX: 250, clientY: 12 });
+    await pause();
+    expect((await listDay(DAY))[0].done).toBe(false);
+  });
+
+  it('dragging the mouse inside a line being edited selects text instead of crossing off', async () => {
+    const user = userEvent.setup();
+    await renderWith('reply to Sam');
+    await user.click(lines()[0]);
+    fireEvent.pointerDown(lines()[0], { clientX: 10, clientY: 10, pointerType: 'mouse' });
+    fireEvent.pointerUp(window, { clientX: 160, clientY: 10, pointerType: 'mouse' });
+    await pause();
+    expect((await listDay(DAY))[0].done).toBe(false);
+  });
+
+  it('a finger swipe on a line being edited still crosses off', async () => {
+    const user = userEvent.setup();
+    await renderWith('reply to Sam');
+    await user.click(lines()[0]);
+    fireEvent.pointerDown(lines()[0], { clientX: 10, clientY: 10, pointerType: 'touch' });
+    fireEvent.pointerUp(window, { clientX: 160, clientY: 10, pointerType: 'touch' });
+    await waitFor(() => expect(li(0)).toHaveAttribute('data-done', 'true'));
+  });
+});
+
 describe('margin marks', () => {
   it('cycles star, bang, question, none', async () => {
     const user = userEvent.setup();

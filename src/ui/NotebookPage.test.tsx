@@ -27,6 +27,11 @@ describe('NotebookPage writing', () => {
     expect(ghost()).toHaveAttribute('placeholder', "what's on today?");
   });
 
+  it('puts the cursor in the writing line on open (mouse/trackpad devices)', async () => {
+    await renderPage();
+    await waitFor(() => expect(ghost()).toHaveFocus());
+  });
+
   it('commits the writing line on Enter and stays there', async () => {
     const user = userEvent.setup();
     await renderPage();

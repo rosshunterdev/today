@@ -20,6 +20,13 @@ describe('tasks store', () => {
     expect(await texts()).toEqual(['a', 'b']);
   });
 
+  it('gives distinct, ordered positions to tasks added at the same moment', async () => {
+    await Promise.all([addTask(DAY, { text: 'a' }), addTask(DAY, { text: 'b' }), addTask(DAY, { text: 'c' })]);
+    const rows = await listDay(DAY);
+    expect(new Set(rows.map((t) => t.position)).size).toBe(3);
+    expect(rows.map((t) => t.text)).toEqual(['a', 'b', 'c']);
+  });
+
   it('inserts after a given task', async () => {
     const a = await addTask(DAY, { text: 'a' });
     await addTask(DAY, { text: 'c' });

@@ -15,7 +15,9 @@ export const GHOST = 'ghost';
 
 export function NotebookPage({ day }: { day: string }) {
   const tasks = useLiveQuery(() => listDay(day), [day]);
-  const [focusId, setFocusId] = useState<string | null>(null);
+  // Cursor starts in the writing line on mouse/trackpad devices. Phones can't raise the
+  // keyboard without a tap, so focusing there would only show the bar with no keyboard.
+  const [focusId, setFocusId] = useState<string | null>(() => (window.matchMedia('(pointer: coarse)').matches ? null : GHOST));
   const [activeId, setActiveId] = useState<string | null>(null);
   const [ghostIndent, setGhostIndent] = useState<0 | 1>(0);
   const clearFocus = useCallback(() => setFocusId(null), []);

@@ -61,12 +61,19 @@ export function TaskLine(props: TaskLineProps) {
   }
 
   // Listen for the release on window so a stroke that drifts off the line still counts.
+  // pointercancel (the browser took over to scroll) ends the stroke without a strike.
   function onPointerDown(e: ReactPointerEvent<HTMLLIElement>) {
+    // With a mouse, dragging inside the line being edited is text selection, not a strike.
+    if (e.pointerType === 'mouse' && document.activeElement === inputRef.current && e.target === inputRef.current) return;
     const startX = e.clientX;
     const startY = e.clientY;
     const width = e.currentTarget.getBoundingClientRect().width;
-    const onUp = (up: PointerEvent) => {
+    const end = () => {
       window.removeEventListener('pointerup', onUp);
+      window.removeEventListener('pointercancel', end);
+    };
+    const onUp = (up: PointerEvent) => {
+      end();
       if (draggingRef.current) return;
       if (!isStrike(up.clientX - startX, up.clientY - startY, width)) return;
       onToggleDone();
@@ -74,6 +81,7 @@ export function TaskLine(props: TaskLineProps) {
       window.getSelection()?.removeAllRanges();
     };
     window.addEventListener('pointerup', onUp);
+    window.addEventListener('pointercancel', end);
   }
 
   return (

@@ -152,6 +152,8 @@ body {
   overflow: visible;
   pointer-events: none;
   translate: 0 -50%;
+  /* Wipe left to right, like the pen moving across. */
+  animation: draw-strike 280ms ease-out;
 }
 
 .strike path {
@@ -160,19 +162,19 @@ body {
   stroke-width: 2.5px;
   stroke-linecap: round;
   vector-effect: non-scaling-stroke;
-  stroke-dasharray: 1;
-  stroke-dashoffset: 0;
-  animation: draw-strike 280ms ease-out;
 }
 
 @keyframes draw-strike {
   from {
-    stroke-dashoffset: 1;
+    clip-path: inset(-50% 100% -50% 0);
+  }
+  to {
+    clip-path: inset(-50% 0 -50% 0);
   }
 }
 
 @media (prefers-reduced-motion: reduce) {
-  .strike path {
+  .strike {
     animation: none;
   }
 }
