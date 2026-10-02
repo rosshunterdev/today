@@ -33,5 +33,6 @@ export default defineConfig({
     environment: 'node',
     setupFiles: ['./src/test/setup.ts'],
     env: { TZ: 'Pacific/Auckland' },
+    exclude: ['e2e/**', 'node_modules/**'],
   },
 });
