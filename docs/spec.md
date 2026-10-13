@@ -1,10 +1,10 @@
 # Today: design spec
 
-Agreed in Session 2 (2026-10-02). Decisions referenced as D-NNN live in `DECISIONS.md`.
+Written 2026-10-02.
 
 ## 1. Purpose
 
-A software version of the user's morning pen-and-paper task list, for one user (the developer, who has ADHD).
+A software version of the user's morning pen-and-paper task list, for a single user.
 
 **The problem.** Previous task apps (built and tried) "felt worse than paper" and "seemed not worth opening". Paper wins on four things the user named:
 
@@ -21,11 +21,11 @@ Plus: paper is a pleasant canvas with room for personal expression.
 
 ## 2. Platforms
 
-Phone and laptop. Installable web app (PWA), one codebase, synced between devices (D-004). Not built: native app with home-screen widget (D-005, OPEN), local-only app (ruled out in D-004).
+Phone and laptop. Installable web app (PWA), one codebase, synced between devices. Not built: native app with home-screen widget (parked), local-only app (ruled out).
 
 ## 3. Experience
 
-Layout: notebook page (D-001). Lined paper, margin line, handwritten-style font, date at top. Parked alternatives: free page and desk scraps (D-002, OPEN). Reference mockups: `.superpowers/brainstorm/2665-1790891866/content/canvas-style.html`.
+Layout: notebook page. Lined paper, margin line, handwritten-style font, date at top. Parked alternatives: free page and desk scraps.
 
 | Action | Desktop | Phone |
 |---|---|---|
@@ -40,16 +40,16 @@ Layout: notebook page (D-001). Lined paper, margin line, handwritten-style font,
 
 - Crossing off animates a red hand-drawn pen stroke across the text. Crossed-off tasks stay on the page, greyed.
 - Sub-steps are one level deep only (indent 0 or 1).
-- Marks are hand-drawn style glyphs. Freehand drawing is not in v1 (see D-002).
-- Crossing off is a horizontal stroke across the line, like running a pen through it (D-008). The same stroke across a crossed-off task un-crosses it. Tap/click only ever places the cursor for editing.
+- Marks are hand-drawn style glyphs. Freehand drawing is not in v1.
+- Crossing off is a horizontal stroke across the line, like running a pen through it. The same stroke across a crossed-off task un-crosses it. Tap/click only ever places the cursor for editing.
 
-**Leftovers (D-003).** When the page for a new day opens and an earlier day has unfinished tasks, a small note shows at the top: "Thursday: 3 left". Tapping it opens a short list with a checkbox per task; confirming copies the chosen tasks onto today. A dismiss control hides the note. Shown until used or dismissed, once per day.
+**Leftovers.** When the page for a new day opens and an earlier day has unfinished tasks, a small note shows at the top: "Thursday: 3 left". Tapping it opens a short list with a checkbox per task; confirming copies the chosen tasks onto today. A dismiss control hides the note. Shown until used or dismissed, once per day.
 
 **Not in v1:** browsing past days, settings, reminders/notifications, stats/streaks, themes, freehand drawing, sharing.
 
 ## 4. Day rules
 
-- Logical day = date of (device local time minus 4 hours) (D-006). 02:30 Friday belongs to Thursday.
+- Logical day = date of (device local time minus 4 hours). 02:30 Friday belongs to Thursday.
 - The page shown is always the current logical day. If the app is left open across 04:00, it switches to the new day on next focus or interaction.
 - Leftovers source = the most recent earlier day that has at least one task with `done = false` and `deleted = false`. Skipped days are fine: Friday's leftovers show on Monday.
 - Bringing a task over creates a new task on today with the same `text`, `indent` and `mark`, `done = false`. The original is not modified.
@@ -85,7 +85,7 @@ Both the local store (Dexie) and Supabase hold the same two tables.
 | `leftovers_dismissed` | boolean | |
 | `updated_at` | timestamp | |
 
-## 6. Architecture (D-007)
+## 6. Architecture
 
 ```
  Phone / laptop (installed PWA)              Cloud
@@ -140,4 +140,4 @@ Rule: nothing ever stops the user writing.
 
 ## 9. Open questions
 
-- Parked: D-002 (layouts), D-005 (native widget).
+- Parked: alternative layouts (free page, desk scraps), native home-screen widget.
