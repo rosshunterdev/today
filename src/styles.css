@@ -245,7 +245,7 @@ body {
   text-underline-offset: 0.2em;
 }
 
-.leftovers-all {
+.leftovers .leftovers-all {
   color: var(--pen);
 }
 
