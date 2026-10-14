@@ -4,10 +4,14 @@ function pad(n: number): string {
   return String(n).padStart(2, '0');
 }
 
+export function dateToDay(date: Date): string {
+  return `${date.getFullYear()}-${pad(date.getMonth() + 1)}-${pad(date.getDate())}`;
+}
+
 export function logicalDay(now: Date): string {
   const shifted = new Date(now.getTime());
   shifted.setHours(shifted.getHours() - ROLLOVER_HOUR);
-  return `${shifted.getFullYear()}-${pad(shifted.getMonth() + 1)}-${pad(shifted.getDate())}`;
+  return dateToDay(shifted);
 }
 
 export function dayToDate(day: string): Date {
