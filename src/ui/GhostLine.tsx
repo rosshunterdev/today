@@ -1,19 +1,20 @@
 import { useEffect, useRef, useState, type KeyboardEvent } from 'react';
 
 export interface GhostLineProps {
-  indent: 0 | 1;
+  indent?: 0 | 1;
+  label?: string;
   placeholder: string;
   focusRequested: boolean;
   onFocusHandled: () => void;
   onFocusChange: (focused: boolean) => void;
-  onIndent: (indent: 0 | 1) => void;
+  onIndent?: (indent: 0 | 1) => void;
   onCommit: (text: string) => void;
   onBackspaceEmpty: () => void;
 }
 
 // The always-present writing line at the bottom of the page.
 export function GhostLine(props: GhostLineProps) {
-  const { indent, placeholder, focusRequested, onFocusHandled, onFocusChange, onIndent, onCommit, onBackspaceEmpty } = props;
+  const { indent = 0, label = 'New task', placeholder, focusRequested, onFocusHandled, onFocusChange, onIndent, onCommit, onBackspaceEmpty } = props;
   const inputRef = useRef<HTMLInputElement>(null);
   const [text, setText] = useState('');
 
@@ -33,12 +34,12 @@ export function GhostLine(props: GhostLineProps) {
     if (e.key === 'Enter') {
       e.preventDefault();
       commit();
-    } else if (e.key === 'Tab') {
+    } else if (e.key === 'Tab' && onIndent) {
       e.preventDefault();
       onIndent(e.shiftKey ? 0 : 1);
     } else if (e.key === 'Backspace' && text === '') {
       e.preventDefault();
-      if (indent === 1) onIndent(0);
+      if (indent === 1 && onIndent) onIndent(0);
       else onBackspaceEmpty();
     }
   }
@@ -48,7 +49,7 @@ export function GhostLine(props: GhostLineProps) {
       <input
         ref={inputRef}
         className="line-text"
-        aria-label="New task"
+        aria-label={label}
         enterKeyHint="next"
         placeholder={placeholder}
         value={text}

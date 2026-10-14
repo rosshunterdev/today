@@ -72,6 +72,7 @@ export function NotebookPage({ day }: { day: string }) {
             <TaskLine
               key={task.id}
               task={task}
+              list="today"
               coarse={coarse}
               focusRequested={focusId === task.id}
               onFocusHandled={clearFocus}
