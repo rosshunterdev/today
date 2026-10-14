@@ -90,3 +90,19 @@ test('phone: long-press a task onto the week tab, then drag it back', async ({ p
   await expect(tasks(page)).toHaveCount(2);
   await expect(tasks(page).nth(0)).toHaveValue('work on assignment');
 });
+
+test('desktop: a goal dropped on blank paper moves to the end of today', async ({ page }, testInfo) => {
+  test.skip(testInfo.project.name !== 'desktop', 'mouse drag');
+  await page.goto('/');
+  await write(page, ['groceries']);
+  await page.getByRole('textbox', { name: 'New goal', exact: true }).click();
+  await page.keyboard.type('work on assignment');
+  await page.keyboard.press('Enter');
+  await expect(goals(page)).toHaveCount(1);
+
+  // The middle of the page is empty lined paper, well below the only task.
+  await mouseDrag(page, lineOf(goals(page).nth(0)), page.locator('main'));
+  await expect(goals(page)).toHaveCount(0);
+  await expect(tasks(page)).toHaveCount(2);
+  await expect(tasks(page).nth(1)).toHaveValue('work on assignment');
+});

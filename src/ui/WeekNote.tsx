@@ -34,7 +34,7 @@ export function WeekNote({ week }: { week: string }) {
   const keyboard = useKeyboardOffset();
   const rootRef = useRef<HTMLDivElement>(null);
   const { active } = useDndContext();
-  const { setNodeRef: setListRef } = useDroppable({ id: LIST_DROP_ID.week, data: { list: 'week' } });
+  const { setNodeRef: setNoteRef } = useDroppable({ id: LIST_DROP_ID.week, data: { list: 'week' } });
   const { setNodeRef: setTabRef, isOver: overTab } = useDroppable({ id: WEEK_TAB_ID, data: { list: 'week' } });
 
   useEffect(() => {
@@ -85,7 +85,7 @@ export function WeekNote({ week }: { week: string }) {
       >
         {tabText}
       </button>
-      <section className="week-note" aria-label="This week" style={lift}>
+      <section className="week-note" aria-label="This week" style={lift} ref={setNoteRef}>
         <h2>This week</h2>
         {leftovers && (
           <CarryOverNote
@@ -97,7 +97,7 @@ export function WeekNote({ week }: { week: string }) {
           />
         )}
         <SortableContext items={goals.map((g) => g.id)} strategy={verticalListSortingStrategy}>
-          <ol className="lines" ref={setListRef}>
+          <ol className="lines">
             {goals.map((goal, i) => (
               <TaskLine
                 key={goal.id}

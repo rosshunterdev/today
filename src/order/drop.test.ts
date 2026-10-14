@@ -1,5 +1,6 @@
 import { describe, it, expect } from 'vitest';
-import { resolveDrop, LIST_DROP_ID, WEEK_TAB_ID } from './drop';
+import type { CollisionDetection } from '@dnd-kit/core';
+import { collide, resolveDrop, LIST_DROP_ID, WEEK_TAB_ID, type ListId } from './drop';
 
 const lists = { today: ['t1', 't2', 't3'], week: ['g1', 'g2'] };
 
@@ -32,5 +33,52 @@ describe('resolveDrop', () => {
     const empty = { today: ['t1'], week: [] };
     expect(resolveDrop(empty, 't1', WEEK_TAB_ID)).toEqual({ kind: 'transfer', from: 'today', to: 'week', id: 't1', prevId: null, nextId: null });
     expect(resolveDrop({ today: [], week: ['g1'] }, 'g1', LIST_DROP_ID.today)).toEqual({ kind: 'transfer', from: 'week', to: 'today', id: 'g1', prevId: null, nextId: null });
+  });
+});
+
+describe('collide', () => {
+  type Box = { id: string; list: ListId; top: number; left: number; width: number; height: number };
+  const rect = (b: Omit<Box, 'id' | 'list'>) => ({ ...b, right: b.left + b.width, bottom: b.top + b.height });
+
+  // Desktop-ish layout: today's page on the left with two lines, the week note bottom-right with one goal.
+  const boxes: Box[] = [
+    { id: LIST_DROP_ID.today, list: 'today', top: 0, left: 0, width: 600, height: 800 },
+    { id: 't1', list: 'today', top: 80, left: 0, width: 600, height: 36 },
+    { id: 't2', list: 'today', top: 116, left: 0, width: 600, height: 36 },
+    { id: LIST_DROP_ID.week, list: 'week', top: 600, left: 900, width: 270, height: 150 },
+    { id: 'g1', list: 'week', top: 640, left: 900, width: 270, height: 36 },
+  ];
+
+  function run(activeList: ListId, pointer: { x: number; y: number } | null) {
+    const droppableRects = new Map(boxes.map((b) => [b.id, rect(b)]));
+    const droppableContainers = boxes.map((b) => ({ id: b.id, key: b.id, data: { current: { list: b.list } }, disabled: false, node: { current: null }, rect: { current: rect(b) } }));
+    const at = pointer ?? { x: 300, y: 98 };
+    return collide({
+      active: { id: 'dragged', data: { current: { list: activeList } }, rect: { current: { initial: null, translated: null } } },
+      collisionRect: rect({ top: at.y - 18, left: at.x - 300, width: 600, height: 36 }),
+      droppableRects,
+      droppableContainers,
+      pointerCoordinates: pointer,
+    } as unknown as Parameters<CollisionDetection>[0]).map((c) => c.id);
+  }
+
+  it('prefers the line under the pointer over the list around it', () => {
+    expect(run('today', { x: 300, y: 130 })).toEqual(['t2']);
+  });
+
+  it('drops a goal on blank paper below today’s lines into today', () => {
+    expect(run('week', { x: 300, y: 500 })).toEqual([LIST_DROP_ID.today]);
+  });
+
+  it('drops a task on the note outside its lines into the week', () => {
+    expect(run('today', { x: 1000, y: 610 })).toEqual([LIST_DROP_ID.week]);
+  });
+
+  it('finds nothing on blank desk, so the drop writes nothing', () => {
+    expect(run('today', { x: 750, y: 300 })).toEqual([]);
+  });
+
+  it('keyboard drags (no pointer) fall back to the nearest line in their own list', () => {
+    expect(run('today', null)[0]).toBe('t1');
   });
 });

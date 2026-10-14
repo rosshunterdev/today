@@ -1,10 +1,8 @@
 import { useCallback, useState } from 'react';
 import { useLiveQuery } from 'dexie-react-hooks';
-import { useDroppable } from '@dnd-kit/core';
 import { SortableContext, verticalListSortingStrategy } from '@dnd-kit/sortable';
 import { addTask, deleteTask, listDay, setDone, setIndent, setMark, updateText } from '../store/tasks';
 import { nextMark } from '../marks';
-import { LIST_DROP_ID } from '../order/drop';
 import { TaskLine } from './TaskLine';
 import { GhostLine } from './GhostLine';
 import { usePointerCoarse } from './usePointerCoarse';
@@ -21,7 +19,6 @@ export function NotebookPage({ day }: { day: string }) {
   const [ghostIndent, setGhostIndent] = useState<0 | 1>(0);
   const clearFocus = useCallback(() => setFocusId(null), []);
   const coarse = usePointerCoarse();
-  const { setNodeRef: setListRef } = useDroppable({ id: LIST_DROP_ID.today, data: { list: 'today' } });
 
   if (!tasks) return null;
 
@@ -56,7 +53,7 @@ export function NotebookPage({ day }: { day: string }) {
   return (
     <>
       <SortableContext items={tasks.map((t) => t.id)} strategy={verticalListSortingStrategy}>
-        <ol className="lines" ref={setListRef}>
+        <ol className="lines">
           {tasks.map((task, i) => (
             <TaskLine
               key={task.id}

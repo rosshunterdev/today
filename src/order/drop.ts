@@ -46,18 +46,21 @@ export function resolveDrop(lists: Record<ListId, string[]>, activeId: string, o
 
 // Pointer first, so the line under the finger wins over the list around it.
 // The phone note sits on top of today's lines, so while the pointer is on the week, only week targets count.
-// With the pointer off every target, fall back to the nearest line in the item's own list, which is how reorder felt before.
+// Off every target (blank desk) there is no target, so the drop writes nothing.
+// Keyboard drags have no pointer: they use the nearest line in the item's own list.
 export const collide: CollisionDetection = (args) => {
+  const own = args.active.data.current?.list;
+  if (!args.pointerCoordinates) {
+    return closestCenter({
+      ...args,
+      droppableContainers: args.droppableContainers.filter((c) => !CONTAINERS.has(c.id) && c.data.current?.list === own),
+    });
+  }
   const listOf = (id: UniqueIdentifier) => args.droppableContainers.find((c) => c.id === id)?.data.current?.list as ListId | undefined;
   const within = pointerWithin(args);
   const onWeek = within.some((c) => CONTAINERS.has(c.id) && listOf(c.id) === 'week');
   const candidates: Collision[] = onWeek ? within.filter((c) => listOf(c.id) === 'week') : within;
   const lines = candidates.filter((c) => !CONTAINERS.has(c.id));
   if (lines.length > 0) return lines;
-  if (candidates.length > 0) return candidates;
-  const own = args.active.data.current?.list;
-  return closestCenter({
-    ...args,
-    droppableContainers: args.droppableContainers.filter((c) => !CONTAINERS.has(c.id) && c.data.current?.list === own),
-  });
+  return candidates;
 };
