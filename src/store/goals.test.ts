@@ -1,6 +1,6 @@
 import { describe, it, expect, beforeEach } from 'vitest';
 import { db } from './db';
-import { addGoal, deleteGoal, goalToTask, listWeek, moveGoal, setGoalDone, taskToGoal, updateGoalText } from './goals';
+import { addGoal, bringOverGoals, deleteGoal, dismissWeekLeftovers, findWeekLeftovers, goalToTask, listWeek, moveGoal, setGoalDone, taskToGoal, updateGoalText } from './goals';
 import { addTask, listDay, setDone, setMark } from './tasks';
 
 const WEEK = '2026-10-12';
@@ -98,5 +98,44 @@ describe('moving between today and the week', () => {
     await deleteGoal(goal.id);
     expect(await goalToTask(goal.id, DAY, null, null)).toBeNull();
     expect(await listDay(DAY)).toEqual([]);
+  });
+});
+
+describe('week leftovers', () => {
+  const NEXT = '2026-10-19';
+
+  it('offers unfinished goals from the most recent earlier week, skipping an empty week', async () => {
+    await addGoal('2026-10-05', { text: 'old' });
+    const done = await addGoal(WEEK, { text: 'done' });
+    await setGoalDone(done.id, true);
+    await addGoal(WEEK, { text: 'assignment' });
+    await addGoal(WEEK, { text: '  ' });
+    expect(await findWeekLeftovers(NEXT)).toMatchObject({ week: WEEK, goals: [{ text: 'assignment' }] });
+
+    // Skipped a week: the week of 19 Oct had nothing, so 26 Oct still sees 12 Oct.
+    expect((await findWeekLeftovers('2026-10-26'))?.week).toBe(WEEK);
+  });
+
+  it('finds last year’s goals in the first week of a new year', async () => {
+    await addGoal('2026-12-28', { text: 'holiday plan' });
+    expect((await findWeekLeftovers('2027-01-04'))?.week).toBe('2026-12-28');
+  });
+
+  it('returns null once dismissed for this week', async () => {
+    await addGoal(WEEK, { text: 'assignment' });
+    await dismissWeekLeftovers(NEXT);
+    expect(await findWeekLeftovers(NEXT)).toBeNull();
+    expect((await db.weeks.get(NEXT))?.updatedAt).toBeTruthy();
+  });
+
+  it('copies chosen goals after this week’s goals, keeps the originals, and dismisses', async () => {
+    await addGoal(NEXT, { text: 'already here' });
+    const a = await addGoal(WEEK, { text: 'assignment' });
+    const b = await addGoal(WEEK, { text: 'run 3x' });
+    await addGoal(WEEK, { text: 'not chosen' });
+    await bringOverGoals(NEXT, [b.id, a.id]);
+    expect((await listWeek(NEXT)).map((g) => g.text)).toEqual(['already here', 'assignment', 'run 3x']);
+    expect((await listWeek(WEEK)).map((g) => g.text)).toEqual(['assignment', 'run 3x', 'not chosen']);
+    expect(await findWeekLeftovers(NEXT)).toBeNull();
   });
 });

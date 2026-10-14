@@ -2,6 +2,8 @@ import { db } from './db';
 import type { Goal, Task } from '../model';
 import { byPosition, positionBetween } from '../order/position';
 import { nowIso } from './tasks';
+import { copyGoalForWeek, leftoversSourceWeek } from '../day/week';
+import { isUnfinished } from '../day/leftovers';
 
 export async function listWeek(week: string): Promise<Goal[]> {
   const rows = await db.goals.where('week').equals(week).toArray();
@@ -97,5 +99,39 @@ export function goalToTask(goalId: string, day: string, prevId: string | null, n
     await db.tasks.add(task);
     await db.goals.update(goalId, { deleted: true, updatedAt: now });
     return task;
+  });
+}
+
+export interface WeekLeftovers {
+  week: string;
+  goals: Goal[];
+}
+
+export async function findWeekLeftovers(week: string): Promise<WeekLeftovers | null> {
+  const record = await db.weeks.get(week);
+  if (record?.leftoversDismissed) return null;
+  const earlier = await db.goals.where('week').below(week).toArray();
+  const source = leftoversSourceWeek(earlier, week);
+  if (!source) return null;
+  const goals = earlier.filter((g) => g.week === source && isUnfinished(g)).sort(byPosition);
+  return { week: source, goals };
+}
+
+export async function dismissWeekLeftovers(week: string): Promise<void> {
+  await db.weeks.put({ week, leftoversDismissed: true, updatedAt: nowIso() });
+}
+
+export async function bringOverGoals(week: string, ids: string[]): Promise<void> {
+  await db.transaction('rw', db.goals, db.weeks, async () => {
+    const sources = (await db.goals.bulkGet(ids)).filter((g): g is Goal => g !== undefined).sort(byPosition);
+    const existing = await listWeek(week);
+    let prev = existing[existing.length - 1]?.position ?? null;
+    const now = nowIso();
+    const copies = sources.map((s) => {
+      prev = positionBetween(prev, null);
+      return copyGoalForWeek(s, week, prev, crypto.randomUUID(), now);
+    });
+    await db.goals.bulkAdd(copies);
+    await dismissWeekLeftovers(week);
   });
 }
