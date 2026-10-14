@@ -1,11 +1,10 @@
 import { useCallback, useState } from 'react';
 import { useLiveQuery } from 'dexie-react-hooks';
-import { DndContext, KeyboardSensor, MouseSensor, TouchSensor, closestCenter, useSensor, useSensors, type DragEndEvent } from '@dnd-kit/core';
-import { SortableContext, sortableKeyboardCoordinates, verticalListSortingStrategy } from '@dnd-kit/sortable';
-import { restrictToVerticalAxis } from '@dnd-kit/modifiers';
-import { addTask, deleteTask, listDay, moveTask, setDone, setIndent, setMark, updateText } from '../store/tasks';
+import { useDroppable } from '@dnd-kit/core';
+import { SortableContext, verticalListSortingStrategy } from '@dnd-kit/sortable';
+import { addTask, deleteTask, listDay, setDone, setIndent, setMark, updateText } from '../store/tasks';
 import { nextMark } from '../marks';
-import { neighboursAfterMove } from '../order/reorder';
+import { LIST_DROP_ID } from '../order/drop';
 import { TaskLine } from './TaskLine';
 import { GhostLine } from './GhostLine';
 import { usePointerCoarse } from './usePointerCoarse';
@@ -22,11 +21,7 @@ export function NotebookPage({ day }: { day: string }) {
   const [ghostIndent, setGhostIndent] = useState<0 | 1>(0);
   const clearFocus = useCallback(() => setFocusId(null), []);
   const coarse = usePointerCoarse();
-  const sensors = useSensors(
-    useSensor(MouseSensor, { activationConstraint: { distance: 4 } }),
-    useSensor(TouchSensor, { activationConstraint: { delay: 300, tolerance: 8 } }),
-    useSensor(KeyboardSensor, { coordinateGetter: sortableKeyboardCoordinates }),
-  );
+  const { setNodeRef: setListRef } = useDroppable({ id: LIST_DROP_ID.today, data: { list: 'today' } });
 
   if (!tasks) return null;
 
@@ -58,16 +53,10 @@ export function NotebookPage({ day }: { day: string }) {
     else if (activeId) void setIndent(activeId, indent);
   }
 
-  function handleDragEnd({ active, over }: DragEndEvent) {
-    if (!over || active.id === over.id) return;
-    const { prevId, nextId } = neighboursAfterMove(tasks!.map((t) => t.id), String(active.id), String(over.id));
-    void moveTask(String(active.id), prevId, nextId);
-  }
-
   return (
-    <DndContext sensors={sensors} collisionDetection={closestCenter} modifiers={[restrictToVerticalAxis]} onDragEnd={handleDragEnd}>
+    <>
       <SortableContext items={tasks.map((t) => t.id)} strategy={verticalListSortingStrategy}>
-        <ol className="lines">
+        <ol className="lines" ref={setListRef}>
           {tasks.map((task, i) => (
             <TaskLine
               key={task.id}
@@ -98,6 +87,6 @@ export function NotebookPage({ day }: { day: string }) {
         </ol>
       </SortableContext>
       {coarse && activeId && <KeyboardBar onIndent={indentActive} />}
-    </DndContext>
+    </>
   );
 }
