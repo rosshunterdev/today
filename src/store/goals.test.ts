@@ -1,6 +1,7 @@
 import { describe, it, expect, beforeEach } from 'vitest';
 import { db } from './db';
-import { addGoal, deleteGoal, listWeek, moveGoal, setGoalDone, updateGoalText } from './goals';
+import { addGoal, deleteGoal, goalToTask, listWeek, moveGoal, setGoalDone, taskToGoal, updateGoalText } from './goals';
+import { addTask, listDay, setDone, setMark } from './tasks';
 
 const WEEK = '2026-10-12';
 
@@ -46,5 +47,56 @@ describe('goal store', () => {
     const c = await addGoal(WEEK, { text: 'c' });
     await moveGoal(c.id, a.id, b.id);
     expect((await listWeek(WEEK)).map((g) => g.text)).toEqual(['a', 'c', 'b']);
+  });
+});
+
+const DAY = '2026-10-14';
+
+describe('moving between today and the week', () => {
+  it('moves a task between two goals and soft-deletes the task', async () => {
+    const a = await addGoal(WEEK, { text: 'a' });
+    const b = await addGoal(WEEK, { text: 'b' });
+    const task = await addTask(DAY, { text: 'assignment', indent: 1 });
+    await setMark(task.id, 'star');
+
+    const goal = await taskToGoal(task.id, WEEK, a.id, b.id);
+
+    expect((await listWeek(WEEK)).map((g) => g.text)).toEqual(['a', 'assignment', 'b']);
+    expect(goal).toMatchObject({ week: WEEK, text: 'assignment', done: false, deleted: false });
+    expect(goal).not.toHaveProperty('indent');
+    expect(goal).not.toHaveProperty('mark');
+    const source = await db.tasks.get(task.id);
+    expect(source!.deleted).toBe(true);
+    expect(source!.updatedAt >= goal!.createdAt).toBe(true);
+    expect(await listDay(DAY)).toEqual([]);
+  });
+
+  it('keeps a crossed-off task crossed off', async () => {
+    const task = await addTask(DAY, { text: 'done thing' });
+    await setDone(task.id, true);
+    const doneAt = (await db.tasks.get(task.id))!.doneAt;
+    const goal = await taskToGoal(task.id, WEEK, null, null);
+    expect(goal).toMatchObject({ done: true, doneAt });
+  });
+
+  it('moves a goal to the end of today as a plain task', async () => {
+    await addTask(DAY, { text: 'first' });
+    const last = await addTask(DAY, { text: 'second' });
+    const goal = await addGoal(WEEK, { text: 'assignment' });
+
+    const task = await goalToTask(goal.id, DAY, last.id, null);
+
+    expect((await listDay(DAY)).map((t) => t.text)).toEqual(['first', 'second', 'assignment']);
+    expect(task).toMatchObject({ day: DAY, indent: 0, mark: null, deleted: false });
+    expect((await db.goals.get(goal.id))!.deleted).toBe(true);
+    expect(await listWeek(WEEK)).toEqual([]);
+  });
+
+  it('does nothing for a missing or already-deleted source', async () => {
+    expect(await taskToGoal('nope', WEEK, null, null)).toBeNull();
+    const goal = await addGoal(WEEK, { text: 'x' });
+    await deleteGoal(goal.id);
+    expect(await goalToTask(goal.id, DAY, null, null)).toBeNull();
+    expect(await listDay(DAY)).toEqual([]);
   });
 });
