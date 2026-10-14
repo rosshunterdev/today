@@ -70,3 +70,7 @@ CI runs both suites, plus the type-check and build, on every pull request and pu
 
 - Sign in with an emailed code and sync between devices (Supabase, with row-level security).
 - Deploy to Vercel.
+
+## License
+
+[MIT](LICENSE)
