@@ -3,6 +3,7 @@ import { DayHeader } from './ui/DayHeader';
 import { LeftoversNote } from './ui/LeftoversNote';
 import { NotebookPage } from './ui/NotebookPage';
 import { DragBoard } from './ui/DragBoard';
+import { WeekNote } from './ui/WeekNote';
 import { weekOf } from './day/week';
 
 export function App() {
@@ -15,6 +16,7 @@ export function App() {
         <LeftoversNote today={today} />
         <NotebookPage day={today} />
       </main>
+      <WeekNote week={week} />
     </DragBoard>
   );
 }

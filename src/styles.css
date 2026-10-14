@@ -327,3 +327,92 @@ body {
 .kbd-bar button:active {
   background: var(--rule);
 }
+
+/* Week goals: a sticky note in the same pen and paper, pinned beside the page. */
+.week {
+  --note: #fbf0bf;
+  --note-rule: rgb(30 39 71 / 0.13);
+}
+
+.week-note {
+  --margin-w: 1.6rem;
+  position: fixed;
+  right: 1.5rem;
+  bottom: 1.5rem;
+  z-index: 3;
+  width: 17rem;
+  max-height: min(60dvh, 30rem);
+  overflow-y: auto;
+  padding: 0 0.75rem 0.5rem 0;
+  background-color: var(--note);
+  background-image: repeating-linear-gradient(
+    to bottom,
+    transparent 0 calc(var(--line-h) - 1px),
+    var(--note-rule) calc(var(--line-h) - 1px) var(--line-h)
+  );
+  box-shadow:
+    0 1px 2px rgb(30 39 71 / 0.12),
+    0 10px 20px -8px rgb(30 39 71 / 0.3);
+}
+
+.week-note h2 {
+  margin: 0;
+  padding-left: calc(var(--margin-w) + 0.75rem);
+  font-size: 1.5rem;
+  font-weight: 700;
+  line-height: var(--line-h);
+}
+
+.week-tab {
+  display: none;
+}
+
+/* Below 80rem the note can't sit beside the 40rem page without covering it, so it folds into a tab. */
+@media (max-width: 79.99rem) {
+  .week-note {
+    display: none;
+    right: 0.75rem;
+    bottom: calc(env(safe-area-inset-bottom) + 4rem);
+    width: min(20rem, calc(100vw - 1.5rem));
+    max-height: 50dvh;
+  }
+
+  .week[data-open='true'] .week-note {
+    display: block;
+  }
+
+  .week-tab {
+    display: block;
+    position: fixed;
+    right: 0.75rem;
+    bottom: calc(env(safe-area-inset-bottom) + 0.75rem);
+    z-index: 3;
+    min-height: 2.75rem;
+    padding: 0 1rem;
+    border: 0;
+    background: var(--note);
+    color: var(--ink);
+    font: 700 1.3rem var(--hand);
+    box-shadow: 0 4px 10px -4px rgb(30 39 71 / 0.35);
+    cursor: pointer;
+  }
+
+  /* Lifted above the keyboard bar while a task is being edited. */
+  body:has(.kbd-bar) .week-tab {
+    bottom: calc(env(safe-area-inset-bottom) + 4rem);
+  }
+
+  .week-tab[data-target='true'] {
+    outline: 2px dashed var(--pen);
+    outline-offset: 3px;
+  }
+
+  .week-tab[data-over='true'] {
+    background: #f5df78;
+  }
+}
+
+.week-tab:focus-visible {
+  outline: 2px solid var(--ink);
+  outline-offset: 3px;
+}
