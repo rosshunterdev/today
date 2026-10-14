@@ -245,6 +245,10 @@ body {
   text-underline-offset: 0.2em;
 }
 
+.leftovers-all {
+  color: var(--pen);
+}
+
 .leftovers-panel {
   flex-direction: column;
   align-items: flex-start;

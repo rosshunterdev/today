@@ -38,6 +38,21 @@ describe('LeftoversNote', () => {
     await waitFor(() => expect(screen.queryByRole('button', { name: /left$/ })).toBeNull());
   });
 
+  it('"Bring all" copies every leftover in order without opening the picker', async () => {
+    const user = userEvent.setup();
+    await addTask(THU, { text: 'gym' });
+    await addTask(THU, { text: 'groceries' });
+    await addTask(THU, { text: 'call mum' });
+    render(<LeftoversNote today={FRI} />);
+
+    await user.click(await screen.findByRole('button', { name: 'Bring all' }));
+
+    await waitFor(async () =>
+      expect((await listDay(FRI)).map((t) => t.text)).toEqual(['gym', 'groceries', 'call mum']),
+    );
+    await waitFor(() => expect(screen.queryByRole('button', { name: /left$/ })).toBeNull());
+  });
+
   it('can be dismissed and stays dismissed', async () => {
     const user = userEvent.setup();
     await addTask(THU, { text: 'gym' });

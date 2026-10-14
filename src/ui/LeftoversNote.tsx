@@ -28,6 +28,13 @@ export function LeftoversNote({ today }: { today: string }) {
         <button type="button" className="leftovers-open" onClick={() => setOpen(true)}>
           {label}: {leftovers.tasks.length} left
         </button>
+        <button
+          type="button"
+          className="leftovers-all"
+          onClick={() => void bringOver(today, leftovers.tasks.map((t) => t.id))}
+        >
+          Bring all
+        </button>
         <button type="button" className="leftovers-dismiss" aria-label="Dismiss" onClick={() => void dismissLeftovers(today)}>
           ×
         </button>
