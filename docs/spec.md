@@ -45,6 +45,8 @@ Layout: notebook page. Lined paper, margin line, handwritten-style font, date at
 
 **Leftovers.** When the page for a new day opens and an earlier day has unfinished tasks, a small note shows at the top: "Thursday: 3 left". Tapping it opens a short list with a checkbox per task; confirming copies the chosen tasks onto today. A dismiss control hides the note. Shown until used or dismissed, once per day.
 
+**Week goals.** A "This week" sticky note holds a few bigger aims for the week. On wide screens it sits bottom-right beside the page; on phones it folds into a `Week · N` tab that opens it. Type a goal into the note, or drag a task from today onto it (the task moves). Drag a goal back onto today's page to move it back. Goals cross off with the same stroke as tasks and can be reordered. A week runs Monday to Sunday on the same 4am boundary. When a new week starts, the note offers last week's unfinished goals the same way day leftovers work.
+
 **Not in v1:** browsing past days, settings, reminders/notifications, stats/streaks, themes, freehand drawing, sharing.
 
 ## 4. Day rules
@@ -57,7 +59,7 @@ Layout: notebook page. Lined paper, margin line, handwritten-style font, date at
 
 ## 5. Data model
 
-Both the local store (Dexie) and Supabase hold the same two tables.
+Both the local store (Dexie) and Supabase hold the same four tables.
 
 **tasks**
 
@@ -82,6 +84,30 @@ Both the local store (Dexie) and Supabase hold the same two tables.
 |---|---|---|
 | `user_id` | uuid | |
 | `day` | text `YYYY-MM-DD` | primary key with `user_id` |
+| `leftovers_dismissed` | boolean | |
+| `updated_at` | timestamp | |
+
+**goals**
+
+| field | type | notes |
+|---|---|---|
+| `id` | uuid | generated on device |
+| `user_id` | uuid | Supabase auth user; set on sync |
+| `week` | text `YYYY-MM-DD` | the Monday of the week, on the 4am day boundary |
+| `text` | text | |
+| `done` | boolean | |
+| `done_at` | timestamp, nullable | |
+| `position` | text | fractional index |
+| `created_at` | timestamp | |
+| `updated_at` | timestamp | set on every local change |
+| `deleted` | boolean | soft delete; moving a line between today and the week soft-deletes it on one side and creates it on the other |
+
+**weeks**
+
+| field | type | notes |
+|---|---|---|
+| `user_id` | uuid | |
+| `week` | text `YYYY-MM-DD` | primary key with `user_id` |
 | `leftovers_dismissed` | boolean | |
 | `updated_at` | timestamp | |
 
