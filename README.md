@@ -12,7 +12,7 @@ A today-only task list that feels like the pen-and-paper list you write each mor
 
 ## Why
 
-Task apps tend to feel worse than paper. Paper is always ready, crossing things off feels good, and writing the list is how the day gets planned. This app keeps those parts and drops everything else. It holds **today, and nothing else**: no backlog, projects, tags, due dates, priorities or streaks.
+Task apps tend to feel worse than paper. Paper is always ready, crossing things off feels good, and writing the list is how the day gets planned. This app keeps those parts and drops everything else. It holds **today, plus a short note of this week's goals**: no backlog, projects, tags, due dates, priorities or streaks.
 
 ## Features
 
@@ -22,6 +22,7 @@ Task apps tend to feel worse than paper. Paper is always ready, crossing things 
 - **Margin marks:** click or tap the margin to cycle ★, ! and ?.
 - **Reorder:** drag the ⠿ handle on desktop, or long-press and drag on a phone.
 - **Leftovers:** when a new day starts, a small note offers to bring over unfinished tasks from the last day you used it.
+- **This week:** a sticky note of goals for the week. Drag a task onto it, drag a goal back to today, and bring last week's unfinished goals forward.
 - **4am day boundary:** 02:30 Friday still counts as Thursday.
 - **Phone keyboard bar:** ⇥ / ⇤ buttons above the keyboard for sub-steps.
 - **Installable and offline:** works with no connection; data is stored on the device.

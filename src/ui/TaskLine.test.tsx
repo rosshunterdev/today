@@ -3,6 +3,7 @@ import { describe, it, expect, beforeEach } from 'vitest';
 import { render, screen, waitFor, fireEvent } from '@testing-library/react';
 import userEvent from '@testing-library/user-event';
 import { NotebookPage } from './NotebookPage';
+import { TaskLine } from './TaskLine';
 import { db } from '../store/db';
 import { addTask, listDay } from '../store/tasks';
 
@@ -92,5 +93,47 @@ describe('margin marks', () => {
     await waitFor(() => expect(mark()).toHaveAccessibleName('Mark: question'));
     await user.click(mark());
     await waitFor(() => expect(mark()).toHaveAccessibleName('Mark: none'));
+  });
+});
+
+describe('TaskLine as a goal', () => {
+  const noop = () => {};
+  function renderGoal() {
+    return render(
+      <>
+        <ol>
+          <TaskLine
+            task={{ id: 'g1', text: 'assignment', done: false }}
+            list="week"
+            label="Goal"
+            coarse={false}
+            focusRequested={false}
+            onFocusHandled={noop}
+            onFocusChange={noop}
+            onText={noop}
+            onEnter={noop}
+            onBackspaceEmpty={noop}
+            onToggleDone={noop}
+          />
+        </ol>
+        <button type="button">after</button>
+      </>,
+    );
+  }
+
+  it('has no margin mark and is labelled as a goal', () => {
+    renderGoal();
+    expect(screen.getByRole('textbox', { name: 'Goal' })).toHaveValue('assignment');
+    expect(screen.queryByRole('button', { name: /^Mark/ })).toBeNull();
+  });
+
+  it('lets Tab move focus on instead of indenting', async () => {
+    const user = userEvent.setup();
+    renderGoal();
+    await user.click(screen.getByRole('textbox', { name: 'Goal' }));
+    await user.tab();
+    // The Reorder handle comes next in the line, then the button after the list.
+    if (document.activeElement?.getAttribute('aria-label') === 'Reorder') await user.tab();
+    expect(screen.getByRole('button', { name: 'after' })).toHaveFocus();
   });
 });
