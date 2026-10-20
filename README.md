@@ -22,6 +22,7 @@ Task apps tend to feel worse than paper. Paper is always ready, crossing things 
 - **Margin marks:** click or tap the margin to cycle ★, ! and ?.
 - **Reorder:** drag the ⠿ handle on desktop, or long-press and drag on a phone.
 - **Old pages:** unfinished tasks from earlier days stay pinned beside today as small torn-off pages. Drag a line onto today or into the week when you're ready for it, and bin the page once it's done.
+- **Notes:** tap the ✎ at the end of a line to unfold a note under it, for the details behind a short task.
 - **This week:** a sticky note of goals for the week. Drag a task onto it, drag a goal back to today, and bring last week's unfinished goals forward.
 - **4am day boundary:** 02:30 Friday still counts as Thursday.
 - **Phone keyboard bar:** ⇥ / ⇤ buttons above the keyboard for sub-steps.

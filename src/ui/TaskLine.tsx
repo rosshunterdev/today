@@ -5,6 +5,7 @@ import type { Mark } from '../model';
 import type { LineSource } from '../order/drop';
 import { isStrike } from './stroke';
 import { MARK_GLYPH } from '../marks';
+import { hasNotes } from '../day/leftovers';
 
 export interface LineItem {
   id: string;
@@ -12,6 +13,7 @@ export interface LineItem {
   done: boolean;
   indent?: 0 | 1;
   mark?: Mark;
+  notes?: string;
 }
 
 export interface TaskLineProps {
@@ -29,14 +31,20 @@ export interface TaskLineProps {
   onIndent?: (indent: 0 | 1) => void;
   onToggleDone: () => void;
   onCycleMark?: () => void;
+  onNotes?: (notes: string) => void;
 }
 
 export function TaskLine(props: TaskLineProps) {
-  const { task, list, label = 'Task', readOnly = false, coarse, focusRequested, onFocusHandled, onFocusChange, onText, onEnter, onBackspaceEmpty, onIndent, onToggleDone, onCycleMark } = props;
+  const { task, list, label = 'Task', readOnly = false, coarse, focusRequested, onFocusHandled, onFocusChange, onText, onEnter, onBackspaceEmpty, onIndent, onToggleDone, onCycleMark, onNotes } = props;
   const inputRef = useRef<HTMLInputElement>(null);
   const measureRef = useRef<HTMLSpanElement>(null);
   const [text, setText] = useState(task.text);
   const [textWidth, setTextWidth] = useState(0);
+  const notesRef = useRef<HTMLTextAreaElement>(null);
+  const toggleRef = useRef<HTMLButtonElement>(null);
+  const [notes, setNotesText] = useState(task.notes ?? '');
+  const [notesOpen, setNotesOpen] = useState(false);
+  const noted = hasNotes(notes);
   const { attributes, listeners, setNodeRef, setActivatorNodeRef, transform, transition, isDragging } = useSortable({
     id: task.id,
     data: { list, text: task.text },
@@ -49,6 +57,18 @@ export function TaskLine(props: TaskLineProps) {
   useEffect(() => {
     if (document.activeElement !== inputRef.current) setText(task.text);
   }, [task.text]);
+
+  useEffect(() => {
+    if (document.activeElement !== notesRef.current) setNotesText(task.notes ?? '');
+  }, [task.notes]);
+
+  // Grow the note one ruled line at a time as it's written.
+  useLayoutEffect(() => {
+    const el = notesRef.current;
+    if (!el) return;
+    el.style.height = '0';
+    el.style.height = `${el.scrollHeight}px`;
+  }, [notes, notesOpen]);
 
   useEffect(() => {
     if (!focusRequested) return;
@@ -71,7 +91,7 @@ export function TaskLine(props: TaskLineProps) {
     } else if (e.key === 'Tab' && onIndent) {
       e.preventDefault();
       onIndent(e.shiftKey ? 0 : 1);
-    } else if (e.key === 'Backspace' && text === '') {
+    } else if (e.key === 'Backspace' && text === '' && !noted) {
       e.preventDefault();
       onBackspaceEmpty();
     }
@@ -152,6 +172,45 @@ export function TaskLine(props: TaskLineProps) {
           </svg>
         )}
       </div>
+      {(onNotes || (readOnly && noted)) && (
+        <button
+          type="button"
+          ref={toggleRef}
+          className="notes-toggle"
+          aria-label="Notes"
+          aria-expanded={notesOpen}
+          data-has={noted}
+          onPointerDown={(e) => e.stopPropagation()}
+          onClick={() => setNotesOpen((open) => !open)}
+        >
+          ✎
+        </button>
+      )}
+      {notesOpen && (
+        <textarea
+          ref={notesRef}
+          className="notes"
+          aria-label="Notes"
+          rows={1}
+          value={notes}
+          readOnly={readOnly}
+          autoFocus={!readOnly}
+          onChange={(e) => {
+            setNotesText(e.target.value);
+            onNotes?.(e.target.value);
+          }}
+          onKeyDown={(e) => {
+            if (e.key === 'Escape') {
+              e.preventDefault();
+              setNotesOpen(false);
+              toggleRef.current?.focus();
+            }
+          }}
+          // Strokes and drags start from the line row only, never from the note.
+          onPointerDown={(e) => e.stopPropagation()}
+          onTouchStart={(e) => e.stopPropagation()}
+        />
+      )}
     </li>
   );
 }

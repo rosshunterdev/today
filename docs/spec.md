@@ -45,6 +45,8 @@ Layout: notebook page. Lined paper, margin line, handwritten-style font, date at
 
 **Old pages.** Each morning today's page starts blank. Every earlier day that still has unfinished lines appears as a small torn-off page pinned beside today, newest on top, with older pages peeking out underneath. Lines on an old page can be crossed off, or dragged onto today or into This week (the line moves), but nothing can be added or edited. When every line is crossed off the page greys out and offers "Bin page"; a page can also be binned early, which takes a second tap ("Bin 3 open lines?") because binning can't be undone. The point is to keep a backlog in view without crowding today's list.
 
+**Notes.** Any task or goal can hold a free-text note, like writing on the back of the card. A small ✎ at the end of a line (shown while you're on the line, always when a note exists) unfolds the note in place under the line; Escape or ✎ folds it. Enter adds a new line inside the note. Notes move with their line everywhere and are read-only on old pages. A line with blank text but a note still counts as a real line.
+
 **Week goals.** A "This week" sticky note holds a few bigger aims for the week. On wide screens it sits bottom-right beside the page; on phones it folds into a `Week · N` tab that opens it. Type a goal into the note, or drag a task from today onto it (the task moves). Drag a goal back onto today's page to move it back. Goals cross off with the same stroke as tasks and can be reordered. A week runs Monday to Sunday on the same 4am boundary. When a new week starts, the note offers last week's unfinished goals with a Bring all / pick / dismiss note.
 
 **Not in v1:** browsing past days beyond old pages, settings, reminders/notifications, stats/streaks, themes, freehand drawing, sharing.
@@ -75,6 +77,7 @@ Both the local store (Dexie) and Supabase hold the same four tables.
 | `position` | text | fractional index; sorts lexically; inserting between two lines never renumbers others |
 | `indent` | 0 or 1 | |
 | `mark` | null, `star`, `bang`, `question` | |
+| `notes` | text | free text behind the line, may be empty |
 | `created_at` | timestamp | |
 | `updated_at` | timestamp | set on every local change; drives sync and conflicts |
 | `deleted` | boolean | soft delete so deletions sync |
@@ -96,6 +99,7 @@ Both the local store (Dexie) and Supabase hold the same four tables.
 | `user_id` | uuid | Supabase auth user; set on sync |
 | `week` | text `YYYY-MM-DD` | the Monday of the week, on the 4am day boundary |
 | `text` | text | |
+| `notes` | text | free text behind the line, may be empty |
 | `done` | boolean | |
 | `done_at` | timestamp, nullable | |
 | `position` | text | fractional index |

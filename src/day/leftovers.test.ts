@@ -1,5 +1,5 @@
 import { describe, it, expect } from 'vitest';
-import { isUnfinished } from './leftovers';
+import { hasNotes, isUnfinished } from './leftovers';
 import { makeTask } from '../test/factories';
 
 describe('isUnfinished', () => {
@@ -11,5 +11,18 @@ describe('isUnfinished', () => {
     expect(isUnfinished(makeTask({ deleted: true }))).toBe(false);
     expect(isUnfinished(makeTask({ text: '' }))).toBe(false);
     expect(isUnfinished(makeTask({ text: '   ' }))).toBe(false);
+  });
+  it('counts a blank line with a note as unfinished, but not whitespace-only notes', () => {
+    expect(isUnfinished(makeTask({ text: '', notes: 'call back after 3' }))).toBe(true);
+    expect(isUnfinished(makeTask({ text: '', notes: '  \n ' }))).toBe(false);
+  });
+});
+
+describe('hasNotes', () => {
+  it('is true only for notes with visible text', () => {
+    expect(hasNotes('ask about projects')).toBe(true);
+    expect(hasNotes(' \n ')).toBe(false);
+    expect(hasNotes('')).toBe(false);
+    expect(hasNotes(undefined)).toBe(false);
   });
 });

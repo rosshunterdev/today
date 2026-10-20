@@ -31,6 +31,10 @@ describe('pageLines', () => {
     ];
     expect(pageLines(tasks, DAY)).toEqual([]);
   });
+
+  it('keeps a line with blank text when it has a note', () => {
+    expect(pageLines([makeTask({ day: DAY, text: '', notes: 'call back' })], DAY)).toHaveLength(1);
+  });
 });
 
 describe('isPageDone', () => {

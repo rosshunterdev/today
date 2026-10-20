@@ -10,6 +10,7 @@ import {
   findWeekLeftovers,
   listWeek,
   setGoalDone,
+  setGoalNotes,
   updateGoalText,
 } from '../store/goals';
 import { weekLeftoversLabel } from '../day/week';
@@ -115,6 +116,7 @@ export function WeekNote({ week, oldCount = 0, children }: { week: string; oldCo
                   onEnter={() => void handleEnter(i)}
                   onBackspaceEmpty={() => void handleBackspaceEmpty(i)}
                   onToggleDone={() => void setGoalDone(goal.id, !goal.done)}
+                  onNotes={(notes) => void setGoalNotes(goal.id, notes)}
                 />
               ))}
               <GhostLine

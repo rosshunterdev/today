@@ -1,6 +1,7 @@
 import type { Task } from '../model';
 import { byPosition } from '../order/position';
 import { ROLLOVER_HOUR, dayToDate } from './logicalDay';
+import { hasNotes } from './leftovers';
 
 // A day ends at the 04:00 rollover on the next calendar day.
 export function dayEnd(day: string): string {
@@ -12,7 +13,7 @@ export function dayEnd(day: string): string {
 export function pageLines(tasks: Task[], day: string): Task[] {
   const end = dayEnd(day);
   return tasks
-    .filter((t) => t.day === day && !t.deleted && t.text.trim() !== '' && (!t.done || (t.doneAt !== null && t.doneAt >= end)))
+    .filter((t) => t.day === day && !t.deleted && (t.text.trim() !== '' || hasNotes(t.notes)) &&(!t.done || (t.doneAt !== null && t.doneAt >= end)))
     .sort(byPosition);
 }
 

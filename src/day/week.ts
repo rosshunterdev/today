@@ -26,6 +26,7 @@ export function copyGoalForWeek(source: Goal, week: string, position: string, id
     id,
     week,
     text: source.text,
+    notes: source.notes ?? '',
     done: false,
     doneAt: null,
     position,
