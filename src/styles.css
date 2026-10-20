@@ -1,16 +1,41 @@
-/* Exercise-book page: blue rules, red margin, ballpoint ink, red pen for strikes. */
+/* Dot-grid journal: black fineliner by day, white gel pen on black pages at night. */
 :root {
-  --paper: #fdfcf6;
-  --ink: #1e2747;
-  --ink-soft: #7b8094;
-  --done-ink: #a5a9b6;
-  --rule: #bcd0e6;
-  --margin-rule: #e3908a;
-  --pen: #c62f2a;
-  --line-h: 2.25rem;
-  --margin-w: 2.75rem;
-  --hand: 'Caveat', 'Segoe Print', 'Bradley Hand', cursive;
+  --desk: #c9c7c0;
+  --cover: #2a2c31;
+  --paper: #fafaf7;
+  --dot: #babec7;
+  --ink: #24262b;
+  --ink-soft: #5d6068;
+  --ink-faint: #a0a3aa;
+  --strike: #24262b;
+  --highlight: rgb(241 234 90 / 0.9);
+  --gutter: rgb(36 38 43 / 0.1);
+  --fold-under: #e6e6e0;
+  --fold-shade: #e4e4de;
+  --shadow: rgb(36 38 43 / 0.25);
+  --row: 2.25rem;
+  --dot-step: 1.125rem;
+  --text-x: 4rem;
+  --indent: 1.875rem;
+  --hand: 'Shantell Sans', 'Segoe Print', 'Bradley Hand', cursive;
   color-scheme: light;
+}
+
+/* Night pages: set on <html> by the switch, and before first paint by index.html. */
+:root[data-theme='night'] {
+  --desk: #3a3e46;
+  --cover: #17181c;
+  --paper: #202329;
+  --dot: #454a55;
+  --ink: #ecedef;
+  --ink-soft: #a9adb6;
+  --ink-faint: #767b86;
+  --strike: #f4a7c0;
+  --gutter: rgb(0 0 0 / 0.28);
+  --fold-under: #2b2f37;
+  --fold-shade: #2c3038;
+  --shadow: rgb(0 0 0 / 0.5);
+  color-scheme: dark;
 }
 
 * {
@@ -26,47 +51,80 @@ body {
 body {
   color: var(--ink);
   font-family: var(--hand);
-  font-size: 1.5rem;
+  font-size: 1.3rem;
   -webkit-tap-highlight-color: transparent;
 }
 
+/* A page of dot grid. Dots sit every half row, so every row line falls on a row of dots. */
 .page {
   position: relative;
-  max-width: 40rem;
   min-height: 100dvh;
-  margin: 0 auto;
-  padding: env(safe-area-inset-top) 1rem calc(env(safe-area-inset-bottom) + 6rem) 0;
-  background-image:
-    linear-gradient(var(--margin-rule), var(--margin-rule)),
-    repeating-linear-gradient(
-      to bottom,
-      transparent 0 calc(var(--line-h) - 1px),
-      var(--rule) calc(var(--line-h) - 1px) var(--line-h)
-    );
-  background-size: 2px 100%, 100% 100%;
-  background-position: var(--margin-w) 0, 0 env(safe-area-inset-top);
-  background-repeat: no-repeat, repeat;
+  padding: env(safe-area-inset-top) 0.75rem calc(env(safe-area-inset-bottom) + 7rem) 0.25rem;
+  background-color: var(--paper);
+  background-image: radial-gradient(circle, var(--dot) 1.1px, transparent 1.5px);
+  background-size: var(--dot-step) var(--dot-step);
+  background-position: calc(var(--dot-step) / 2) calc(env(safe-area-inset-top) + var(--dot-step) / 2);
 }
 
+/* The day's date as a big numeral, the weekday and month stacked beside it. */
 .day-header {
   display: flex;
-  align-items: baseline;
-  gap: 0.75rem;
-  height: calc(var(--line-h) * 2);
-  padding-left: calc(var(--margin-w) + 0.75rem);
+  align-items: flex-end;
+  height: calc(var(--row) * 3);
+  padding: 0 0 0.6rem 1rem;
 }
 
 .day-header h1 {
+  display: flex;
+  align-items: flex-end;
+  gap: 0.6rem;
   margin: 0;
-  font-size: 2.25rem;
-  font-weight: 700;
-  line-height: calc(var(--line-h) * 2);
+  font-weight: 600;
+  outline: none;
 }
 
-.day-header p {
-  margin: 0;
+.day-number {
+  font-size: 5.25rem;
+  line-height: 0.78;
+  letter-spacing: -0.04em;
+}
+
+.day-words {
+  display: flex;
+  flex-direction: column;
+  font-size: 1.35rem;
+  line-height: 1.1;
+}
+
+.day-month {
   color: var(--ink-soft);
-  font-size: 1.25rem;
+  font-weight: 400;
+}
+
+.theme-switch {
+  align-self: flex-start;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  width: 2.75rem;
+  height: 2.75rem;
+  margin: 0.75rem 0 0 auto;
+  padding: 0;
+  border: 0;
+  border-radius: 50%;
+  background: transparent;
+  color: var(--ink-soft);
+  cursor: pointer;
+}
+
+.theme-switch svg {
+  width: 1.4rem;
+  height: 1.4rem;
+}
+
+.theme-switch:focus-visible {
+  outline: 2px solid var(--ink);
+  outline-offset: 2px;
 }
 
 .lines {
@@ -75,55 +133,19 @@ body {
   list-style: none;
 }
 
+/* A line, left to right: drag dots (on hover), mark slot, bullet, text, pencil. */
 .line {
   position: relative;
   display: flex;
   align-items: center;
   flex-wrap: wrap;
-  min-height: var(--line-h);
-  padding-left: calc(var(--margin-w) + 0.75rem);
+  min-height: var(--row);
+  padding-left: var(--text-x);
   touch-action: pan-y;
 }
 
 .line[data-indent='1'] {
-  padding-left: calc(var(--margin-w) + 2.5rem);
-}
-
-.line-text {
-  flex: 1;
-  min-width: 0;
-  height: 100%;
-  padding: 0 2rem 0 0; /* room for the ✎ at the end of the line */
-  border: 0;
-  background: transparent;
-  color: inherit;
-  font: inherit;
-  line-height: var(--line-h);
-  outline: none;
-}
-
-.line-text::placeholder {
-  color: var(--ink-soft);
-  opacity: 0.6;
-}
-
-.mark {
-  position: absolute;
-  left: 0;
-  top: 0;
-  width: var(--margin-w);
-  height: var(--line-h);
-  padding: 0;
-  border: 0;
-  background: transparent;
-  color: var(--pen);
-  font: 700 1.5rem/var(--line-h) var(--hand);
-  cursor: pointer;
-}
-
-.mark:focus-visible {
-  outline: 2px solid var(--rule);
-  outline-offset: -4px;
+  padding-left: calc(var(--text-x) + var(--indent));
 }
 
 .ink {
@@ -131,7 +153,30 @@ body {
   flex: 1;
   display: flex;
   min-width: 0;
-  height: var(--line-h);
+  height: var(--row);
+}
+
+.line-text {
+  position: relative; /* paints over the star band */
+  flex: 1;
+  min-width: 0;
+  height: var(--row);
+  padding: 0 2.25rem 0 0; /* room for the pencil at the end of the line */
+  border: 0;
+  background: transparent;
+  color: inherit;
+  font: inherit;
+  line-height: var(--row);
+  outline: none;
+}
+
+.line-text::placeholder {
+  color: var(--ink-faint);
+  opacity: 1;
+}
+
+.line[data-done='true'] .line-text {
+  color: var(--ink-faint);
 }
 
 .measure {
@@ -141,26 +186,69 @@ body {
   pointer-events: none;
 }
 
-.line[data-done='true'] .line-text {
-  color: var(--done-ink);
+/* The bullet sits just left of the text: a dot, then a cross once the line is done. */
+.bullet {
+  position: absolute;
+  left: -1.375rem;
+  top: 0;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  width: 1rem;
+  height: var(--row);
+  pointer-events: none;
+}
+
+.bullet .dot {
+  width: 0.375rem;
+  height: 0.375rem;
+  border-radius: 50%;
+  background: currentColor;
+}
+
+.bullet svg {
+  width: 0.75rem;
+  height: 0.75rem;
+  fill: none;
+  stroke: var(--strike);
+  stroke-width: 2;
+  stroke-linecap: round;
+  animation: pop 180ms ease-out;
+}
+
+/* A starred line: a highlighter band by day. A band doesn't read on black paper, so night uses a wavy gel underline. */
+.star {
+  position: absolute;
+  left: -3px;
+  top: 18%;
+  height: 66%;
+  pointer-events: none;
+  background: linear-gradient(176deg, transparent 12%, var(--highlight) 12% 88%, transparent 88%);
+}
+
+:root[data-theme='night'] .star {
+  top: auto;
+  bottom: 0.35rem;
+  height: 0.375rem;
+  background: url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='12' height='6' viewBox='0 0 12 6'%3E%3Cpath d='M0 3 Q3 0.5 6 3 T12 3' fill='none' stroke='%23f2e27a' stroke-width='1.6'/%3E%3C/svg%3E") repeat-x 0 0 / 0.75rem 0.375rem;
 }
 
 .strike {
   position: absolute;
-  left: -4px;
+  left: -2px;
   top: 50%;
-  height: 0.6rem;
+  height: 0.4rem;
   overflow: visible;
   pointer-events: none;
   translate: 0 -50%;
   /* Wipe left to right, like the pen moving across. */
-  animation: draw-strike 280ms ease-out;
+  animation: draw-strike 240ms ease-out;
 }
 
 .strike path {
   fill: none;
-  stroke: var(--pen);
-  stroke-width: 2.5px;
+  stroke: var(--strike);
+  stroke-width: 1.6px;
   stroke-linecap: round;
   vector-effect: non-scaling-stroke;
 }
@@ -174,26 +262,63 @@ body {
   }
 }
 
+@keyframes pop {
+  from {
+    scale: 0.3;
+    opacity: 0;
+  }
+}
+
 @media (prefers-reduced-motion: reduce) {
-  .strike {
+  .strike,
+  .bullet svg {
     animation: none;
   }
 }
 
+/* The margin slot: tap to cycle marks. ! and ? show here; a star shows on the text. */
+.mark {
+  position: absolute;
+  left: 0;
+  top: 0;
+  width: 2.625rem;
+  height: var(--row);
+  padding: 0;
+  border: 0;
+  background: transparent;
+  color: var(--ink);
+  font: 600 1.35rem/var(--row) var(--hand);
+  text-align: center;
+  cursor: pointer;
+}
+
+.mark:focus-visible {
+  outline: 2px solid var(--ink);
+  outline-offset: -4px;
+}
+
 .handle {
   position: absolute;
-  left: calc(var(--margin-w) - 1.6rem);
+  left: 0;
   top: 0;
-  width: 1.4rem;
-  height: var(--line-h);
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  width: 0.875rem;
+  height: var(--row);
   padding: 0;
   border: 0;
   background: transparent;
   color: var(--ink-soft);
-  font-size: 1rem;
   cursor: grab;
   opacity: 0;
   transition: opacity 120ms ease-out;
+}
+
+.handle svg {
+  width: 0.5rem;
+  height: 0.875rem;
+  fill: currentColor;
 }
 
 .line:hover .handle,
@@ -201,22 +326,29 @@ body {
   opacity: 1;
 }
 
-/* ✎ at the end of a line: shown while you're on the line, always when there's a note behind it. */
+/* The pencil at the end of a line: shown while you're on the line, always when there's a note behind it. */
 /* It floats over the end of the line, so when hidden on touch a tap there falls through to the text. */
 .notes-toggle {
   position: absolute;
   top: 0;
   right: 0;
-  width: 2rem;
-  height: var(--line-h);
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  width: 2.25rem;
+  height: var(--row);
   padding: 0;
   border: 0;
   background: transparent;
   color: var(--ink-soft);
-  font-size: 1.1rem;
   cursor: pointer;
   opacity: 0;
   transition: opacity 120ms ease-out;
+}
+
+.notes-toggle svg {
+  width: 1.1rem;
+  height: 1.1rem;
 }
 
 .line:hover .notes-toggle,
@@ -230,7 +362,7 @@ body {
   color: var(--ink);
 }
 
-/* On touch a hidden ✎ mustn't catch taps meant for the line; it only answers while the line is being edited. */
+/* On touch a hidden pencil mustn't catch taps meant for the line; it only answers while the line is being edited. */
 @media (hover: none) {
   .notes-toggle:not([data-has='true']) {
     pointer-events: none;
@@ -242,27 +374,64 @@ body {
 }
 
 .notes-toggle:focus-visible {
-  outline: 2px solid var(--rule);
+  outline: 2px solid var(--ink);
   outline-offset: -4px;
 }
 
-/* The note unfolds under its line, on the same rules, in a slightly smaller hand. */
-.notes {
+/* An old line's > sits at the end; the pencil steps left to make room for it. */
+.line:has(.move-today) .notes-toggle {
+  right: 2.5rem;
+}
+
+.move-today {
+  flex: none;
+  width: 2.5rem;
+  height: var(--row);
+  padding: 0;
+  border: 0;
+  background: transparent;
+  color: var(--ink-soft);
+  font: 600 1.3rem/var(--row) var(--hand);
+  cursor: pointer;
+}
+
+.move-today:focus-visible {
+  outline: 2px solid var(--ink);
+  outline-offset: -4px;
+}
+
+/* The note unfolds under its line, a size smaller, with a dash in the gutter. */
+.notes-wrap {
+  display: flex;
   flex-basis: 100%;
-  min-height: var(--line-h);
-  margin: 0 2rem 0 0;
+  margin-right: 2.25rem;
+}
+
+.notes-dash {
+  flex: none;
+  width: 1.125rem;
+  color: var(--ink-soft);
+  font-size: 1.05rem;
+  line-height: var(--row);
+}
+
+.notes {
+  flex: 1;
+  min-width: 0;
+  min-height: var(--row);
+  margin: 0;
   padding: 0;
   border: 0;
   resize: none;
   overflow: hidden;
   background: transparent;
-  color: var(--ink);
-  font: 1.3rem/var(--line-h) var(--hand);
+  color: var(--ink-soft);
+  font: 1.05rem/var(--row) var(--hand);
   outline: none;
 }
 
 .notes:focus-visible {
-  box-shadow: inset 2px 0 0 var(--rule);
+  box-shadow: inset 2px 0 0 var(--dot);
 }
 
 /* The original stays put as a faint placeholder; the overlay is what follows the pointer. */
@@ -270,14 +439,14 @@ body {
   opacity: 0.35;
 }
 
-.drag-overlay {
-  padding-left: 0.75rem;
-  background: var(--paper);
-  box-shadow: 0 2px 8px rgb(30 39 71 / 0.18);
+.line[data-dragging='true'] .handle {
   cursor: grabbing;
 }
 
-.line[data-dragging='true'] .handle {
+.drag-overlay {
+  padding-left: 0.75rem;
+  background: var(--paper);
+  box-shadow: 0 2px 8px var(--shadow);
   cursor: grabbing;
 }
 
@@ -287,17 +456,45 @@ body {
   }
 }
 
+/* This week: the top of the right-hand page, or the second page on phones. */
+.week-header {
+  display: flex;
+  flex-wrap: wrap;
+  align-content: flex-end;
+  align-items: baseline;
+  gap: 0 0.75rem;
+  height: calc(var(--row) * 3);
+  padding: 0 0.5rem 0.6rem 1rem;
+}
+
+.week-header h2 {
+  margin: 0;
+  font-size: 2.4rem;
+  font-weight: 600;
+  line-height: 1.1;
+  outline: none;
+}
+
+.week-dates {
+  margin: 0;
+  color: var(--ink-soft);
+  font-size: 1rem;
+}
+
+/* Last week's unfinished goals, offered at the top of the week. */
 .leftovers {
   display: flex;
   align-items: center;
+  flex-wrap: wrap;
   gap: 0.5rem;
-  min-height: var(--line-h);
-  padding-left: calc(var(--margin-w) + 0.75rem);
+  min-height: var(--row);
+  padding-left: 1rem;
   color: var(--ink-soft);
-  font-size: 1.25rem;
+  font-size: 1.05rem;
 }
 
 .leftovers button {
+  min-height: 2.75rem;
   padding: 0 0.25rem;
   border: 0;
   background: transparent;
@@ -307,7 +504,7 @@ body {
 }
 
 .leftovers button:focus-visible {
-  outline: 2px solid var(--rule);
+  outline: 2px solid var(--ink);
   outline-offset: 2px;
 }
 
@@ -317,7 +514,8 @@ body {
 }
 
 .leftovers .leftovers-all {
-  color: var(--pen);
+  color: var(--ink);
+  font-weight: 600;
 }
 
 .leftovers-panel {
@@ -336,8 +534,8 @@ body {
 .leftovers-panel li,
 .leftovers-panel p,
 .leftovers-actions {
-  min-height: var(--line-h);
-  line-height: var(--line-h);
+  min-height: var(--row);
+  line-height: var(--row);
 }
 
 .leftovers-panel label {
@@ -348,7 +546,7 @@ body {
 }
 
 .leftovers-panel input[type='checkbox'] {
-  accent-color: var(--pen);
+  accent-color: var(--ink);
 }
 
 .leftovers-actions {
@@ -357,8 +555,8 @@ body {
 }
 
 .leftovers-actions button:first-child {
-  color: var(--pen);
-  font-weight: 700;
+  color: var(--ink);
+  font-weight: 600;
 }
 
 .leftovers-actions button:disabled {
@@ -366,17 +564,81 @@ body {
   cursor: default;
 }
 
+/* Old pages: earlier days' unfinished lines, under a hand-drawn rule, newest first. */
+.old-pages .rule {
+  display: block;
+  width: 11rem;
+  height: 0.875rem;
+  margin: 1.125rem 0 0.5rem 1rem;
+  fill: none;
+  stroke: var(--ink-soft);
+  stroke-width: 1.5;
+  stroke-linecap: round;
+}
+
+.old-page {
+  margin-bottom: 1.125rem;
+}
+
+.old-page header {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  height: var(--row);
+  padding: 0 0.25rem 0 1rem;
+}
+
+.old-page h3 {
+  margin: 0;
+  color: var(--ink-soft);
+  font-size: 1.3rem;
+  font-weight: 600;
+}
+
+.old-page .line {
+  color: var(--ink-soft);
+}
+
+.old-bin {
+  min-height: 2.75rem;
+  margin: -0.25rem 0; /* a full-size target that still fits the row */
+  padding: 0 0.5rem;
+  border: 0;
+  background: transparent;
+  color: var(--ink-soft);
+  font: 1rem var(--hand);
+  text-decoration: underline;
+  text-decoration-thickness: 1px;
+  text-underline-offset: 0.25em;
+  cursor: pointer;
+}
+
+.old-page[data-done='true'] .lines {
+  opacity: 0.55;
+}
+
+.old-page[data-done='true'] .old-bin,
+.old-bin[data-confirm='true'] {
+  color: var(--ink);
+  font-weight: 600;
+}
+
+.old-bin:focus-visible {
+  outline: 2px solid var(--ink);
+  outline-offset: 2px;
+}
+
 .kbd-bar {
   position: fixed;
   left: 0;
   right: 0;
   bottom: 0;
-  z-index: 2;
+  z-index: 4;
   display: flex;
   gap: 0.5rem;
   padding: 0.25rem 0.75rem calc(env(safe-area-inset-bottom) + 0.25rem);
   background: var(--paper);
-  border-top: 1px solid var(--rule);
+  border-top: 1px solid var(--dot);
 }
 
 .kbd-bar button {
@@ -390,202 +652,180 @@ body {
 }
 
 .kbd-bar button:active {
-  background: var(--rule);
+  background: var(--dot);
 }
 
-/* Week goals: a sticky note in the same pen and paper, pinned beside the page. */
-.week {
-  --note: #fbf0bf;
-  --note-rule: rgb(30 39 71 / 0.13);
-}
-
-/* The right-hand column: old pages stacked above the week note. */
-.side {
+/* The folded corner on phones: tap to turn the page, or drop a line on it to send it over. */
+.corner {
   position: fixed;
-  right: 1.5rem;
-  bottom: 1.5rem;
+  bottom: env(safe-area-inset-bottom);
   z-index: 3;
   display: flex;
-  flex-direction: column;
-  gap: 1.25rem;
-  width: 17rem;
-  max-height: calc(100dvh - 3rem);
+  align-items: flex-end;
+  gap: 0.5rem;
+  padding: 0;
+  border: 0;
+  background: transparent;
+  color: var(--ink-soft);
+  font: 0.95rem/1.25 var(--hand);
+  cursor: pointer;
 }
 
-.week-note {
-  --margin-w: 1.6rem;
+.corner[data-to='week'] {
+  right: 0;
+  text-align: right;
+}
+
+.corner[data-to='today'] {
+  left: 0;
+  flex-direction: row-reverse;
+  text-align: left;
+}
+
+.corner-label {
+  max-width: 9rem;
+  margin-bottom: 1.25rem;
+}
+
+.corner-fold {
+  position: relative;
   flex: none;
-  max-height: min(60dvh, 30rem);
-  overflow-y: auto;
-  padding: 0 0.75rem 0.5rem 0;
-  background-color: var(--note);
-  background-image: repeating-linear-gradient(
-    to bottom,
-    transparent 0 calc(var(--line-h) - 1px),
-    var(--note-rule) calc(var(--line-h) - 1px) var(--line-h)
-  );
-  box-shadow:
-    0 1px 2px rgb(30 39 71 / 0.12),
-    0 10px 20px -8px rgb(30 39 71 / 0.3);
+  width: 4.75rem;
+  height: 4.75rem;
 }
 
-.week-note h2 {
-  margin: 0;
-  padding-left: calc(var(--margin-w) + 0.75rem);
-  font-size: 1.5rem;
-  font-weight: 700;
-  line-height: var(--line-h);
+.corner-fold::before,
+.corner-fold::after {
+  content: '';
+  position: absolute;
+  inset: 0;
 }
 
-.week-tab {
-  display: none;
+/* Where the corner has folded up, the page underneath shows; the flap lies over the page. */
+.corner[data-to='week'] .corner-fold::before {
+  background: var(--fold-under);
+  clip-path: polygon(100% 0, 100% 100%, 0 100%);
 }
 
-/* Below 80rem the note can't sit beside the 40rem page without covering it, so it folds into a tab. */
-@media (max-width: 79.99rem) {
-  .side {
-    display: none;
-    right: 0.75rem;
-    bottom: calc(env(safe-area-inset-bottom) + 4rem);
-    width: min(20rem, calc(100vw - 1.5rem));
-    max-height: calc(100dvh - 6rem);
-  }
-
-  .week-note {
-    max-height: 50dvh;
-  }
-
-  .week[data-open='true'] .side {
-    display: flex;
-  }
-
-  .week-tab {
-    display: block;
-    position: fixed;
-    right: 0.75rem;
-    bottom: calc(env(safe-area-inset-bottom) + 0.75rem);
-    z-index: 3;
-    min-height: 2.75rem;
-    padding: 0 1rem;
-    border: 0;
-    background: var(--note);
-    color: var(--ink);
-    font: 700 1.3rem var(--hand);
-    box-shadow: 0 4px 10px -4px rgb(30 39 71 / 0.35);
-    cursor: pointer;
-  }
-
-  /* Lifted above the keyboard bar while a task is being edited. */
-  body:has(.kbd-bar) .week-tab {
-    bottom: calc(env(safe-area-inset-bottom) + 4rem);
-  }
-
-  .week-tab[data-target='true'] {
-    outline: 2px dashed var(--pen);
-    outline-offset: 3px;
-  }
-
-  .week-tab[data-over='true'] {
-    background: #f5df78;
-  }
+.corner[data-to='week'] .corner-fold::after {
+  background: linear-gradient(135deg, var(--paper) 35%, var(--fold-shade));
+  clip-path: polygon(0 0, 100% 0, 0 100%);
 }
 
-.week-tab:focus-visible {
-  outline: 2px solid var(--ink);
+.corner[data-to='today'] .corner-fold::before {
+  background: var(--fold-under);
+  clip-path: polygon(0 0, 0 100%, 100% 100%);
+}
+
+.corner[data-to='today'] .corner-fold::after {
+  background: linear-gradient(225deg, var(--paper) 35%, var(--fold-shade));
+  clip-path: polygon(0 0, 100% 0, 100% 100%);
+}
+
+/* While a line is being dragged, the corner shows it will take it. */
+.corner[data-target='true'] .corner-fold {
+  outline: 2px dashed var(--ink);
   outline-offset: 3px;
 }
 
-/* Old pages: torn-off sheets pinned above the week note, quieter than today's page. */
-.old-pages {
-  --old-paper: #ece8de;
-  display: flex;
-  flex-direction: column;
-  min-height: 0;
-  overflow-y: auto;
-  padding-top: 0.5rem;
+.corner[data-over='true'] .corner-fold::before {
+  background: var(--highlight);
 }
 
-.old-page {
-  --margin-w: 1.6rem;
-  position: relative;
-  padding: 0 0.75rem 0.5rem 0;
-  color: rgb(30 39 71 / 0.78);
-  background-color: var(--old-paper);
-  background-image: repeating-linear-gradient(
-    to bottom,
-    transparent 0 calc(var(--line-h) - 1px),
-    var(--note-rule) calc(var(--line-h) - 1px) var(--line-h)
-  );
-  box-shadow:
-    0 1px 2px rgb(30 39 71 / 0.12),
-    0 8px 16px -8px rgb(30 39 71 / 0.3);
-  rotate: -0.6deg;
+.corner:focus-visible {
+  outline: 2px solid var(--ink);
+  outline-offset: -4px;
 }
 
-/* The pin. */
-.old-page::before {
-  content: '';
-  position: absolute;
-  top: -0.35rem;
-  left: 50%;
-  width: 0.7rem;
-  height: 0.7rem;
-  margin-left: -0.35rem;
-  border-radius: 50%;
-  background: var(--pen);
-  box-shadow: 0 2px 3px rgb(30 39 71 / 0.35);
+/* Lifted above the keyboard bar while a line is being edited. */
+body:has(.kbd-bar) .corner {
+  bottom: calc(env(safe-area-inset-bottom) + 3.5rem);
 }
 
-.old-page header {
-  display: flex;
-  align-items: baseline;
-  justify-content: space-between;
-  padding-left: calc(var(--margin-w) + 0.75rem);
+/* Phones: one page at a time. */
+@media (max-width: 63.99rem) {
+  .book[data-side='today'] .more-page,
+  .book[data-side='more'] .today-page {
+    display: none;
+  }
 }
 
-.old-page h2 {
-  margin: 0;
-  font-size: 1.35rem;
-  font-weight: 700;
-  line-height: var(--line-h);
+/* A fade, not a slide: moving the page would also move its fixed corner mid-turn. */
+@media (max-width: 63.99rem) and (prefers-reduced-motion: no-preference) {
+  .book[data-turned='true'] .page {
+    animation: turn-in 200ms ease-out;
+  }
 }
 
-.old-bin {
-  min-height: 2.75rem;
-  border: 0;
-  background: transparent;
-  color: inherit;
-  font: 1.1rem var(--hand);
-  opacity: 0.6;
-  cursor: pointer;
+@keyframes turn-in {
+  from {
+    opacity: 0;
+  }
 }
 
-.old-page[data-done='true'] .lines {
-  opacity: 0.55;
-}
+/* Wide screens: the journal lies open on the desk, today on the left and the week on the right. */
+@media (min-width: 64rem) {
+  html,
+  body {
+    background: var(--desk);
+  }
 
-.old-page[data-done='true'] .old-bin,
-.old-bin[data-confirm='true'] {
-  color: var(--pen);
-  font-weight: 700;
-  opacity: 1;
-}
+  .book {
+    position: relative;
+    display: flex;
+    justify-content: center;
+    width: min(100% - 3rem, 75rem);
+    height: calc(100dvh - 3rem);
+    margin: 1.5rem auto;
+    padding: 0.5rem 1.75rem 0.5rem 0.5rem; /* room on the right for the elastic band */
+    border-radius: 0.75rem;
+    background: var(--cover);
+    box-shadow: 0 24px 50px -20px var(--shadow);
+  }
 
-.old-page-peek {
-  margin-top: -0.25rem;
-  padding: 0.3rem 0.75rem 0.3rem calc(1.6rem + 0.75rem);
-  border: 0;
-  text-align: left;
-  background: var(--old-paper);
-  color: rgb(30 39 71 / 0.6);
-  font: 700 1.15rem var(--hand);
-  box-shadow: 0 3px 6px -3px rgb(30 39 71 / 0.3);
-  rotate: 0.8deg;
-  cursor: pointer;
-}
+  /* The elastic band, hanging off the back cover. */
+  .book::after {
+    content: '';
+    position: absolute;
+    top: 0;
+    bottom: 0;
+    right: 0.5rem;
+    width: 0.875rem;
+    background: linear-gradient(to right, rgb(0 0 0 / 0.5), rgb(255 255 255 / 0.08) 45%, rgb(0 0 0 / 0.5));
+  }
 
-.old-bin:focus-visible,
-.old-page-peek:focus-visible {
-  outline: 2px solid var(--pen);
-  outline-offset: 2px;
+  /* Each page scrolls on its own. The dots scroll with the writing; the gutter shadow stays at the fold. */
+  .page {
+    flex: 1 1 0;
+    max-width: 36rem;
+    min-height: 0;
+    height: 100%;
+    overflow-y: auto;
+    padding: 0 1rem 3rem;
+    background-image:
+      linear-gradient(to left, var(--gutter), transparent 2.875rem),
+      radial-gradient(circle, var(--dot) 1.1px, transparent 1.5px);
+    background-size: 100% 100%, var(--dot-step) var(--dot-step);
+    background-position: 0 0, calc(var(--dot-step) / 2) calc(var(--dot-step) / 2);
+    background-attachment: scroll, local;
+  }
+
+  .today-page {
+    border-radius: 0.375rem 0 0 0.375rem;
+  }
+
+  .more-page {
+    border-radius: 0 0.375rem 0.375rem 0;
+    background-image:
+      linear-gradient(to right, var(--gutter), transparent 2.875rem),
+      radial-gradient(circle, var(--dot) 1.1px, transparent 1.5px);
+  }
+
+  .day-number {
+    font-size: 6rem;
+  }
+
+  .corner {
+    display: none;
+  }
 }

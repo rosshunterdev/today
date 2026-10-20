@@ -14,8 +14,8 @@ export default defineConfig({
         description: "Today's tasks, nothing else.",
         start_url: '/',
         display: 'standalone',
-        background_color: '#fdfcf6',
-        theme_color: '#fdfcf6',
+        background_color: '#fafaf7',
+        theme_color: '#fafaf7',
         icons: [
           { src: 'pwa-64x64.png', sizes: '64x64', type: 'image/png' },
           { src: 'pwa-192x192.png', sizes: '192x192', type: 'image/png' },
