@@ -14,7 +14,7 @@ import {
   updateGoalText,
 } from '../store/goals';
 import { weekLeftoversLabel } from '../day/week';
-import { LIST_DROP_ID, WEEK_TAB_ID } from '../order/drop';
+import { CORNER_ID, LIST_DROP_ID } from '../order/drop';
 import { TaskLine } from './TaskLine';
 import { GhostLine } from './GhostLine';
 import { CarryOverNote } from './CarryOverNote';
@@ -36,7 +36,7 @@ export function WeekNote({ week, oldCount = 0, children }: { week: string; oldCo
   const rootRef = useRef<HTMLDivElement>(null);
   const { active } = useDndContext();
   const { setNodeRef: setNoteRef } = useDroppable({ id: LIST_DROP_ID.week, data: { list: 'week' } });
-  const { setNodeRef: setTabRef, isOver: overTab } = useDroppable({ id: WEEK_TAB_ID, data: { list: 'week' } });
+  const { setNodeRef: setTabRef, isOver: overTab } = useDroppable({ id: CORNER_ID.week, data: { list: 'week' } });
 
   useEffect(() => {
     if (!open) return;
