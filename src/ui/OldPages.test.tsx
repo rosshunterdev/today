@@ -51,6 +51,17 @@ describe('OldPages', () => {
     expect(await db.days.get(MON)).toMatchObject({ binned: true });
   });
 
+  it('asks for a second tap before binning a page that still has open lines', async () => {
+    const user = userEvent.setup();
+    await addTask(MON, { text: 'email Sam' });
+    await addTask(MON, { text: 'call bank' });
+    render(<Live />);
+    await user.click(await screen.findByRole('button', { name: 'Bin page' }));
+    expect(await db.days.get(MON)).toBeUndefined();
+    await user.click(screen.getByRole('button', { name: 'Bin 2 open lines?' }));
+    await waitFor(async () => expect(await db.days.get(MON)).toMatchObject({ binned: true }));
+  });
+
   it('renders nothing with no pages', () => {
     const { container } = render(<OldPages pages={[]} today={TODAY} />);
     expect(container).toBeEmptyDOMElement();

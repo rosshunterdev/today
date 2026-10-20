@@ -499,7 +499,8 @@ body {
   opacity: 0.55;
 }
 
-.old-page[data-done='true'] .old-bin {
+.old-page[data-done='true'] .old-bin,
+.old-bin[data-confirm='true'] {
   color: var(--pen);
   font-weight: 700;
   opacity: 1;

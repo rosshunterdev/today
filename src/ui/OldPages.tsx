@@ -22,20 +22,28 @@ function pageTitle(page: OldPage, today: string): string {
 // Lines can be crossed off and dragged out, never added to or edited.
 export function OldPages({ pages, today }: { pages: OldPage[]; today: string }) {
   const [topDay, setTopDay] = useState<string | null>(null);
+  const [confirmDay, setConfirmDay] = useState<string | null>(null);
   const coarse = usePointerCoarse();
   const { setNodeRef } = useDroppable({ id: OLD_DROP_ID, data: { list: 'old' } });
   if (pages.length === 0) return null;
 
   const top = pages.find((p) => p.day === topDay) ?? pages[0];
   const under = pages.filter((p) => p !== top);
+  const open = top.lines.filter((l) => !l.done).length;
+
+  // Binning can't be undone, so a page with open lines takes a second tap.
+  function handleBin() {
+    if (open > 0 && confirmDay !== top.day) setConfirmDay(top.day);
+    else void binPage(top.day);
+  }
 
   return (
     <section className="old-pages" aria-label="Old pages" ref={setNodeRef}>
       <article className="old-page" data-done={isPageDone(top.lines)}>
         <header>
           <h2>{pageTitle(top, today)}</h2>
-          <button type="button" className="old-bin" onClick={() => void binPage(top.day)}>
-            Bin page
+          <button type="button" className="old-bin" data-confirm={confirmDay === top.day} onClick={handleBin}>
+            {confirmDay === top.day ? `Bin ${open} open line${open === 1 ? '' : 's'}?` : 'Bin page'}
           </button>
         </header>
         <SortableContext items={top.lines.map((l) => l.id)} strategy={verticalListSortingStrategy}>
