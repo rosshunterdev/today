@@ -30,6 +30,7 @@ export function addTask(
       position: positionBetween(prev?.position ?? null, next?.position ?? null),
       indent: opts.indent ?? 0,
       mark: null,
+      notes: '',
       createdAt: now,
       updatedAt: now,
       deleted: false,
@@ -46,6 +47,7 @@ async function patch(id: string, changes: Partial<Task>): Promise<void> {
 export const updateText = (id: string, text: string) => patch(id, { text });
 export const setIndent = (id: string, indent: 0 | 1) => patch(id, { indent });
 export const setMark = (id: string, mark: Mark) => patch(id, { mark });
+export const setNotes = (id: string, notes: string) => patch(id, { notes });
 export const setDone = (id: string, done: boolean) => patch(id, { done, doneAt: done ? nowIso() : null });
 export const deleteTask = (id: string) => patch(id, { deleted: true });
 

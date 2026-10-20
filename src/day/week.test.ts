@@ -61,6 +61,7 @@ describe('copyGoalForWeek', () => {
       id: 'new-id',
       week: '2026-10-19',
       text: 'run 3x',
+      notes: '',
       done: false,
       doneAt: null,
       position: 'b0',

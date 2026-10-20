@@ -22,6 +22,7 @@ export function addGoal(week: string, opts: { afterId?: string; text?: string } 
       id: crypto.randomUUID(),
       week,
       text: opts.text ?? '',
+      notes: '',
       done: false,
       doneAt: null,
       position: positionBetween(prev?.position ?? null, next?.position ?? null),
@@ -40,6 +41,7 @@ async function patch(id: string, changes: Partial<Goal>): Promise<void> {
 
 export const updateGoalText = (id: string, text: string) => patch(id, { text });
 export const setGoalDone = (id: string, done: boolean) => patch(id, { done, doneAt: done ? nowIso() : null });
+export const setGoalNotes = (id: string, notes: string) => patch(id, { notes });
 export const deleteGoal = (id: string) => patch(id, { deleted: true });
 
 export function moveGoal(id: string, prevId: string | null, nextId: string | null): Promise<void> {
@@ -63,6 +65,7 @@ export function taskToGoal(taskId: string, week: string, prevId: string | null, 
       id: crypto.randomUUID(),
       week,
       text: task.text,
+      notes: task.notes ?? '',
       done: task.done,
       doneAt: task.doneAt,
       position: positionBetween(prev?.position ?? null, next?.position ?? null),
@@ -92,6 +95,7 @@ export function goalToTask(goalId: string, day: string, prevId: string | null, n
       position: positionBetween(prev?.position ?? null, next?.position ?? null),
       indent: 0,
       mark: null,
+      notes: goal.notes ?? '',
       createdAt: now,
       updatedAt: now,
       deleted: false,
