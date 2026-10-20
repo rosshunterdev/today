@@ -9,6 +9,7 @@ export interface Task {
   position: string; // fractional index, compare with byPosition
   indent: 0 | 1;
   mark: Mark;
+  notes?: string; // free text behind the line; missing on rows written before notes existed
   createdAt: string;
   updatedAt: string;
   deleted: boolean;
@@ -24,6 +25,7 @@ export interface Goal {
   id: string;
   week: string; // YYYY-MM-DD, the Monday of the week (4am logical days)
   text: string;
+  notes?: string; // free text behind the line; missing on rows written before notes existed
   done: boolean;
   doneAt: string | null; // ISO timestamp
   position: string; // fractional index, compare with byPosition
