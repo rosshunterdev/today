@@ -2,7 +2,7 @@ import { db } from './db';
 import type { Goal, Task } from '../model';
 import { positionBetween } from '../order/position';
 import { pageLines } from '../day/pages';
-import { nowIso } from './tasks';
+import { listDay, nowIso } from './tasks';
 
 export interface OldPage {
   day: string;
@@ -79,6 +79,16 @@ export function pageLineToGoal(id: string, week: string, prevId: string | null, 
     await db.goals.add(goal);
     await db.tasks.update(id, { deleted: true, updatedAt: now });
     return goal;
+  });
+}
+
+// The > on an old line: the same move as dropping it at the end of today.
+// Read and move in one rw transaction (pageLineToTask joins it), so fast taps on two lines queue up
+// instead of both claiming the slot after the same last line.
+export function pageLineToTodayEnd(id: string, today: string): Promise<Task | null> {
+  return db.transaction('rw', db.tasks, async () => {
+    const rows = await listDay(today);
+    return pageLineToTask(id, today, rows[rows.length - 1]?.id ?? null, null);
   });
 }
 

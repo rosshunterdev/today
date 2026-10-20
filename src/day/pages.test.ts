@@ -1,5 +1,5 @@
 import { describe, it, expect } from 'vitest';
-import { dayEnd, isPageDone, pageLines } from './pages';
+import { dayEnd, isPageDone, pageLines, pageTitle } from './pages';
 import { makeTask } from '../test/factories';
 
 const DAY = '2026-10-19';
@@ -42,5 +42,13 @@ describe('isPageDone', () => {
     expect(isPageDone([])).toBe(false);
     expect(isPageDone([{ done: true }, { done: false }])).toBe(false);
     expect(isPageDone([{ done: true }, { done: true }])).toBe(true);
+  });
+});
+
+describe('pageTitle', () => {
+  it('names the last six days by short weekday and day, and older pages by date', () => {
+    expect(pageTitle('2026-10-19', '2026-10-20')).toBe('Mon 19');
+    expect(pageTitle('2026-10-14', '2026-10-20')).toBe('Wed 14');
+    expect(pageTitle('2026-10-13', '2026-10-20')).toBe('13 Oct');
   });
 });

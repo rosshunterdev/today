@@ -13,7 +13,7 @@ export async function center(locator: Locator) {
   return { x: box.x + box.width / 2, y: box.y + box.height / 2 };
 }
 
-// Mouse drag by the ⠿ handle, which appears on hover.
+// Mouse drag by the dotted grip, which appears on hover.
 export async function mouseDrag(page: Page, line: Locator, target: Locator) {
   await line.hover();
   const from = await center(line.getByRole('button', { name: 'Reorder', exact: true }));

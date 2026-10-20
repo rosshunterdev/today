@@ -14,22 +14,18 @@ beforeEach(async () => {
 });
 
 describe('WeekNote', () => {
+  it('heads the section with the week’s dates', async () => {
+    render(<WeekNote week={WEEK} />);
+    expect(await screen.findByRole('heading', { name: 'This week', level: 2 })).toBeInTheDocument();
+    expect(screen.getByText('19 to 25 October')).toBeInTheDocument();
+  });
+
   it('adds a goal from the writing line', async () => {
     const user = userEvent.setup();
     render(<WeekNote week={WEEK} />);
     await user.type(await screen.findByRole('textbox', { name: 'New goal' }), 'work on assignment{Enter}');
     await waitFor(() => expect(screen.getByRole('textbox', { name: 'Goal' })).toHaveValue('work on assignment'));
     expect((await listWeek(WEEK)).map((g) => g.text)).toEqual(['work on assignment']);
-  });
-
-  it('adds the old page count to the tab and shows the stack above the note', async () => {
-    render(
-      <WeekNote week={WEEK} oldCount={2}>
-        <p>stack</p>
-      </WeekNote>,
-    );
-    expect(await screen.findByRole('button', { name: 'Week · 0 · 2 old' })).toBeInTheDocument();
-    expect(screen.getByText('stack')).toBeInTheDocument();
   });
 
   it('saves a note on a goal', async () => {
@@ -55,28 +51,9 @@ describe('WeekNote', () => {
     await addGoal(LAST, { text: 'assignment' });
     await addGoal(LAST, { text: 'run 3x' });
     render(<WeekNote week={WEEK} />);
-    expect(await screen.findByRole('button', { name: 'Week · 2 left' })).toBeInTheDocument();
+    expect(await screen.findByRole('button', { name: 'Last week: 2 left' })).toBeInTheDocument();
     await user.click(screen.getByRole('button', { name: 'Bring all' }));
     await waitFor(async () => expect((await listWeek(WEEK)).map((g) => g.text)).toEqual(['assignment', 'run 3x']));
-    await waitFor(() => expect(screen.getByRole('button', { name: 'Week · 2' })).toBeInTheDocument());
-  });
-
-  it('opens and closes from the phone tab, and closes on a tap outside', async () => {
-    const user = userEvent.setup();
-    render(
-      <>
-        <p>outside</p>
-        <WeekNote week={WEEK} />
-      </>,
-    );
-    const tab = await screen.findByRole('button', { name: 'Week · 0' });
-    expect(tab).toHaveAttribute('aria-expanded', 'false');
-    await user.click(tab);
-    expect(tab).toHaveAttribute('aria-expanded', 'true');
-    await user.click(tab);
-    expect(tab).toHaveAttribute('aria-expanded', 'false');
-    await user.click(tab);
-    await user.click(screen.getByText('outside'));
-    expect(tab).toHaveAttribute('aria-expanded', 'false');
+    await waitFor(() => expect(screen.queryByRole('button', { name: 'Bring all' })).not.toBeInTheDocument());
   });
 });

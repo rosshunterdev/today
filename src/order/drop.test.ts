@@ -1,6 +1,6 @@
 import { describe, it, expect } from 'vitest';
 import type { CollisionDetection } from '@dnd-kit/core';
-import { collide, resolveDrop, LIST_DROP_ID, OLD_DROP_ID, WEEK_TAB_ID, type ListId } from './drop';
+import { collide, resolveDrop, CORNER_ID, LIST_DROP_ID, OLD_DROP_ID, type ListId } from './drop';
 
 const lists = { today: ['t1', 't2', 't3'], week: ['g1', 'g2'] };
 
@@ -23,9 +23,9 @@ describe('resolveDrop', () => {
     expect(resolveDrop(lists, 't2', 'g1')).toEqual({ kind: 'transfer', from: 'today', to: 'week', id: 't2', prevId: null, nextId: 'g1' });
   });
 
-  it('appends when dropped on the other list itself or on the phone tab', () => {
+  it('appends when dropped on the other list itself or on its corner', () => {
     expect(resolveDrop(lists, 't2', LIST_DROP_ID.week)).toEqual({ kind: 'transfer', from: 'today', to: 'week', id: 't2', prevId: 'g2', nextId: null });
-    expect(resolveDrop(lists, 't2', WEEK_TAB_ID)).toEqual({ kind: 'transfer', from: 'today', to: 'week', id: 't2', prevId: 'g2', nextId: null });
+    expect(resolveDrop(lists, 't2', CORNER_ID.week)).toEqual({ kind: 'transfer', from: 'today', to: 'week', id: 't2', prevId: 'g2', nextId: null });
     expect(resolveDrop(lists, 'g1', LIST_DROP_ID.today)).toEqual({ kind: 'transfer', from: 'week', to: 'today', id: 'g1', prevId: 't3', nextId: null });
   });
 
@@ -33,15 +33,21 @@ describe('resolveDrop', () => {
     const old = ['o1', 'o2'];
     expect(resolveDrop(lists, 'o1', 't2', old)).toEqual({ kind: 'transfer', from: 'old', to: 'today', id: 'o1', prevId: 't1', nextId: 't2' });
     expect(resolveDrop(lists, 'o1', LIST_DROP_ID.today, old)).toEqual({ kind: 'transfer', from: 'old', to: 'today', id: 'o1', prevId: 't3', nextId: null });
-    expect(resolveDrop(lists, 'o1', WEEK_TAB_ID, old)).toEqual({ kind: 'transfer', from: 'old', to: 'week', id: 'o1', prevId: 'g2', nextId: null });
+    expect(resolveDrop(lists, 'o1', CORNER_ID.week, old)).toEqual({ kind: 'transfer', from: 'old', to: 'week', id: 'o1', prevId: 'g2', nextId: null });
     expect(resolveDrop(lists, 'o1', 'o2', old)).toEqual({ kind: 'none' });
     expect(resolveDrop(lists, 'o1', OLD_DROP_ID, old)).toEqual({ kind: 'none' });
   });
 
   it('drops into an empty list as its only item', () => {
     const empty = { today: ['t1'], week: [] };
-    expect(resolveDrop(empty, 't1', WEEK_TAB_ID)).toEqual({ kind: 'transfer', from: 'today', to: 'week', id: 't1', prevId: null, nextId: null });
+    expect(resolveDrop(empty, 't1', CORNER_ID.week)).toEqual({ kind: 'transfer', from: 'today', to: 'week', id: 't1', prevId: null, nextId: null });
     expect(resolveDrop({ today: [], week: ['g1'] }, 'g1', LIST_DROP_ID.today)).toEqual({ kind: 'transfer', from: 'week', to: 'today', id: 'g1', prevId: null, nextId: null });
+  });
+
+  it('appends to today from the back-to-today corner, and ignores a drop on a line’s own corner', () => {
+    expect(resolveDrop(lists, 'g1', CORNER_ID.today)).toEqual({ kind: 'transfer', from: 'week', to: 'today', id: 'g1', prevId: 't3', nextId: null });
+    expect(resolveDrop(lists, 'o1', CORNER_ID.today, ['o1'])).toEqual({ kind: 'transfer', from: 'old', to: 'today', id: 'o1', prevId: 't3', nextId: null });
+    expect(resolveDrop(lists, 't1', CORNER_ID.today)).toEqual({ kind: 'none' });
   });
 });
 
@@ -60,9 +66,9 @@ describe('collide', () => {
     { id: OLD_DROP_ID, list: 'old', top: 110, left: 300, width: 300, height: 60 },
   ];
 
-  function run(activeList: ListId | 'old', pointer: { x: number; y: number } | null) {
-    const droppableRects = new Map(boxes.map((b) => [b.id, rect(b)]));
-    const droppableContainers = boxes.map((b) => ({ id: b.id, key: b.id, data: { current: { list: b.list } }, disabled: false, node: { current: null }, rect: { current: rect(b) } }));
+  function run(activeList: ListId | 'old', pointer: { x: number; y: number } | null, layout: Box[] = boxes) {
+    const droppableRects = new Map(layout.map((b) => [b.id, rect(b)]));
+    const droppableContainers = layout.map((b) => ({ id: b.id, key: b.id, data: { current: { list: b.list } }, disabled: false, node: { current: null }, rect: { current: rect(b) } }));
     const at = pointer ?? { x: 300, y: 98 };
     return collide({
       active: { id: 'dragged', data: { current: { list: activeList } }, rect: { current: { initial: null, translated: null } } },
@@ -95,5 +101,32 @@ describe('collide', () => {
 
   it('keyboard drags (no pointer) fall back to the nearest line in their own list', () => {
     expect(run('today', null)[0]).toBe('t1');
+  });
+
+  // Phone pages: a folded corner floats over whatever is at the bottom of the screen.
+  const phoneToday: Box[] = [
+    { id: LIST_DROP_ID.today, list: 'today', top: 0, left: 0, width: 400, height: 800 },
+    { id: 't9', list: 'today', top: 740, left: 0, width: 400, height: 36 },
+    { id: CORNER_ID.week, list: 'week', top: 720, left: 280, width: 120, height: 80 },
+  ];
+  const phoneMore: Box[] = [
+    { id: LIST_DROP_ID.week, list: 'week', top: 0, left: 0, width: 400, height: 500 },
+    { id: 'g1', list: 'week', top: 120, left: 0, width: 400, height: 36 },
+    { id: OLD_DROP_ID, list: 'old', top: 500, left: 0, width: 400, height: 300 },
+    { id: 'o1', list: 'old', top: 540, left: 0, width: 400, height: 36 },
+    { id: CORNER_ID.today, list: 'today', top: 720, left: 0, width: 120, height: 80 },
+  ];
+  const phoneLongWeek: Box[] = [
+    { id: LIST_DROP_ID.week, list: 'week', top: 0, left: 0, width: 400, height: 800 },
+    { id: CORNER_ID.today, list: 'today', top: 720, left: 0, width: 120, height: 80 },
+  ];
+
+  it('a drop on the this-week corner means the week, even over today’s lines', () => {
+    expect(run('today', { x: 360, y: 760 }, phoneToday)).toEqual([CORNER_ID.week]);
+  });
+
+  it('a drop on the back-to-today corner means today, even over an old page or the week', () => {
+    expect(run('old', { x: 40, y: 760 }, phoneMore)).toEqual([CORNER_ID.today]);
+    expect(run('week', { x: 40, y: 760 }, phoneLongWeek)).toEqual([CORNER_ID.today]);
   });
 });

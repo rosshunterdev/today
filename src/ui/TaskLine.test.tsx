@@ -1,5 +1,5 @@
 // @vitest-environment jsdom
-import { describe, it, expect, beforeEach } from 'vitest';
+import { describe, it, expect, beforeEach, vi } from 'vitest';
 import { render, screen, waitFor, fireEvent } from '@testing-library/react';
 import userEvent from '@testing-library/user-event';
 import { NotebookPage } from './NotebookPage';
@@ -86,13 +86,17 @@ describe('margin marks', () => {
     expect(mark()).toHaveAccessibleName('Mark: none');
     await user.click(mark());
     await waitFor(() => expect(mark()).toHaveAccessibleName('Mark: star'));
-    expect(mark()).toHaveTextContent('★');
+    expect(mark()).toHaveTextContent('');
+    expect(li(0)).toHaveAttribute('data-mark', 'star');
+    expect(li(0).querySelector('.star')).not.toBeNull();
     await user.click(mark());
     await waitFor(() => expect(mark()).toHaveAccessibleName('Mark: bang'));
+    expect(mark()).toHaveTextContent('!');
     await user.click(mark());
     await waitFor(() => expect(mark()).toHaveAccessibleName('Mark: question'));
     await user.click(mark());
     await waitFor(() => expect(mark()).toHaveAccessibleName('Mark: none'));
+    expect(li(0)).not.toHaveAttribute('data-mark');
   });
 });
 
@@ -178,5 +182,53 @@ describe('notes', () => {
     await user.keyboard('{Backspace}');
     await pause();
     expect(await listDay(DAY)).toHaveLength(1);
+  });
+});
+
+describe('bullets', () => {
+  it('shows a dot, then a cross once the line is crossed off', async () => {
+    await renderWith('gym');
+    expect(li(0).querySelector('.bullet .dot')).not.toBeNull();
+    stroke(150, 4);
+    await waitFor(() => expect(li(0).querySelector('.bullet svg')).not.toBeNull());
+    expect(li(0).querySelector('.bullet .dot')).toBeNull();
+  });
+});
+
+describe('TaskLine on an old page', () => {
+  const noop = () => {};
+  function renderOld(text: string, onMoveToday = noop) {
+    return render(
+      <ol>
+        <TaskLine
+          task={{ id: 'o1', text, done: false }}
+          list="old"
+          label="Old task"
+          readOnly
+          coarse={false}
+          focusRequested={false}
+          onFocusHandled={noop}
+          onFocusChange={noop}
+          onText={noop}
+          onEnter={noop}
+          onBackspaceEmpty={noop}
+          onToggleDone={noop}
+          onMoveToday={onMoveToday}
+        />
+      </ol>,
+    );
+  }
+
+  it('moves to today from its > button, named after the line', async () => {
+    const user = userEvent.setup();
+    const onMoveToday = vi.fn();
+    renderOld('call bank', onMoveToday);
+    await user.click(screen.getByRole('button', { name: 'Move call bank to today' }));
+    expect(onMoveToday).toHaveBeenCalledTimes(1);
+  });
+
+  it('names a blank line by what it is', () => {
+    renderOld('');
+    expect(screen.getByRole('button', { name: 'Move line to today' })).toBeInTheDocument();
   });
 });

@@ -1,6 +1,6 @@
 import type { Task } from '../model';
 import { byPosition } from '../order/position';
-import { ROLLOVER_HOUR, dayToDate } from './logicalDay';
+import { ROLLOVER_HOUR, dayLabel, dayParts, dayToDate, daysBetween } from './logicalDay';
 import { hasNotes } from './leftovers';
 
 // A day ends at the 04:00 rollover on the next calendar day.
@@ -19,4 +19,11 @@ export function pageLines(tasks: Task[], day: string): Task[] {
 
 export function isPageDone(lines: Pick<Task, 'done'>[]): boolean {
   return lines.length > 0 && lines.every((l) => l.done);
+}
+
+// An old page's header: "Mon 19" for the last six days, the date ("12 Oct") before that.
+export function pageTitle(day: string, today: string): string {
+  if (daysBetween(day, today) > 6) return dayLabel(day).date;
+  const { number, weekday } = dayParts(day);
+  return `${weekday.slice(0, 3)} ${number}`;
 }

@@ -5,9 +5,12 @@
 A today-only task list that feels like the pen-and-paper list you write each morning. It's an installable, offline-first web app (PWA) for phone and laptop.
 
 <p>
-  <img src="docs/screenshots/desktop.png" alt="Today on desktop: a lined notebook page headed Friday 2 Oct, with 'reply to Sam' crossed off in red pen and 'groceries' below" width="560">
+  <img src="docs/screenshots/desktop.png" alt="Today on desktop: a dot-grid journal lying open, today's list on the left page with 'reply to Sam' crossed off, This week on the right page" width="560">
   &nbsp;
-  <img src="docs/screenshots/phone.png" alt="Today on a phone: the same notebook page at phone width" width="200">
+  <img src="docs/screenshots/phone.png" alt="Today on a phone: one dot-grid page with a folded corner at the bottom right" width="200">
+</p>
+<p>
+  <img src="docs/screenshots/desktop-night.png" alt="Night pages: the same journal with black pages and white ink" width="560">
 </p>
 
 ## Why
@@ -16,14 +19,15 @@ Task apps tend to feel worse than paper. Paper is always ready, crossing things 
 
 ## Features
 
-- **Notebook page:** lined paper, a margin line, a handwritten-style font, and the date at the top.
+- **Dot-grid journal:** dot-grid paper, a handwritten-style font and the date as a big numeral. On a wide screen the journal lies open: today on the left, the week and old pages on the right.
 - **Write line by line:** Enter for a new line, Tab / Shift+Tab for one level of sub-steps, Backspace on an empty line to delete it.
-- **Cross off with a stroke:** drag the mouse or swipe a finger across a line to draw a red pen stroke through it. Do it again to undo.
-- **Margin marks:** click or tap the margin to cycle ★, ! and ?.
-- **Reorder:** drag the ⠿ handle on desktop, or long-press and drag on a phone.
-- **Old pages:** unfinished tasks from earlier days stay pinned beside today as small torn-off pages. Drag a line onto today or into the week when you're ready for it, and bin the page once it's done.
-- **Notes:** tap the ✎ at the end of a line to unfold a note under it, for the details behind a short task.
-- **This week:** a sticky note of goals for the week. Drag a task onto it, drag a goal back to today, and bring last week's unfinished goals forward.
+- **Cross off with a stroke:** drag the mouse or swipe a finger across a line to turn its bullet into a cross and draw a pen stroke through it. Do it again to undo.
+- **Marks:** click or tap the margin to highlight a line, or mark it ! or ?.
+- **Reorder:** drag the dotted grip on desktop, or long-press and drag on a phone.
+- **Old pages:** unfinished tasks from earlier days stay listed under the week. Tap > to send a line to today, or drag it onto today or into the week, and bin the page once it's done.
+- **Notes:** tap the pencil at the end of a line to unfold a note under it, for the details behind a short task.
+- **This week:** goals for the week on the facing page (a folded corner away on a phone). Drag a task onto it, drag a goal back to today, and bring last week's unfinished goals forward.
+- **Night pages:** a moon in the header turns the journal dark, and it stays that way on that device.
 - **4am day boundary:** 02:30 Friday still counts as Thursday.
 - **Phone keyboard bar:** ⇥ / ⇤ buttons above the keyboard for sub-steps.
 - **Installable and offline:** works with no connection; data is stored on the device.

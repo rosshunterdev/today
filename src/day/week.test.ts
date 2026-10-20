@@ -1,5 +1,5 @@
 import { describe, it, expect } from 'vitest';
-import { weekOf, leftoversSourceWeek, weekLeftoversLabel, copyGoalForWeek } from './week';
+import { weekOf, leftoversSourceWeek, weekLeftoversLabel, copyGoalForWeek, weekRange } from './week';
 import { logicalDay } from './logicalDay';
 import { makeGoal } from '../test/factories';
 
@@ -69,5 +69,15 @@ describe('copyGoalForWeek', () => {
       updatedAt: '2026-10-19T08:00:00.000Z',
       deleted: false,
     });
+  });
+});
+
+describe('weekRange', () => {
+  it('reads Monday to Sunday, naming the month once', () => {
+    expect(weekRange('2026-10-19')).toBe('19 to 25 October');
+  });
+  it('names both months when the week crosses a month or year end', () => {
+    expect(weekRange('2026-09-28')).toBe('28 September to 4 October');
+    expect(weekRange('2026-12-28')).toBe('28 December to 3 January');
   });
 });
