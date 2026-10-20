@@ -57,9 +57,24 @@ test('desktop: a goal dropped on blank paper moves to the end of today', async (
   await page.keyboard.press('Enter');
   await expect(goals(page)).toHaveCount(1);
 
-  // The middle of the page is empty lined paper, well below the only task.
+  // The middle of the page is empty dot-grid paper, well below the only task.
   await mouseDrag(page, lineOf(goals(page).nth(0)), page.locator('main'));
   await expect(goals(page)).toHaveCount(0);
   await expect(tasks(page)).toHaveCount(2);
   await expect(tasks(page).nth(1)).toHaveValue('work on assignment');
+});
+
+test('desktop: last week’s unfinished goals are offered at the top of the week', async ({ page }, testInfo) => {
+  test.skip(testInfo.project.name !== 'desktop', 'wide layout');
+  await page.clock.setFixedTime(new Date(2026, 9, 14, 9, 0));
+  await page.goto('/');
+  await page.getByRole('textbox', { name: 'New goal', exact: true }).click();
+  await page.keyboard.type('finish cloud assignment');
+  await page.keyboard.press('Enter');
+  await expect(goals(page)).toHaveCount(1);
+
+  await page.clock.setFixedTime(new Date(2026, 9, 20, 9, 0));
+  await page.reload();
+  await expect(page.getByRole('button', { name: 'Last week: 1 left', exact: true })).toBeVisible();
+  await page.screenshot({ path: 'e2e/screenshots/desktop-leftovers.png', animations: 'disabled' });
 });
