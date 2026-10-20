@@ -74,6 +74,27 @@ describe('OldPages', () => {
     await waitFor(() => expect(oldLines()).toHaveLength(0));
   });
 
+  it('keeps keyboard focus on the old pages after >: the next line’s >, then the week heading', async () => {
+    const user = userEvent.setup();
+    await addTask(MON, { text: 'email Sam' });
+    await addTask(MON, { text: 'call bank' });
+    render(
+      <>
+        <h2 id="week-heading" tabIndex={-1}>
+          This week
+        </h2>
+        <Live />
+      </>,
+    );
+    (await screen.findByRole('button', { name: 'Move email Sam to today' })).focus();
+    await user.keyboard('{Enter}');
+    expect(screen.getByRole('button', { name: 'Move call bank to today' })).toHaveFocus();
+    // Pressed again before the first line has gone: the > on its way out is skipped.
+    await user.keyboard('{Enter}');
+    expect(screen.getByRole('heading', { name: 'This week' })).toHaveFocus();
+    await waitFor(() => expect(oldLines()).toHaveLength(0));
+  });
+
   it('shows the pencil only on lines with notes, and the note is read-only', async () => {
     const user = userEvent.setup();
     const t = await addTask(MON, { text: 'email Sam' });

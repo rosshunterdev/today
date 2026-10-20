@@ -33,7 +33,7 @@ export interface TaskLineProps {
   onToggleDone: () => void;
   onCycleMark?: () => void;
   onNotes?: (notes: string) => void;
-  onMoveToday?: () => void; // old page lines: the > that sends the line to the end of today
+  onMoveToday?: (button: HTMLButtonElement) => void; // old page lines: the > that sends the line to the end of today
 }
 
 export function TaskLine(props: TaskLineProps) {
@@ -185,7 +185,7 @@ export function TaskLine(props: TaskLineProps) {
           className="move-today"
           aria-label={`Move ${task.text.trim() || 'line'} to today`}
           onPointerDown={(e) => e.stopPropagation()}
-          onClick={onMoveToday}
+          onClick={(e) => onMoveToday(e.currentTarget)}
         >
           &gt;
         </button>

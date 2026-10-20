@@ -10,6 +10,18 @@ import { usePointerCoarse } from './usePointerCoarse';
 
 const noop = () => {};
 
+// The line is about to leave the page, so keep keyboard users on the old pages: focus moves to the
+// next line's >, else the one before, else the week heading. A > already pressed is skipped while
+// its line is on its way out.
+function focusAfterMove(button: HTMLButtonElement) {
+  button.dataset.moving = 'true';
+  const all = Array.from(button.closest('.old-pages')?.querySelectorAll<HTMLButtonElement>('.move-today') ?? []);
+  const i = all.indexOf(button);
+  const waiting = (b: HTMLButtonElement) => !b.dataset.moving;
+  const target = all.slice(i + 1).find(waiting) ?? all.slice(0, i).reverse().find(waiting) ?? document.getElementById('week-heading');
+  target?.focus();
+}
+
 // Earlier days' unfinished lines, listed under the week, newest first.
 // Lines can be crossed off, dragged out or sent to today with >, never added to or edited.
 export function OldPages({ pages, today }: { pages: OldPage[]; today: string }) {
@@ -56,7 +68,10 @@ export function OldPages({ pages, today }: { pages: OldPage[]; today: string }) 
                     onEnter={noop}
                     onBackspaceEmpty={noop}
                     onToggleDone={() => void setDone(line.id, !line.done)}
-                    onMoveToday={() => void pageLineToTodayEnd(line.id, today)}
+                    onMoveToday={(button) => {
+                      focusAfterMove(button);
+                      void pageLineToTodayEnd(line.id, today);
+                    }}
                   />
                 ))}
               </ol>
