@@ -10,8 +10,8 @@
   --strike: #24262b;
   --highlight: rgb(241 234 90 / 0.9);
   --gutter: rgb(36 38 43 / 0.1);
-  --fold-under: #e6e6e0;
-  --fold-shade: #e4e4de;
+  --fold-under: #d6d5ce;
+  --fold-shade: #e9e9e3;
   --shadow: rgb(36 38 43 / 0.25);
   --row: 2.25rem;
   --dot-step: 1.125rem;
@@ -32,8 +32,8 @@
   --ink-faint: #767b86;
   --strike: #f4a7c0;
   --gutter: rgb(0 0 0 / 0.28);
-  --fold-under: #2b2f37;
-  --fold-shade: #2c3038;
+  --fold-under: #141519;
+  --fold-shade: #30343c;
   --shadow: rgb(0 0 0 / 0.5);
   color-scheme: dark;
 }
@@ -687,11 +687,17 @@ body {
   margin-bottom: 1.25rem;
 }
 
+/* The flap's two outer edges lie on the page, so its shadow falls along them. */
 .corner-fold {
   position: relative;
   flex: none;
   width: 4.75rem;
   height: 4.75rem;
+  filter: drop-shadow(-1px -1px 2px var(--shadow));
+}
+
+.corner[data-to='today'] .corner-fold {
+  filter: drop-shadow(1px -1px 2px var(--shadow));
 }
 
 .corner-fold::before,
@@ -708,7 +714,7 @@ body {
 }
 
 .corner[data-to='week'] .corner-fold::after {
-  background: linear-gradient(135deg, var(--paper) 35%, var(--fold-shade));
+  background: linear-gradient(135deg, var(--paper) 25%, var(--fold-shade) 50%);
   clip-path: polygon(0 0, 100% 0, 0 100%);
 }
 
@@ -718,7 +724,7 @@ body {
 }
 
 .corner[data-to='today'] .corner-fold::after {
-  background: linear-gradient(225deg, var(--paper) 35%, var(--fold-shade));
+  background: linear-gradient(225deg, var(--paper) 25%, var(--fold-shade) 50%);
   clip-path: polygon(0 0, 100% 0, 100% 100%);
 }
 
