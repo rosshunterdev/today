@@ -45,3 +45,21 @@ export async function touchDrag(page: Page, line: Locator, target: Locator) {
 export const tasks = (page: Page) => page.getByRole('textbox', { name: 'Task', exact: true });
 export const goals = (page: Page) => page.getByRole('textbox', { name: 'Goal', exact: true });
 export const lineOf = (input: Locator) => input.locator('xpath=ancestor::li[1]');
+
+// Notes save on every keystroke; wait for the last write before reloading.
+export async function savedNote(page: Page, text: string) {
+  await page.waitForFunction(
+    (expected) =>
+      new Promise<boolean>((resolve) => {
+        const open = indexedDB.open('today');
+        open.onsuccess = () => {
+          const all = open.result.transaction('tasks').objectStore('tasks').getAll();
+          all.onsuccess = () => {
+            resolve(all.result.some((t: { notes?: string }) => t.notes === expected));
+            open.result.close();
+          };
+        };
+      }),
+    text,
+  );
+}
