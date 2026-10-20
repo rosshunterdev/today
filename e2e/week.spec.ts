@@ -25,25 +25,27 @@ test('desktop: reorder today, then move a task into the week note and back', asy
   await expect(tasks(page).nth(1)).toHaveValue('work on assignment');
 });
 
-test('phone: long-press a task onto the week tab, then drag it back', async ({ page }, testInfo) => {
+test('phone: long-press a task onto the corner, then drop the goal on back to today', async ({ page }, testInfo) => {
   test.skip(testInfo.project.name !== 'phone', 'touch drag');
   await page.goto('/');
   await write(page, ['groceries', 'work on assignment']);
   await page.getByRole('heading', { level: 1 }).click(); // leave the line so the keyboard bar goes
 
-  const tab = page.getByRole('button', { name: /^Week · / });
-  await expect(tab).toHaveText('Week · 0');
-  await touchDrag(page, lineOf(tasks(page).nth(1)), tab);
-  await expect(tab).toHaveText('Week · 1');
+  const corner = page.getByRole('button', { name: 'this week', exact: true });
+  await touchDrag(page, lineOf(tasks(page).nth(1)), corner);
   await expect(tasks(page)).toHaveCount(1);
 
-  await tab.click();
+  await corner.click();
   await expect(goals(page).nth(0)).toHaveValue('work on assignment');
   await page.screenshot({ path: 'e2e/screenshots/phone-week.png', animations: 'disabled' });
 
-  await touchDrag(page, lineOf(goals(page).nth(0)), lineOf(tasks(page).nth(0)));
+  const back = page.getByRole('button', { name: 'back to today', exact: true });
+  await touchDrag(page, lineOf(goals(page).nth(0)), back);
+  await expect(goals(page)).toHaveCount(0);
+
+  await back.click();
   await expect(tasks(page)).toHaveCount(2);
-  await expect(tasks(page).nth(0)).toHaveValue('work on assignment');
+  await expect(tasks(page).nth(1)).toHaveValue('work on assignment');
 });
 
 test('desktop: a goal dropped on blank paper moves to the end of today', async ({ page }, testInfo) => {
