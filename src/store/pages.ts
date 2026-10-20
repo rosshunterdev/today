@@ -83,9 +83,13 @@ export function pageLineToGoal(id: string, week: string, prevId: string | null, 
 }
 
 // The > on an old line: the same move as dropping it at the end of today.
-export async function pageLineToTodayEnd(id: string, today: string): Promise<Task | null> {
-  const rows = await listDay(today);
-  return pageLineToTask(id, today, rows[rows.length - 1]?.id ?? null, null);
+// Read and move in one rw transaction (pageLineToTask joins it), so fast taps on two lines queue up
+// instead of both claiming the slot after the same last line.
+export function pageLineToTodayEnd(id: string, today: string): Promise<Task | null> {
+  return db.transaction('rw', db.tasks, async () => {
+    const rows = await listDay(today);
+    return pageLineToTask(id, today, rows[rows.length - 1]?.id ?? null, null);
+  });
 }
 
 export function binPage(day: string): Promise<void> {

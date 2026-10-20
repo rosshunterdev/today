@@ -96,3 +96,15 @@ describe('pageLineToTodayEnd', () => {
     expect((await listDay(TODAY)).map((t) => t.text)).toEqual(['call bank']);
   });
 });
+
+describe('pageLineToTodayEnd under fast taps', () => {
+  it('two quick moves land in order with different positions', async () => {
+    await addTask(TODAY, { text: 'a' });
+    const x = await addTask(FRI, { text: 'call bank' });
+    const y = await addTask(FRI, { text: 'tax form' });
+    await Promise.all([pageLineToTodayEnd(x.id, TODAY), pageLineToTodayEnd(y.id, TODAY)]);
+    const rows = await listDay(TODAY);
+    expect(new Set(rows.map((t) => t.position)).size).toBe(3);
+    expect(rows.map((t) => t.text)).toEqual(['a', 'call bank', 'tax form']);
+  });
+});
