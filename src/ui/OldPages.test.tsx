@@ -5,7 +5,7 @@ import userEvent from '@testing-library/user-event';
 import { useLiveQuery } from 'dexie-react-hooks';
 import { OldPages } from './OldPages';
 import { db } from '../store/db';
-import { addTask } from '../store/tasks';
+import { addTask, setNotes } from '../store/tasks';
 import { listOldPages } from '../store/pages';
 
 const TODAY = '2026-10-20';
@@ -60,6 +60,20 @@ describe('OldPages', () => {
     expect(await db.days.get(MON)).toBeUndefined();
     await user.click(screen.getByRole('button', { name: 'Bin 2 open lines?' }));
     await waitFor(async () => expect(await db.days.get(MON)).toMatchObject({ binned: true }));
+  });
+
+  it('shows ✎ only on lines with notes, and the note is read-only', async () => {
+    const user = userEvent.setup();
+    const t = await addTask(MON, { text: 'email Sam' });
+    await setNotes(t.id, 'ask about the invoice');
+    await addTask(MON, { text: 'call bank' });
+    render(<Live />);
+    const toggles = await screen.findAllByRole('button', { name: 'Notes' });
+    expect(toggles).toHaveLength(1);
+    await user.click(toggles[0]);
+    const box = await screen.findByRole('textbox', { name: 'Notes' });
+    expect(box).toHaveValue('ask about the invoice');
+    expect(box).toHaveAttribute('readonly');
   });
 
   it('renders nothing with no pages', () => {

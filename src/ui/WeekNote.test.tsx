@@ -32,6 +32,15 @@ describe('WeekNote', () => {
     expect(screen.getByText('stack')).toBeInTheDocument();
   });
 
+  it('saves a note on a goal', async () => {
+    const user = userEvent.setup();
+    await addGoal(WEEK, { text: 'assignment' });
+    render(<WeekNote week={WEEK} />);
+    await user.click(await screen.findByRole('button', { name: 'Notes' }));
+    await user.type(await screen.findByRole('textbox', { name: 'Notes' }), 'chapter 2');
+    await waitFor(async () => expect((await listWeek(WEEK))[0].notes).toBe('chapter 2'));
+  });
+
   it('crosses a goal off with a stroke', async () => {
     await addGoal(WEEK, { text: 'run 3x' });
     render(<WeekNote week={WEEK} />);

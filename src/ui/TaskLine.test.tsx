@@ -5,7 +5,7 @@ import userEvent from '@testing-library/user-event';
 import { NotebookPage } from './NotebookPage';
 import { TaskLine } from './TaskLine';
 import { db } from '../store/db';
-import { addTask, listDay } from '../store/tasks';
+import { addTask, listDay, setNotes } from '../store/tasks';
 
 const DAY = '2026-10-02';
 const lines = () => screen.queryAllByRole('textbox', { name: 'Task' });
@@ -135,5 +135,48 @@ describe('TaskLine as a goal', () => {
     // The Reorder handle comes next in the line, then the button after the list.
     if (document.activeElement?.getAttribute('aria-label') === 'Reorder') await user.tab();
     expect(screen.getByRole('button', { name: 'after' })).toHaveFocus();
+  });
+});
+
+describe('notes', () => {
+  const toggle = () => screen.getByRole('button', { name: 'Notes' });
+  const notesBox = () => screen.queryByRole('textbox', { name: 'Notes' });
+
+  it('opens from ✎, saves as you type, keeps Enter inside the note, and folds on Escape', async () => {
+    const user = userEvent.setup();
+    await renderWith('message manager');
+    expect(toggle()).toHaveAttribute('data-has', 'false');
+    await user.click(toggle());
+    const box = await screen.findByRole('textbox', { name: 'Notes' });
+    await user.type(box, 'ask about projects{Enter}will she review it');
+    await waitFor(async () => expect((await listDay(DAY))[0].notes).toBe('ask about projects\nwill she review it'));
+    expect(lines()).toHaveLength(1);
+    await user.keyboard('{Escape}');
+    await waitFor(() => expect(notesBox()).toBeNull());
+    expect(toggle()).toHaveAttribute('data-has', 'true');
+    expect(toggle()).toHaveFocus();
+  });
+
+  it('a stroke across the open note never crosses the line off', async () => {
+    const user = userEvent.setup();
+    await renderWith('gym');
+    await user.click(toggle());
+    const box = await screen.findByRole('textbox', { name: 'Notes' });
+    fireEvent.pointerDown(box, { clientX: 10, clientY: 50, pointerType: 'touch' });
+    fireEvent.pointerUp(window, { clientX: 250, clientY: 52, pointerType: 'touch' });
+    await pause();
+    expect((await listDay(DAY))[0].done).toBe(false);
+  });
+
+  it('Backspace on an empty line keeps it when it has a note', async () => {
+    const user = userEvent.setup();
+    const t = await addTask(DAY, { text: '' });
+    await setNotes(t.id, 'call back after 3');
+    render(<NotebookPage day={DAY} />);
+    await waitFor(() => expect(lines()).toHaveLength(1));
+    await user.click(lines()[0]);
+    await user.keyboard('{Backspace}');
+    await pause();
+    expect(await listDay(DAY)).toHaveLength(1);
   });
 });
