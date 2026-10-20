@@ -12,13 +12,12 @@ describe('App', () => {
     vi.useFakeTimers({ toFake: ['Date'] });
     vi.setSystemTime(new Date(2026, 9, 2, 3, 30));
     render(<App />);
-    expect(screen.getByRole('heading', { level: 1 })).toHaveTextContent('Thursday');
-    expect(screen.getByText('1 Oct')).toBeInTheDocument();
+    expect(screen.getByRole('heading', { level: 1 })).toHaveTextContent('1 Thursday October');
 
     vi.setSystemTime(new Date(2026, 9, 2, 4, 1));
     act(() => {
       fireEvent(window, new Event('focus'));
     });
-    expect(screen.getByRole('heading', { level: 1 })).toHaveTextContent('Friday');
+    expect(screen.getByRole('heading', { level: 1 })).toHaveTextContent('2 Friday October');
   });
 });
