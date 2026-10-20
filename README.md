@@ -21,7 +21,7 @@ Task apps tend to feel worse than paper. Paper is always ready, crossing things 
 - **Cross off with a stroke:** drag the mouse or swipe a finger across a line to draw a red pen stroke through it. Do it again to undo.
 - **Margin marks:** click or tap the margin to cycle ★, ! and ?.
 - **Reorder:** drag the ⠿ handle on desktop, or long-press and drag on a phone.
-- **Leftovers:** when a new day starts, a small note offers to bring over unfinished tasks from the last day you used it.
+- **Old pages:** unfinished tasks from earlier days stay pinned beside today as small torn-off pages. Drag a line onto today or into the week when you're ready for it, and bin the page once it's done.
 - **This week:** a sticky note of goals for the week. Drag a task onto it, drag a goal back to today, and bring last week's unfinished goals forward.
 - **4am day boundary:** 02:30 Friday still counts as Thursday.
 - **Phone keyboard bar:** ⇥ / ⇤ buttons above the keyboard for sub-steps.
@@ -41,7 +41,7 @@ Task apps tend to feel worse than paper. Paper is always ready, crossing things 
 ## How it's built
 
 - **The UI only talks to the store.** Components read and write through `src/store/*` and never touch the database directly, which leaves room for a sync layer later without changing the UI.
-- **Pure logic is separate from React.** Day rollover, leftovers selection (`src/day/`) and line ordering (`src/order/`) are plain functions with their own unit tests.
+- **Pure logic is separate from React.** Day rollover, old page rules (`src/day/`) and line ordering (`src/order/`) are plain functions with their own unit tests.
 - **Fractional indexing for order.** Each line has a sortable string position, so moving a line between two others never renumbers the rest.
 - **Every write sets `updatedAt`, and deletes are soft.** This keeps the data ready for last-write-wins sync.
 
