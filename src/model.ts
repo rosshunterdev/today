@@ -16,7 +16,7 @@ export interface Task {
 
 export interface DayRecord {
   day: string;
-  leftoversDismissed: boolean;
+  binned: boolean; // the old page was thrown away
   updatedAt: string;
 }
 

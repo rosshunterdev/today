@@ -1,4 +1,4 @@
-import { useCallback, useEffect, useRef, useState } from 'react';
+import { useCallback, useEffect, useRef, useState, type ReactNode } from 'react';
 import { useLiveQuery } from 'dexie-react-hooks';
 import { useDndContext, useDroppable } from '@dnd-kit/core';
 import { SortableContext, verticalListSortingStrategy } from '@dnd-kit/sortable';
@@ -23,8 +23,8 @@ import { useKeyboardOffset } from './useKeyboardOffset';
 const GHOST = 'goal-ghost';
 const noop = () => {};
 
-// "This week": a sticky note beside the page on wide screens, a tab that opens it on phones.
-export function WeekNote({ week }: { week: string }) {
+// "This week" plus any old pages: a side column beside the page on wide screens, a tab that opens it on phones.
+export function WeekNote({ week, oldCount = 0, children }: { week: string; oldCount?: number; children?: ReactNode }) {
   const goals = useLiveQuery(() => listWeek(week), [week]);
   const leftovers = useLiveQuery(() => findWeekLeftovers(week), [week]);
   const [open, setOpen] = useState(false);
@@ -67,7 +67,8 @@ export function WeekNote({ week }: { week: string }) {
     if (last) setFocusId(last.id);
   }
 
-  const tabText = leftovers ? `Week · ${leftovers.goals.length} left` : `Week · ${goals.filter((g) => !g.done).length}`;
+  const weekText = leftovers ? `Week · ${leftovers.goals.length} left` : `Week · ${goals.filter((g) => !g.done).length}`;
+  const tabText = oldCount > 0 ? `${weekText} · ${oldCount} old` : weekText;
   const leftoversLabel = leftovers ? weekLeftoversLabel(leftovers.week, week) : '';
   const lift = keyboard > 0 ? { translate: `0 ${-keyboard}px` } : undefined;
 
@@ -78,54 +79,57 @@ export function WeekNote({ week }: { week: string }) {
         ref={setTabRef}
         className="week-tab"
         aria-expanded={open}
-        data-target={active?.data.current?.list === 'today'}
+        data-target={active?.data.current?.list === 'today' || active?.data.current?.list === 'old'}
         data-over={overTab}
         style={lift}
         onClick={() => setOpen((o) => !o)}
       >
         {tabText}
       </button>
-      <section className="week-note" aria-label="This week" style={lift} ref={setNoteRef}>
-        <h2>This week</h2>
-        {leftovers && (
-          <CarryOverNote
-            label={leftoversLabel}
-            fromLabel={leftoversLabel.charAt(0).toLowerCase() + leftoversLabel.slice(1)}
-            items={leftovers.goals}
-            onBring={(ids) => void bringOverGoals(week, ids)}
-            onDismiss={() => void dismissWeekLeftovers(week)}
-          />
-        )}
-        <SortableContext items={goals.map((g) => g.id)} strategy={verticalListSortingStrategy}>
-          <ol className="lines">
-            {goals.map((goal, i) => (
-              <TaskLine
-                key={goal.id}
-                task={goal}
-                list="week"
-                label="Goal"
-                coarse={coarse}
-                focusRequested={focusId === goal.id}
+      <div className="side" style={lift}>
+        {children}
+        <section className="week-note" aria-label="This week" ref={setNoteRef}>
+          <h2>This week</h2>
+          {leftovers && (
+            <CarryOverNote
+              label={leftoversLabel}
+              fromLabel={leftoversLabel.charAt(0).toLowerCase() + leftoversLabel.slice(1)}
+              items={leftovers.goals}
+              onBring={(ids) => void bringOverGoals(week, ids)}
+              onDismiss={() => void dismissWeekLeftovers(week)}
+            />
+          )}
+          <SortableContext items={goals.map((g) => g.id)} strategy={verticalListSortingStrategy}>
+            <ol className="lines">
+              {goals.map((goal, i) => (
+                <TaskLine
+                  key={goal.id}
+                  task={goal}
+                  list="week"
+                  label="Goal"
+                  coarse={coarse}
+                  focusRequested={focusId === goal.id}
+                  onFocusHandled={clearFocus}
+                  onFocusChange={noop}
+                  onText={(text) => void updateGoalText(goal.id, text)}
+                  onEnter={() => void handleEnter(i)}
+                  onBackspaceEmpty={() => void handleBackspaceEmpty(i)}
+                  onToggleDone={() => void setGoalDone(goal.id, !goal.done)}
+                />
+              ))}
+              <GhostLine
+                label="New goal"
+                placeholder={goals.length === 0 ? 'add a goal' : ''}
+                focusRequested={focusId === GHOST}
                 onFocusHandled={clearFocus}
                 onFocusChange={noop}
-                onText={(text) => void updateGoalText(goal.id, text)}
-                onEnter={() => void handleEnter(i)}
-                onBackspaceEmpty={() => void handleBackspaceEmpty(i)}
-                onToggleDone={() => void setGoalDone(goal.id, !goal.done)}
+                onCommit={(text) => void addGoal(week, { text })}
+                onBackspaceEmpty={handleGhostBackspace}
               />
-            ))}
-            <GhostLine
-              label="New goal"
-              placeholder={goals.length === 0 ? 'add a goal' : ''}
-              focusRequested={focusId === GHOST}
-              onFocusHandled={clearFocus}
-              onFocusChange={noop}
-              onCommit={(text) => void addGoal(week, { text })}
-              onBackspaceEmpty={handleGhostBackspace}
-            />
-          </ol>
-        </SortableContext>
-      </section>
+            </ol>
+          </SortableContext>
+        </section>
+      </div>
     </div>
   );
 }

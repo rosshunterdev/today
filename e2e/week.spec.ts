@@ -1,50 +1,5 @@
-import { test, expect, type Locator, type Page } from '@playwright/test';
-
-async function write(page: Page, lines: string[]) {
-  await page.getByRole('textbox', { name: 'New task', exact: true }).click();
-  for (const line of lines) {
-    await page.keyboard.type(line);
-    await page.keyboard.press('Enter');
-  }
-}
-
-async function center(locator: Locator) {
-  const box = (await locator.boundingBox())!;
-  return { x: box.x + box.width / 2, y: box.y + box.height / 2 };
-}
-
-// Mouse drag by the ⠿ handle, which appears on hover.
-async function mouseDrag(page: Page, line: Locator, target: Locator) {
-  await line.hover();
-  const from = await center(line.getByRole('button', { name: 'Reorder', exact: true }));
-  const to = await center(target);
-  await page.mouse.move(from.x, from.y);
-  await page.mouse.down();
-  await page.mouse.move(from.x + 8, from.y, { steps: 4 });
-  await page.mouse.move(to.x, to.y, { steps: 20 });
-  await page.mouse.up();
-}
-
-// Long-press then drag, through real touch events (Playwright's touchscreen can only tap).
-async function touchDrag(page: Page, line: Locator, target: Locator) {
-  const from = await center(line);
-  const to = await center(target);
-  const cdp = await page.context().newCDPSession(page);
-  await cdp.send('Input.dispatchTouchEvent', { type: 'touchStart', touchPoints: [from] });
-  await page.waitForTimeout(450);
-  for (let i = 1; i <= 15; i++) {
-    const t = i / 15;
-    await cdp.send('Input.dispatchTouchEvent', {
-      type: 'touchMove',
-      touchPoints: [{ x: from.x + (to.x - from.x) * t, y: from.y + (to.y - from.y) * t }],
-    });
-  }
-  await cdp.send('Input.dispatchTouchEvent', { type: 'touchEnd', touchPoints: [] });
-}
-
-const tasks = (page: Page) => page.getByRole('textbox', { name: 'Task', exact: true });
-const goals = (page: Page) => page.getByRole('textbox', { name: 'Goal', exact: true });
-const lineOf = (input: Locator) => input.locator('xpath=ancestor::li[1]');
+import { test, expect } from '@playwright/test';
+import { goals, lineOf, mouseDrag, tasks, touchDrag, write } from './helpers';
 
 test('desktop: reorder today, then move a task into the week note and back', async ({ page }, testInfo) => {
   test.skip(testInfo.project.name !== 'desktop', 'mouse drag');

@@ -2,7 +2,7 @@ import { useEffect, useLayoutEffect, useRef, useState, type KeyboardEvent, type 
 import { useSortable } from '@dnd-kit/sortable';
 import { CSS } from '@dnd-kit/utilities';
 import type { Mark } from '../model';
-import type { ListId } from '../order/drop';
+import type { LineSource } from '../order/drop';
 import { isStrike } from './stroke';
 import { MARK_GLYPH } from '../marks';
 
@@ -16,8 +16,9 @@ export interface LineItem {
 
 export interface TaskLineProps {
   task: LineItem;
-  list: ListId;
+  list: LineSource;
   label?: string;
+  readOnly?: boolean; // old page lines: cross off and drag out only
   coarse: boolean;
   focusRequested: boolean;
   onFocusHandled: () => void;
@@ -31,7 +32,7 @@ export interface TaskLineProps {
 }
 
 export function TaskLine(props: TaskLineProps) {
-  const { task, list, label = 'Task', coarse, focusRequested, onFocusHandled, onFocusChange, onText, onEnter, onBackspaceEmpty, onIndent, onToggleDone, onCycleMark } = props;
+  const { task, list, label = 'Task', readOnly = false, coarse, focusRequested, onFocusHandled, onFocusChange, onText, onEnter, onBackspaceEmpty, onIndent, onToggleDone, onCycleMark } = props;
   const inputRef = useRef<HTMLInputElement>(null);
   const measureRef = useRef<HTMLSpanElement>(null);
   const [text, setText] = useState(task.text);
@@ -39,6 +40,8 @@ export function TaskLine(props: TaskLineProps) {
   const { attributes, listeners, setNodeRef, setActivatorNodeRef, transform, transition, isDragging } = useSortable({
     id: task.id,
     data: { list, text: task.text },
+    // Old page lines can be picked up but nothing can be dropped onto them.
+    disabled: readOnly ? { draggable: false, droppable: true } : undefined,
   });
   const draggingRef = useRef(false);
   draggingRef.current = isDragging;
@@ -114,6 +117,11 @@ export function TaskLine(props: TaskLineProps) {
           {task.mark ? MARK_GLYPH[task.mark] : ''}
         </button>
       )}
+      {readOnly && task.mark && (
+        <span className="mark" aria-label={`Mark: ${task.mark}`}>
+          {MARK_GLYPH[task.mark]}
+        </span>
+      )}
       {!coarse && (
         <button type="button" className="handle" ref={setActivatorNodeRef} {...attributes} {...listeners} aria-label="Reorder">
           ⠿
@@ -124,6 +132,7 @@ export function TaskLine(props: TaskLineProps) {
           ref={inputRef}
           className="line-text"
           aria-label={label}
+          readOnly={readOnly}
           enterKeyHint="next"
           value={text}
           onChange={(e) => {

@@ -43,19 +43,20 @@ Layout: notebook page. Lined paper, margin line, handwritten-style font, date at
 - Marks are hand-drawn style glyphs. Freehand drawing is not in v1.
 - Crossing off is a horizontal stroke across the line, like running a pen through it. The same stroke across a crossed-off task un-crosses it. Tap/click only ever places the cursor for editing.
 
-**Leftovers.** When the page for a new day opens and an earlier day has unfinished tasks, a small note shows at the top: "Thursday: 3 left". Tapping it opens a short list with a checkbox per task; confirming copies the chosen tasks onto today. A dismiss control hides the note. Shown until used or dismissed, once per day.
+**Old pages.** Each morning today's page starts blank. Every earlier day that still has unfinished lines appears as a small torn-off page pinned beside today, newest on top, with older pages peeking out underneath. Lines on an old page can be crossed off, or dragged onto today or into This week (the line moves), but nothing can be added or edited. When every line is crossed off the page greys out and offers "Bin page"; a page can also be binned early, which takes a second tap ("Bin 3 open lines?") because binning can't be undone. The point is to keep a backlog in view without crowding today's list.
 
-**Week goals.** A "This week" sticky note holds a few bigger aims for the week. On wide screens it sits bottom-right beside the page; on phones it folds into a `Week · N` tab that opens it. Type a goal into the note, or drag a task from today onto it (the task moves). Drag a goal back onto today's page to move it back. Goals cross off with the same stroke as tasks and can be reordered. A week runs Monday to Sunday on the same 4am boundary. When a new week starts, the note offers last week's unfinished goals the same way day leftovers work.
+**Week goals.** A "This week" sticky note holds a few bigger aims for the week. On wide screens it sits bottom-right beside the page; on phones it folds into a `Week · N` tab that opens it. Type a goal into the note, or drag a task from today onto it (the task moves). Drag a goal back onto today's page to move it back. Goals cross off with the same stroke as tasks and can be reordered. A week runs Monday to Sunday on the same 4am boundary. When a new week starts, the note offers last week's unfinished goals with a Bring all / pick / dismiss note.
 
-**Not in v1:** browsing past days, settings, reminders/notifications, stats/streaks, themes, freehand drawing, sharing.
+**Not in v1:** browsing past days beyond old pages, settings, reminders/notifications, stats/streaks, themes, freehand drawing, sharing.
 
 ## 4. Day rules
 
 - Logical day = date of (device local time minus 4 hours). 02:30 Friday belongs to Thursday.
 - The page shown is always the current logical day. If the app is left open across 04:00, it switches to the new day on next focus or interaction.
-- Leftovers source = the most recent earlier day that has at least one task with `done = false` and `deleted = false`. Skipped days are fine: Friday's leftovers show on Monday.
-- Bringing a task over creates a new task on today with the same `text`, `indent` and `mark`, `done = false`. The original is not modified.
-- A day's leftovers offer is finished when the user confirms or dismisses it; recorded as `leftovers_dismissed = true` on today's day record.
+- A day ends at 04:00 on the next calendar day. An old page shows that day's lines that were unfinished when it ended: still open, or crossed off since (`done_at` after the day end). Blank and deleted lines never count.
+- An old page appears for every earlier day with at least one such line, unless its day record is `binned`.
+- Moving a line off an old page soft-deletes it there and creates it on today (same `text`, `indent`, `mark`) or as a goal, always open.
+- Binning sets `binned = true` on the day record and soft-deletes the page's remaining lines.
 
 ## 5. Data model
 
@@ -84,7 +85,7 @@ Both the local store (Dexie) and Supabase hold the same four tables.
 |---|---|---|
 | `user_id` | uuid | |
 | `day` | text `YYYY-MM-DD` | primary key with `user_id` |
-| `leftovers_dismissed` | boolean | |
+| `binned` | boolean | the old page was thrown away |
 | `updated_at` | timestamp | |
 
 **goals**
@@ -131,12 +132,12 @@ Stack: React + TypeScript + Vite, vite-plugin-pwa, Dexie, Supabase JS client, Ve
 
 | unit | job | depends on |
 |---|---|---|
-| `day` | pure functions: logical day from a Date, leftovers source selection, copy-over task building | nothing |
+| `day` | pure functions: logical day from a Date, old page lines, week maths | nothing |
 | `order` | pure functions: fractional position between two positions | nothing |
 | `store` | local reads/writes of tasks and days; sets `updated_at`; exposes live queries to the UI | Dexie |
 | `sync` | push/pull between store and Supabase; conflict resolution | store, Supabase client |
 | `auth` | email code sign-in, session state | Supabase client |
-| UI | notebook page, task line, leftovers note, sign-in screen | store, day, order, auth |
+| UI | notebook page, task line, old pages, sign-in screen | store, day, order, auth |
 
 The UI never calls Supabase directly. It only reads and writes `store`.
 
@@ -159,8 +160,8 @@ Rule: nothing ever stops the user writing.
 
 ## 8. Testing
 
-1. **Unit (Vitest):** `day` (04:00 boundary both sides, leftovers source across skipped days, copy-over fields), `order` (positions between, before first, after last, many inserts), `sync` merge (newer wins, deletes propagate).
-2. **Component (Vitest + Testing Library):** Enter creates a line, Tab/Shift+Tab indents, Backspace on empty line deletes, horizontal drag/swipe toggles crossed-off, click places cursor, leftovers confirm/dismiss.
+1. **Unit (Vitest):** `day` (04:00 boundary both sides, old page lines either side of the day end), `order` (positions between, before first, after last, many inserts), `sync` merge (newer wins, deletes propagate).
+2. **Component (Vitest + Testing Library):** Enter creates a line, Tab/Shift+Tab indents, Backspace on empty line deletes, horizontal drag/swipe toggles crossed-off, click places cursor, old pages cross off and bin.
 3. **End-to-end (Playwright):** write tasks, cross one off, reload, state persists. Also used for screenshot verification. To be added once there is UI (user to confirm).
 4. **Manual device pass:** install on phone and laptop; airplane mode, edit, reconnect; both devices match.
 
