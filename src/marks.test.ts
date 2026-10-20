@@ -8,7 +8,7 @@ describe('nextMark', () => {
     expect(nextMark('bang')).toBe('question');
     expect(nextMark('question')).toBeNull();
   });
-  it('has a glyph for each mark', () => {
-    expect(MARK_GLYPH).toEqual({ star: '★', bang: '!', question: '?' });
+  it('shows ! and ? in the margin; a star shows on the text instead', () => {
+    expect(MARK_GLYPH).toEqual({ star: '', bang: '!', question: '?' });
   });
 });

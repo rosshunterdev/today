@@ -17,3 +17,34 @@ export function SunIcon() {
     </svg>
   );
 }
+
+export function PencilIcon() {
+  return (
+    <svg viewBox="0 0 24 24" aria-hidden="true" focusable="false">
+      <path {...PEN} d="M4.5 19.5l1.1-4.5L15.8 4.8c.7-.7 1.9-.7 2.6 0l.9.9c.7.7.7 1.9 0 2.6L9.1 18.4zM14 6.6l3.4 3.4" />
+    </svg>
+  );
+}
+
+// The grip for dragging a line. Filled by CSS.
+export function DragDotsIcon() {
+  return (
+    <svg viewBox="0 0 8 14" aria-hidden="true" focusable="false">
+      <circle cx="2" cy="2" r="1.3" />
+      <circle cx="6" cy="2" r="1.3" />
+      <circle cx="2" cy="7" r="1.3" />
+      <circle cx="6" cy="7" r="1.3" />
+      <circle cx="2" cy="12" r="1.3" />
+      <circle cx="6" cy="12" r="1.3" />
+    </svg>
+  );
+}
+
+// The bullet once a line is crossed off. Stroked by CSS.
+export function CrossIcon() {
+  return (
+    <svg viewBox="0 0 14 14" aria-hidden="true" focusable="false">
+      <path d="M2.5 2.2l9.1 9.6M11.4 2.6l-9 8.9" />
+    </svg>
+  );
+}

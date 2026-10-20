@@ -6,6 +6,7 @@ import type { LineSource } from '../order/drop';
 import { isStrike } from './stroke';
 import { MARK_GLYPH } from '../marks';
 import { hasNotes } from '../day/leftovers';
+import { CrossIcon, DragDotsIcon, PencilIcon } from './icons';
 
 export interface LineItem {
   id: string;
@@ -32,10 +33,11 @@ export interface TaskLineProps {
   onToggleDone: () => void;
   onCycleMark?: () => void;
   onNotes?: (notes: string) => void;
+  onMoveToday?: () => void; // old page lines: the > that sends the line to the end of today
 }
 
 export function TaskLine(props: TaskLineProps) {
-  const { task, list, label = 'Task', readOnly = false, coarse, focusRequested, onFocusHandled, onFocusChange, onText, onEnter, onBackspaceEmpty, onIndent, onToggleDone, onCycleMark, onNotes } = props;
+  const { task, list, label = 'Task', readOnly = false, coarse, focusRequested, onFocusHandled, onFocusChange, onText, onEnter, onBackspaceEmpty, onIndent, onToggleDone, onCycleMark, onNotes, onMoveToday } = props;
   const inputRef = useRef<HTMLInputElement>(null);
   const measureRef = useRef<HTMLSpanElement>(null);
   const [text, setText] = useState(task.text);
@@ -127,6 +129,7 @@ export function TaskLine(props: TaskLineProps) {
       className="line"
       data-indent={task.indent ?? 0}
       data-done={task.done}
+      data-mark={task.mark ?? undefined}
       data-dragging={isDragging}
       style={{ transform: CSS.Transform.toString(transform), transition }}
       onPointerDown={onPointerDown}
@@ -138,16 +141,20 @@ export function TaskLine(props: TaskLineProps) {
         </button>
       )}
       {readOnly && task.mark && (
-        <span className="mark" aria-label={`Mark: ${task.mark}`}>
+        <span className="mark" role="img" aria-label={`Mark: ${task.mark}`}>
           {MARK_GLYPH[task.mark]}
         </span>
       )}
       {!coarse && (
         <button type="button" className="handle" ref={setActivatorNodeRef} {...attributes} {...listeners} aria-label="Reorder">
-          ⠿
+          <DragDotsIcon />
         </button>
       )}
       <div className="ink">
+        <span className="bullet" aria-hidden="true">
+          {task.done ? <CrossIcon /> : <span className="dot" />}
+        </span>
+        {task.mark === 'star' && <span className="star" style={{ width: textWidth + 6 }} aria-hidden="true" />}
         <input
           ref={inputRef}
           className="line-text"
@@ -167,11 +174,22 @@ export function TaskLine(props: TaskLineProps) {
           {text}
         </span>
         {task.done && (
-          <svg className="strike" style={{ width: textWidth + 8 }} viewBox="0 0 100 10" preserveAspectRatio="none" aria-hidden="true">
-            <path d="M1 6 C30 3, 60 8, 99 4" pathLength={1} />
+          <svg className="strike" style={{ width: textWidth + 4 }} viewBox="0 0 100 10" preserveAspectRatio="none" aria-hidden="true">
+            <path d="M1 5.2 C30 4.6, 62 5.6, 99 4.8" pathLength={1} />
           </svg>
         )}
       </div>
+      {onMoveToday && (
+        <button
+          type="button"
+          className="move-today"
+          aria-label={`Move ${task.text.trim() || 'line'} to today`}
+          onPointerDown={(e) => e.stopPropagation()}
+          onClick={onMoveToday}
+        >
+          &gt;
+        </button>
+      )}
       {(onNotes || (readOnly && noted)) && (
         <button
           type="button"
@@ -183,33 +201,36 @@ export function TaskLine(props: TaskLineProps) {
           onPointerDown={(e) => e.stopPropagation()}
           onClick={() => setNotesOpen((open) => !open)}
         >
-          ✎
+          <PencilIcon />
         </button>
       )}
       {notesOpen && (
-        <textarea
-          ref={notesRef}
-          className="notes"
-          aria-label="Notes"
-          rows={1}
-          value={notes}
-          readOnly={readOnly}
-          autoFocus={!readOnly}
-          onChange={(e) => {
-            setNotesText(e.target.value);
-            onNotes?.(e.target.value);
-          }}
-          onKeyDown={(e) => {
-            if (e.key === 'Escape') {
-              e.preventDefault();
-              setNotesOpen(false);
-              toggleRef.current?.focus();
-            }
-          }}
-          // Strokes and drags start from the line row only, never from the note.
-          onPointerDown={(e) => e.stopPropagation()}
-          onTouchStart={(e) => e.stopPropagation()}
-        />
+        // Strokes and drags start from the line row only, never from the note.
+        <div className="notes-wrap" onPointerDown={(e) => e.stopPropagation()} onTouchStart={(e) => e.stopPropagation()}>
+          <span className="notes-dash" aria-hidden="true">
+            –
+          </span>
+          <textarea
+            ref={notesRef}
+            className="notes"
+            aria-label="Notes"
+            rows={1}
+            value={notes}
+            readOnly={readOnly}
+            autoFocus={!readOnly}
+            onChange={(e) => {
+              setNotesText(e.target.value);
+              onNotes?.(e.target.value);
+            }}
+            onKeyDown={(e) => {
+              if (e.key === 'Escape') {
+                e.preventDefault();
+                setNotesOpen(false);
+                toggleRef.current?.focus();
+              }
+            }}
+          />
+        </div>
       )}
     </li>
   );
