@@ -1,6 +1,6 @@
 import { describe, it, expect, beforeEach } from 'vitest';
 import { db } from './db';
-import { binPage, listOldPages, pageLineToGoal, pageLineToTask } from './pages';
+import { binPage, listOldPages, pageLineToGoal, pageLineToTask, pageLineToTodayEnd } from './pages';
 import { addTask, listDay, setDone, setMark } from './tasks';
 import { addGoal, listWeek } from './goals';
 
@@ -77,5 +77,22 @@ describe('binPage', () => {
     expect(await db.days.get(FRI)).toMatchObject({ binned: true });
     expect((await db.tasks.get(open.id))!.deleted).toBe(true);
     expect(await listOldPages(TODAY)).toEqual([]);
+  });
+});
+
+describe('pageLineToTodayEnd', () => {
+  it('moves an old line to the end of today and soft-deletes the original', async () => {
+    await addTask(TODAY, { text: 'a' });
+    await addTask(TODAY, { text: 'b' });
+    const line = await addTask(FRI, { text: 'call bank' });
+    await pageLineToTodayEnd(line.id, TODAY);
+    expect((await listDay(TODAY)).map((t) => t.text)).toEqual(['a', 'b', 'call bank']);
+    expect((await db.tasks.get(line.id))!.deleted).toBe(true);
+  });
+
+  it('makes it the only line when today is empty', async () => {
+    const line = await addTask(FRI, { text: 'call bank' });
+    await pageLineToTodayEnd(line.id, TODAY);
+    expect((await listDay(TODAY)).map((t) => t.text)).toEqual(['call bank']);
   });
 });

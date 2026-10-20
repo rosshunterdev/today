@@ -35,3 +35,12 @@ export function copyGoalForWeek(source: Goal, week: string, position: string, id
     deleted: false,
   };
 }
+
+// "19 to 25 October", or "28 September to 4 October" when the week crosses a month.
+export function weekRange(week: string): string {
+  const start = dayToDate(week);
+  const end = new Date(start.getFullYear(), start.getMonth(), start.getDate() + 6);
+  const month = (d: Date) => d.toLocaleDateString('en-NZ', { month: 'long' });
+  const from = start.getMonth() === end.getMonth() ? `${start.getDate()}` : `${start.getDate()} ${month(start)}`;
+  return `${from} to ${end.getDate()} ${month(end)}`;
+}

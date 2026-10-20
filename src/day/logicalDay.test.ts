@@ -1,5 +1,5 @@
 import { describe, it, expect } from 'vitest';
-import { logicalDay, dayLabel, daysBetween } from './logicalDay';
+import { logicalDay, dayLabel, dayParts, daysBetween } from './logicalDay';
 
 describe('logicalDay', () => {
   it('counts 03:59 as the previous day', () => {
@@ -32,5 +32,12 @@ describe('daysBetween', () => {
   });
   it('is not thrown off by daylight saving', () => {
     expect(daysBetween('2026-09-26', '2026-09-28')).toBe(2);
+  });
+});
+
+describe('dayParts', () => {
+  it('splits a day into the header number, weekday and month', () => {
+    expect(dayParts('2026-10-20')).toEqual({ number: 20, weekday: 'Tuesday', month: 'October' });
+    expect(dayParts('2027-01-01')).toEqual({ number: 1, weekday: 'Friday', month: 'January' });
   });
 });
