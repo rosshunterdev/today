@@ -30,6 +30,19 @@ test('desktop: a note survives a reload and a move into the week', async ({ page
   await expect(notesBox(page)).toHaveValue('ask about software projects\nwill she review my CV');
 });
 
+test('phone: tapping the right end of a line edits it instead of opening a hidden note', async ({ page }, testInfo) => {
+  test.skip(testInfo.project.name !== 'phone', 'touch');
+  await page.goto('/');
+  await write(page, ['message manager', 'groceries']);
+  await expect(tasks(page)).toHaveCount(2);
+  await page.getByRole('heading', { level: 1 }).click(); // leave the lines
+
+  const box = (await lineOf(tasks(page).nth(0)).boundingBox())!;
+  await page.touchscreen.tap(box.x + box.width - 12, box.y + box.height / 2);
+  await expect(tasks(page).nth(0)).toBeFocused();
+  await expect(notesBox(page)).toHaveCount(0);
+});
+
 test('phone: ✎ appears while editing a line and opens its note', async ({ page }, testInfo) => {
   test.skip(testInfo.project.name !== 'phone', 'touch');
   await page.goto('/');

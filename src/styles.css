@@ -93,7 +93,7 @@ body {
   flex: 1;
   min-width: 0;
   height: 100%;
-  padding: 0;
+  padding: 0 2rem 0 0; /* room for the ✎ at the end of the line */
   border: 0;
   background: transparent;
   color: inherit;
@@ -202,8 +202,11 @@ body {
 }
 
 /* ✎ at the end of a line: shown while you're on the line, always when there's a note behind it. */
+/* It floats over the end of the line, so when hidden on touch a tap there falls through to the text. */
 .notes-toggle {
-  flex: none;
+  position: absolute;
+  top: 0;
+  right: 0;
   width: 2rem;
   height: var(--line-h);
   padding: 0;
@@ -225,6 +228,17 @@ body {
 
 .notes-toggle[data-has='true'] {
   color: var(--ink);
+}
+
+/* On touch a hidden ✎ mustn't catch taps meant for the line; it only answers while the line is being edited. */
+@media (hover: none) {
+  .notes-toggle:not([data-has='true']) {
+    pointer-events: none;
+  }
+
+  .line:focus-within .notes-toggle {
+    pointer-events: auto;
+  }
 }
 
 .notes-toggle:focus-visible {
