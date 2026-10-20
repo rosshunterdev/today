@@ -8,6 +8,8 @@ async function leaveMonday(page: Page, lines: string[]) {
   await page.clock.setFixedTime(new Date(2026, 9, 19, 9, 0));
   await page.goto('/');
   await write(page, lines);
+  // Wait until every line is saved, or the reload can land before the last writes.
+  await expect(tasks(page)).toHaveCount(lines.length);
   await page.clock.setFixedTime(new Date(2026, 9, 20, 9, 0));
   await page.reload();
 }
