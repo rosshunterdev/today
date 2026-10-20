@@ -22,6 +22,16 @@ describe('WeekNote', () => {
     expect((await listWeek(WEEK)).map((g) => g.text)).toEqual(['work on assignment']);
   });
 
+  it('adds the old page count to the tab and shows the stack above the note', async () => {
+    render(
+      <WeekNote week={WEEK} oldCount={2}>
+        <p>stack</p>
+      </WeekNote>,
+    );
+    expect(await screen.findByRole('button', { name: 'Week · 0 · 2 old' })).toBeInTheDocument();
+    expect(screen.getByText('stack')).toBeInTheDocument();
+  });
+
   it('crosses a goal off with a stroke', async () => {
     await addGoal(WEEK, { text: 'run 3x' });
     render(<WeekNote week={WEEK} />);

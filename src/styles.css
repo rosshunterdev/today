@@ -334,13 +334,22 @@ body {
   --note-rule: rgb(30 39 71 / 0.13);
 }
 
-.week-note {
-  --margin-w: 1.6rem;
+/* The right-hand column: old pages stacked above the week note. */
+.side {
   position: fixed;
   right: 1.5rem;
   bottom: 1.5rem;
   z-index: 3;
+  display: flex;
+  flex-direction: column;
+  gap: 1.25rem;
   width: 17rem;
+  max-height: calc(100dvh - 3rem);
+}
+
+.week-note {
+  --margin-w: 1.6rem;
+  flex: none;
   max-height: min(60dvh, 30rem);
   overflow-y: auto;
   padding: 0 0.75rem 0.5rem 0;
@@ -369,16 +378,20 @@ body {
 
 /* Below 80rem the note can't sit beside the 40rem page without covering it, so it folds into a tab. */
 @media (max-width: 79.99rem) {
-  .week-note {
+  .side {
     display: none;
     right: 0.75rem;
     bottom: calc(env(safe-area-inset-bottom) + 4rem);
     width: min(20rem, calc(100vw - 1.5rem));
+    max-height: calc(100dvh - 6rem);
+  }
+
+  .week-note {
     max-height: 50dvh;
   }
 
-  .week[data-open='true'] .week-note {
-    display: block;
+  .week[data-open='true'] .side {
+    display: flex;
   }
 
   .week-tab {
@@ -415,4 +428,98 @@ body {
 .week-tab:focus-visible {
   outline: 2px solid var(--ink);
   outline-offset: 3px;
+}
+
+/* Old pages: torn-off sheets pinned above the week note, quieter than today's page. */
+.old-pages {
+  --old-paper: #ece8de;
+  display: flex;
+  flex-direction: column;
+  min-height: 0;
+  overflow-y: auto;
+  padding-top: 0.5rem;
+}
+
+.old-page {
+  --margin-w: 1.6rem;
+  position: relative;
+  padding: 0 0.75rem 0.5rem 0;
+  color: rgb(30 39 71 / 0.78);
+  background-color: var(--old-paper);
+  background-image: repeating-linear-gradient(
+    to bottom,
+    transparent 0 calc(var(--line-h) - 1px),
+    var(--note-rule) calc(var(--line-h) - 1px) var(--line-h)
+  );
+  box-shadow:
+    0 1px 2px rgb(30 39 71 / 0.12),
+    0 8px 16px -8px rgb(30 39 71 / 0.3);
+  rotate: -0.6deg;
+}
+
+/* The pin. */
+.old-page::before {
+  content: '';
+  position: absolute;
+  top: -0.35rem;
+  left: 50%;
+  width: 0.7rem;
+  height: 0.7rem;
+  margin-left: -0.35rem;
+  border-radius: 50%;
+  background: var(--pen);
+  box-shadow: 0 2px 3px rgb(30 39 71 / 0.35);
+}
+
+.old-page header {
+  display: flex;
+  align-items: baseline;
+  justify-content: space-between;
+  padding-left: calc(var(--margin-w) + 0.75rem);
+}
+
+.old-page h2 {
+  margin: 0;
+  font-size: 1.35rem;
+  font-weight: 700;
+  line-height: var(--line-h);
+}
+
+.old-bin {
+  min-height: 2.75rem;
+  border: 0;
+  background: transparent;
+  color: inherit;
+  font: 1.1rem var(--hand);
+  opacity: 0.6;
+  cursor: pointer;
+}
+
+.old-page[data-done='true'] .lines {
+  opacity: 0.55;
+}
+
+.old-page[data-done='true'] .old-bin {
+  color: var(--pen);
+  font-weight: 700;
+  opacity: 1;
+}
+
+.old-page-peek {
+  margin-top: -0.25rem;
+  padding: 0.3rem 0.75rem 0.3rem calc(1.6rem + 0.75rem);
+  border: 0;
+  text-align: left;
+  background: var(--old-paper);
+  color: rgb(30 39 71 / 0.6);
+  font: 700 1.15rem var(--hand);
+  box-shadow: 0 3px 6px -3px rgb(30 39 71 / 0.3);
+  rotate: 0.8deg;
+  cursor: pointer;
+}
+
+.old-bin:focus-visible,
+.old-page-peek:focus-visible {
+  outline: 2px solid var(--pen);
+  outline-offset: 2px;
 }
