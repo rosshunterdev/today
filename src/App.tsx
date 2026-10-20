@@ -2,7 +2,6 @@ import type { ReactNode } from 'react';
 import { useDroppable } from '@dnd-kit/core';
 import { useToday } from './ui/useToday';
 import { DayHeader } from './ui/DayHeader';
-import { LeftoversNote } from './ui/LeftoversNote';
 import { NotebookPage } from './ui/NotebookPage';
 import { DragBoard } from './ui/DragBoard';
 import { WeekNote } from './ui/WeekNote';
@@ -16,7 +15,6 @@ export function App() {
     <DragBoard day={today} week={week}>
       <TodayPage>
         <DayHeader day={today} />
-        <LeftoversNote today={today} />
         <NotebookPage day={today} />
       </TodayPage>
       <WeekNote week={week} />
