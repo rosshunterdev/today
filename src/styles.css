@@ -753,16 +753,16 @@ body:has(.kbd-bar) .corner {
   display: flex;
   align-items: center;
   justify-content: center;
-  width: 3rem;
-  height: 3rem;
+  width: 4.5rem;
+  height: 4.5rem;
   border-radius: 50%;
   color: var(--ink-soft);
   pointer-events: none;
 }
 
 .bin svg {
-  width: 1.6rem;
-  height: 1.6rem;
+  width: 2.25rem;
+  height: 2.25rem;
 }
 
 /* While a line is being dragged the bin shows it will take it, like the corners. */
@@ -935,7 +935,7 @@ body:has(.kbd-bar) .slip-region {
   }
 
   .more-page {
-    padding-bottom: 4.5rem; /* room under the last line for the bin */
+    padding-bottom: 6rem; /* room under the last line for the bin */
     border-radius: 0 0.375rem 0.375rem 0;
     background-image:
       linear-gradient(to right, var(--gutter), transparent 2.875rem),
