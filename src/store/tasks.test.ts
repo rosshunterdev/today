@@ -87,4 +87,18 @@ describe('tasks store', () => {
     expect(await texts()).toEqual(['a', 'b', 'c']);
     expect((await db.tasks.get(b.id))!.updatedAt > deletedAt).toBe(true);
   });
+
+  it('restores a line just before a line written into its place since, so Enter after either still works', async () => {
+    await addTask(DAY, { text: 'a' });
+    const b = await addTask(DAY, { text: 'b' });
+    await deleteTask(b.id);
+    const c = await addTask(DAY, { text: 'c' }); // takes the place b left
+    await restoreTask(b.id);
+    const rows = await listDay(DAY);
+    expect(new Set(rows.map((t) => t.position)).size).toBe(3);
+    expect(rows.map((t) => t.text)).toEqual(['a', 'b', 'c']);
+    await addTask(DAY, { afterId: b.id, text: 'after b' });
+    await addTask(DAY, { afterId: c.id, text: 'after c' });
+    expect(await texts()).toEqual(['a', 'b', 'after b', 'c', 'after c']);
+  });
 });

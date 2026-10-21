@@ -60,6 +60,20 @@ describe('goal store', () => {
     expect((await listWeek(WEEK)).map((g) => g.text)).toEqual(['a', 'b', 'c']);
     expect((await db.goals.get(b.id))!.updatedAt > deletedAt).toBe(true);
   });
+
+  it('restores a goal just before a goal written into its place since, so Enter after either still works', async () => {
+    await addGoal(WEEK, { text: 'a' });
+    const b = await addGoal(WEEK, { text: 'b' });
+    await deleteGoal(b.id);
+    const c = await addGoal(WEEK, { text: 'c' }); // takes the place b left
+    await restoreGoal(b.id);
+    const rows = await listWeek(WEEK);
+    expect(new Set(rows.map((g) => g.position)).size).toBe(3);
+    expect(rows.map((g) => g.text)).toEqual(['a', 'b', 'c']);
+    await addGoal(WEEK, { afterId: b.id, text: 'after b' });
+    await addGoal(WEEK, { afterId: c.id, text: 'after c' });
+    expect((await listWeek(WEEK)).map((g) => g.text)).toEqual(['a', 'b', 'after b', 'c', 'after c']);
+  });
 });
 
 const DAY = '2026-10-14';
