@@ -855,6 +855,11 @@ body:has(.kbd-bar) .slip-region {
     visibility: visible;
   }
 
+  /* The slip sits where the bin appears, so it steps aside while a line is lifted. */
+  body:has(.bin[data-target='true']) .slip-region {
+    visibility: hidden;
+  }
+
   body:has(.kbd-bar) .bin {
     bottom: calc(env(safe-area-inset-bottom) + 9rem);
   }

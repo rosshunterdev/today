@@ -51,4 +51,13 @@ test('phone: the bin appears while a line is lifted, and undo brings the line ba
   await slip.getByRole('button', { name: 'undo', exact: true }).click();
   await expect(tasks(page)).toHaveCount(2);
   await expect(tasks(page).nth(0)).toHaveValue('groceries');
+
+  // Binning again before the slip goes: the slip sits where the bin appears, so it steps aside while a line is lifted.
+  await touchDrag(page, lineOf(tasks(page).nth(0)), bin);
+  await expect(slip).toContainText('binned “groceries”');
+  await touchDrag(page, lineOf(tasks(page).nth(0)), bin, async () => {
+    await expect(slip).toBeHidden({ timeout: 500 }); // short: the slip would also go by itself after 5s
+  });
+  await expect(tasks(page)).toHaveCount(0);
+  await expect(slip).toContainText('binned “reply to Sam”');
 });
