@@ -32,6 +32,29 @@ test('write, cross off, survive reload', async ({ page }, testInfo) => {
   await expect(page.getByRole('textbox', { name: 'Task', exact: true }).nth(0)).toHaveValue('reply to Sam');
 });
 
+test('cross off and back with a click on the bullet', async ({ page }, testInfo) => {
+  const phone = testInfo.project.name === 'phone';
+  await page.goto('/');
+  await write(page, ['reply to Sam', 'groceries']);
+
+  const first = page.locator('li.line').first();
+  const bullet = page.getByRole('button', { name: 'Cross off reply to Sam', exact: true });
+  if (phone) await bullet.tap();
+  else await bullet.click();
+  await expect(first).toHaveAttribute('data-done', 'true');
+  await expect(bullet).toHaveAttribute('aria-pressed', 'true');
+
+  // With a mouse, the next dot previews its cross.
+  if (!phone) await page.getByRole('button', { name: 'Cross off groceries', exact: true }).hover();
+  await page.screenshot({ path: `e2e/screenshots/${testInfo.project.name}-bullet.png`, animations: 'disabled' });
+
+  if (phone) await bullet.tap();
+  else await bullet.click();
+  await expect(first).toHaveAttribute('data-done', 'false');
+  await page.reload();
+  await expect(page.locator('li.line').first()).toHaveAttribute('data-done', 'false');
+});
+
 const rootPx = (page: Page) => page.evaluate(() => parseFloat(getComputedStyle(document.documentElement).fontSize));
 
 test('desktop: the open book fills the screen and grows with it', async ({ page }, testInfo) => {

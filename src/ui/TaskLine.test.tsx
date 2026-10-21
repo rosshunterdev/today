@@ -193,11 +193,32 @@ describe('bullets', () => {
     await waitFor(() => expect(li(0).querySelector('.bullet svg')).not.toBeNull());
     expect(li(0).querySelector('.bullet .dot')).toBeNull();
   });
+
+  it('clicking the bullet crosses off, and clicking it again undoes it', async () => {
+    const user = userEvent.setup();
+    await renderWith('gym');
+    const bullet = screen.getByRole('button', { name: 'Cross off gym' });
+    expect(bullet).toHaveAttribute('aria-pressed', 'false');
+    await user.click(bullet);
+    await waitFor(() => expect(li(0)).toHaveAttribute('data-done', 'true'));
+    expect((await listDay(DAY))[0].done).toBe(true);
+    expect(bullet).toHaveAttribute('aria-pressed', 'true');
+    await user.click(bullet);
+    await waitFor(() => expect(li(0)).toHaveAttribute('data-done', 'false'));
+  });
+
+  it('crosses off from the keyboard once the bullet has focus', async () => {
+    const user = userEvent.setup();
+    await renderWith('gym');
+    screen.getByRole('button', { name: 'Cross off gym' }).focus();
+    await user.keyboard(' ');
+    await waitFor(() => expect(li(0)).toHaveAttribute('data-done', 'true'));
+  });
 });
 
 describe('TaskLine on an old page', () => {
   const noop = () => {};
-  function renderOld(text: string, onMoveToday = noop) {
+  function renderOld(text: string, onMoveToday = noop, onToggleDone = noop) {
     return render(
       <ol>
         <TaskLine
@@ -212,7 +233,7 @@ describe('TaskLine on an old page', () => {
           onText={noop}
           onEnter={noop}
           onBackspaceEmpty={noop}
-          onToggleDone={noop}
+          onToggleDone={onToggleDone}
           onMoveToday={onMoveToday}
         />
       </ol>,
@@ -230,5 +251,14 @@ describe('TaskLine on an old page', () => {
   it('names a blank line by what it is', () => {
     renderOld('');
     expect(screen.getByRole('button', { name: 'Move line to today' })).toBeInTheDocument();
+    expect(screen.getByRole('button', { name: 'Cross off line' })).toBeInTheDocument();
+  });
+
+  it('crosses off from its bullet, named after the line', async () => {
+    const user = userEvent.setup();
+    const onToggleDone = vi.fn();
+    renderOld('call bank', noop, onToggleDone);
+    await user.click(screen.getByRole('button', { name: 'Cross off call bank' }));
+    expect(onToggleDone).toHaveBeenCalledTimes(1);
   });
 });
