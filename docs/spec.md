@@ -25,7 +25,7 @@ Phone and laptop. Installable web app (PWA), one codebase, synced between device
 
 ## 3. Experience
 
-Layout: a dot-grid journal. Dot-grid paper, a handwritten-style font, the day's date as a large numeral at the top. Wide screens show the journal open: today on the left page, This week and old pages on the right. Phones show one page at a time, and a folded corner turns to the other. Parked alternatives: free page and desk scraps.
+Layout: a dot-grid journal. Dot-grid paper, a handwritten-style font, the day's date as a large numeral at the top. Wide screens show the journal open: today on the left page, This week and old pages on the right. The open journal fills the window and grows with it (up to one and a half times its normal size on very wide screens). Phones show one page at a time, and a folded corner turns to the other. Parked alternatives: free page and desk scraps.
 
 | Action | Desktop | Phone |
 |---|---|---|

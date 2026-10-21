@@ -1,4 +1,5 @@
-import { test, expect } from '@playwright/test';
+import { test, expect, type Page } from '@playwright/test';
+import { write } from './helpers';
 
 test('write, cross off, survive reload', async ({ page }, testInfo) => {
   await page.goto('/');
@@ -29,4 +30,38 @@ test('write, cross off, survive reload', async ({ page }, testInfo) => {
   await expect(page.getByRole('textbox', { name: 'Task', exact: true })).toHaveCount(2);
   await expect(page.locator('li.line').first()).toHaveAttribute('data-done', 'true');
   await expect(page.getByRole('textbox', { name: 'Task', exact: true }).nth(0)).toHaveValue('reply to Sam');
+});
+
+const rootPx = (page: Page) => page.evaluate(() => parseFloat(getComputedStyle(document.documentElement).fontSize));
+
+test('desktop: the open book fills the screen and grows with it', async ({ page }, testInfo) => {
+  test.skip(testInfo.project.name !== 'desktop', 'wide layout');
+  await page.setViewportSize({ width: 1920, height: 1080 });
+  await page.goto('/');
+  await write(page, ['reply to Sam', 'groceries']);
+  await page.getByRole('textbox', { name: 'New goal', exact: true }).click();
+  await page.keyboard.type('finish cloud assignment');
+  await page.keyboard.press('Enter');
+
+  // About 1.2x at 1920px, and the book is only short of the window by the desk margin.
+  const root = await rootPx(page);
+  expect(root).toBeCloseTo(19.2, 0);
+  const book = (await page.locator('.book').boundingBox())!;
+  expect(book.width).toBeGreaterThan(1920 - 4 * root);
+  const left = (await page.locator('main').boundingBox())!;
+  const right = (await page.locator('.more-page').boundingBox())!;
+  expect(Math.abs(left.width - right.width)).toBeLessThan(2);
+  await page.screenshot({ path: 'e2e/screenshots/desktop-wide.png', animations: 'disabled' });
+
+  // 1x at the breakpoint, so nothing jumps there, and no more than 1.5x on very wide screens.
+  await page.setViewportSize({ width: 1024, height: 768 });
+  expect(await rootPx(page)).toBeCloseTo(16, 0);
+  await page.setViewportSize({ width: 3840, height: 2160 });
+  expect(await rootPx(page)).toBe(24);
+});
+
+test('phone: text stays its normal size', async ({ page }, testInfo) => {
+  test.skip(testInfo.project.name !== 'phone', 'narrow layout');
+  await page.goto('/');
+  expect(await rootPx(page)).toBe(16);
 });

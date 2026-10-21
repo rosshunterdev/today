@@ -19,7 +19,7 @@ Task apps tend to feel worse than paper. Paper is always ready, crossing things 
 
 ## Features
 
-- **Dot-grid journal:** dot-grid paper, a handwritten-style font and the date as a big numeral. On a wide screen the journal lies open: today on the left, the week and old pages on the right.
+- **Dot-grid journal:** dot-grid paper, a handwritten-style font and the date as a big numeral. On a wide screen the journal lies open and fills the screen: today on the left, the week and old pages on the right.
 - **Write line by line:** Enter for a new line, Tab / Shift+Tab for one level of sub-steps, Backspace on an empty line to delete it.
 - **Cross off with a stroke:** drag the mouse or swipe a finger across a line to turn its bullet into a cross and draw a pen stroke through it. Do it again to undo.
 - **Marks:** click or tap the margin to highlight a line, or mark it ! or ?.
