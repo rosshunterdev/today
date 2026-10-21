@@ -9,15 +9,18 @@ export const LIST_DROP_ID: Record<ListId, string> = { today: 'list:today', week:
 // The folded page corners on phones. A line dropped on one goes to the end of that list.
 export const CORNER_ID: Record<ListId, string> = { today: 'corner:today', week: 'corner:week' };
 export const OLD_DROP_ID = 'list:old';
+// The bin. A line dropped in it is thrown away (a soft delete, with an undo).
+export const BIN_ID = 'bin';
 
 const LISTS: ListId[] = ['today', 'week'];
 const CORNERS = new Set<UniqueIdentifier>([CORNER_ID.today, CORNER_ID.week]);
-const CONTAINERS = new Set<UniqueIdentifier>([LIST_DROP_ID.today, LIST_DROP_ID.week, CORNER_ID.today, CORNER_ID.week, OLD_DROP_ID]);
+const CONTAINERS = new Set<UniqueIdentifier>([LIST_DROP_ID.today, LIST_DROP_ID.week, CORNER_ID.today, CORNER_ID.week, OLD_DROP_ID, BIN_ID]);
 
 export type Drop =
   | { kind: 'none' }
   | { kind: 'reorder'; list: ListId; id: string; prevId: string | null; nextId: string | null }
-  | { kind: 'transfer'; from: LineSource; to: ListId; id: string; prevId: string | null; nextId: string | null };
+  | { kind: 'transfer'; from: LineSource; to: ListId; id: string; prevId: string | null; nextId: string | null }
+  | { kind: 'bin'; from: LineSource; id: string };
 
 const NONE: Drop = { kind: 'none' };
 
@@ -36,6 +39,7 @@ function targetOf(overId: string, lists: Record<ListId, string[]>): { list: List
 export function resolveDrop(lists: Record<ListId, string[]>, activeId: string, overId: string | null, old: string[] = []): Drop {
   const from: LineSource | undefined = old.includes(activeId) ? 'old' : LISTS.find((list) => lists[list].includes(activeId));
   if (!from || overId === null || overId === activeId) return NONE;
+  if (overId === BIN_ID) return { kind: 'bin', from, id: activeId };
   const target = targetOf(overId, lists);
   if (!target) return NONE;
   const ids = lists[target.list];
@@ -50,7 +54,7 @@ export function resolveDrop(lists: Record<ListId, string[]>, activeId: string, o
 }
 
 // Pointer first, so the line under the finger wins over the list around it.
-// A folded corner floats over a phone page, so a drop on it means that corner, whatever lies underneath.
+// The bin and the folded corners float over the pages, so a drop on one means that, whatever lies underneath.
 // Over the old pages there is no target: a drop there means nothing.
 // While the pointer is on the week, only week targets count.
 // Off every target (blank desk) there is no target, so the drop writes nothing.
@@ -65,6 +69,8 @@ export const collide: CollisionDetection = (args) => {
   }
   const listOf = (id: UniqueIdentifier) => args.droppableContainers.find((c) => c.id === id)?.data.current?.list as ListId | undefined;
   const within = pointerWithin(args);
+  const bin = within.find((c) => c.id === BIN_ID);
+  if (bin) return [bin];
   const corner = within.find((c) => CORNERS.has(c.id));
   if (corner) return [corner];
   if (within.some((c) => c.id === OLD_DROP_ID)) return [];
