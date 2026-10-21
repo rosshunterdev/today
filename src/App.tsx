@@ -11,6 +11,8 @@ import { PageCorner } from './ui/PageCorner';
 import { listOldPages } from './store/pages';
 import { weekOf } from './day/week';
 import { LIST_DROP_ID } from './order/drop';
+import { Bin } from './ui/Bin';
+import { BinProvider } from './ui/useBin';
 
 type Side = 'today' | 'more';
 
@@ -35,21 +37,24 @@ export function App() {
   const moreLabel = n === 0 ? 'this week' : `this week and ${n} old page${n === 1 ? '' : 's'}`;
 
   return (
-    <DragBoard day={today} week={week}>
-      {/* Wide screens show both pages as an open book; phones show one side at a time. */}
-      <div className="book" data-side={side} data-turned={turned}>
-        <TodayPage>
-          <DayHeader day={today} />
-          <NotebookPage day={today} />
-          <PageCorner to="week" label={moreLabel} onTurn={() => turn('more')} />
-        </TodayPage>
-        <aside className="page more-page" aria-label="This week and old pages">
-          <WeekNote week={week} />
-          <OldPages pages={pages} today={today} />
-          <PageCorner to="today" label="back to today" onTurn={() => turn('today')} />
-        </aside>
-      </div>
-    </DragBoard>
+    <BinProvider>
+      <DragBoard day={today} week={week}>
+        {/* Wide screens show both pages as an open book; phones show one side at a time. */}
+        <div className="book" data-side={side} data-turned={turned}>
+          <TodayPage>
+            <DayHeader day={today} />
+            <NotebookPage day={today} />
+            <PageCorner to="week" label={moreLabel} onTurn={() => turn('more')} />
+          </TodayPage>
+          <aside className="page more-page" aria-label="This week and old pages">
+            <WeekNote week={week} />
+            <OldPages pages={pages} today={today} />
+            <PageCorner to="today" label="back to today" onTurn={() => turn('today')} />
+          </aside>
+          <Bin />
+        </div>
+      </DragBoard>
+    </BinProvider>
   );
 }
 

@@ -26,6 +26,14 @@ export function PencilIcon() {
   );
 }
 
+export function BinIcon() {
+  return (
+    <svg viewBox="0 0 24 24" aria-hidden="true" focusable="false">
+      <path {...PEN} d="M4 6.5h16M9.5 6.5V4.8c0-.6.4-1 1-1h3c.6 0 1 .4 1 1v1.7M6 6.5l1.1 12.6c.1.9.8 1.4 1.6 1.4h6.6c.8 0 1.5-.5 1.6-1.4L18 6.5M10 10.5v6.5M14 10.5v6.5" />
+    </svg>
+  );
+}
+
 // The grip for dragging a line. Filled by CSS.
 export function DragDotsIcon() {
   return (

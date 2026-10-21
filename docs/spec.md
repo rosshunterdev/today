@@ -36,7 +36,7 @@ Layout: a dot-grid journal. Dot-grid paper, a handwritten-style font, the day's 
 | Cross off / undo | Drag the mouse across the line | Swipe a finger across the line |
 | Reorder | Drag the dotted grip that appears on hover at the line's left edge | Long-press, then drag |
 | Margin mark | Click the margin to cycle: none, star (highlights the line), !, ? | Tap the margin |
-| Delete | Backspace on an empty line | Backspace on an empty line |
+| Delete | Backspace on an empty line, or drag the line into the bin at the bottom right of the week page | Backspace on an empty line, or long-press and drag the line into the bin that appears above the corners |
 | Night pages | Click the moon in today's header | Tap the moon |
 
 - Each line starts with a bullet dot. Crossing off turns the dot into a cross and draws a thin pen stroke across the text. Crossed-off tasks stay on the page, greyed.
@@ -49,6 +49,8 @@ Layout: a dot-grid journal. Dot-grid paper, a handwritten-style font, the day's 
 **Notes.** Any task or goal can hold a free-text note, like writing on the back of the card. A small pencil at the end of a line (shown while you're on the line, always when a note exists) unfolds the note in place under the line; Escape or the pencil folds it. Enter adds a new line inside the note. Notes move with their line everywhere and are read-only on old pages. A line with blank text but a note still counts as a real line.
 
 **Week goals.** This week holds a few bigger aims for the week, at the top of the right-hand page (the second page on phones). Type a goal in, or drag a task from today onto it (the task moves); on a phone, drop the task on the folded corner. Drag a goal back onto today's page to move it back; on a phone, drop it on the "back to today" corner. Goals cross off with the same stroke as tasks and can be reordered. A week runs Monday to Sunday on the same 4am boundary. When a new week starts, the week offers last week's unfinished goals with a Bring all / pick / dismiss note.
+
+**Bin.** Any line (a task, a goal or an old line) can be dragged into the bin to throw it away. A slip then shows the line's words with an undo for five seconds, held while the pointer or focus is on it. Undo, or Ctrl+Z while the slip shows, puts the line back where it was. Only the last bin can be undone.
 
 **Night pages.** A moon in today's header turns the journal dark: black pages, white ink, pink crossing off. The choice is remembered on the device.
 
