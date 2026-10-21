@@ -1,6 +1,6 @@
 import { describe, it, expect, beforeEach, afterEach, vi } from 'vitest';
 import { db } from './db';
-import { listDay, addTask, updateText, setIndent, setMark, setDone, deleteTask, moveTask } from './tasks';
+import { listDay, addTask, updateText, setIndent, setMark, setDone, deleteTask, moveTask, restoreTask } from './tasks';
 
 const DAY = '2026-10-02';
 const texts = async () => (await listDay(DAY)).map((t) => t.text);
@@ -73,5 +73,18 @@ describe('tasks store', () => {
     expect(await texts()).toEqual(['a', 'c', 'b']);
     await moveTask(a.id, b.id, null);
     expect(await texts()).toEqual(['c', 'b', 'a']);
+  });
+
+  it('restores a deleted task to its old place, bumping updatedAt', async () => {
+    await addTask(DAY, { text: 'a' });
+    const b = await addTask(DAY, { text: 'b' });
+    await addTask(DAY, { text: 'c' });
+    await deleteTask(b.id);
+    expect(await texts()).toEqual(['a', 'c']);
+    const deletedAt = (await db.tasks.get(b.id))!.updatedAt;
+    await new Promise((r) => setTimeout(r, 5));
+    await restoreTask(b.id);
+    expect(await texts()).toEqual(['a', 'b', 'c']);
+    expect((await db.tasks.get(b.id))!.updatedAt > deletedAt).toBe(true);
   });
 });

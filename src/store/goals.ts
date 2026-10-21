@@ -43,6 +43,7 @@ export const updateGoalText = (id: string, text: string) => patch(id, { text });
 export const setGoalDone = (id: string, done: boolean) => patch(id, { done, doneAt: done ? nowIso() : null });
 export const setGoalNotes = (id: string, notes: string) => patch(id, { notes });
 export const deleteGoal = (id: string) => patch(id, { deleted: true });
+export const restoreGoal = (id: string) => patch(id, { deleted: false });
 
 export function moveGoal(id: string, prevId: string | null, nextId: string | null): Promise<void> {
   return db.transaction('rw', db.goals, async () => {

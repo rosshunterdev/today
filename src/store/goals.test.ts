@@ -1,6 +1,6 @@
 import { describe, it, expect, beforeEach } from 'vitest';
 import { db } from './db';
-import { addGoal, bringOverGoals, deleteGoal, dismissWeekLeftovers, findWeekLeftovers, goalToTask, listWeek, moveGoal, setGoalDone, taskToGoal, updateGoalText } from './goals';
+import { addGoal, bringOverGoals, deleteGoal, dismissWeekLeftovers, findWeekLeftovers, goalToTask, listWeek, moveGoal, restoreGoal, setGoalDone, taskToGoal, updateGoalText } from './goals';
 import { addTask, listDay, setDone, setMark } from './tasks';
 
 const WEEK = '2026-10-12';
@@ -47,6 +47,18 @@ describe('goal store', () => {
     const c = await addGoal(WEEK, { text: 'c' });
     await moveGoal(c.id, a.id, b.id);
     expect((await listWeek(WEEK)).map((g) => g.text)).toEqual(['a', 'c', 'b']);
+  });
+
+  it('restores a deleted goal to its old place, bumping updatedAt', async () => {
+    await addGoal(WEEK, { text: 'a' });
+    const b = await addGoal(WEEK, { text: 'b' });
+    await addGoal(WEEK, { text: 'c' });
+    await deleteGoal(b.id);
+    const deletedAt = (await db.goals.get(b.id))!.updatedAt;
+    await new Promise((r) => setTimeout(r, 5));
+    await restoreGoal(b.id);
+    expect((await listWeek(WEEK)).map((g) => g.text)).toEqual(['a', 'b', 'c']);
+    expect((await db.goals.get(b.id))!.updatedAt > deletedAt).toBe(true);
   });
 });
 

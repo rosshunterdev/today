@@ -50,6 +50,7 @@ export const setMark = (id: string, mark: Mark) => patch(id, { mark });
 export const setNotes = (id: string, notes: string) => patch(id, { notes });
 export const setDone = (id: string, done: boolean) => patch(id, { done, doneAt: done ? nowIso() : null });
 export const deleteTask = (id: string) => patch(id, { deleted: true });
+export const restoreTask = (id: string) => patch(id, { deleted: false });
 
 export function moveTask(id: string, prevId: string | null, nextId: string | null): Promise<void> {
   return db.transaction('rw', db.tasks, async () => {
