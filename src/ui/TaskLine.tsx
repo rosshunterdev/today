@@ -151,9 +151,19 @@ export function TaskLine(props: TaskLineProps) {
         </button>
       )}
       <div className="ink">
-        <span className="bullet" aria-hidden="true">
+        {/* The single-click way to cross off: the stroke is a gesture, and not everyone can make one. */}
+        <button
+          type="button"
+          className="bullet"
+          aria-label={`Cross off ${text.trim() || 'line'}`}
+          aria-pressed={task.done}
+          onClick={() => {
+            onToggleDone();
+            inputRef.current?.blur();
+          }}
+        >
           {task.done ? <CrossIcon /> : <span className="dot" />}
-        </span>
+        </button>
         {task.mark === 'star' && <span className="star" style={{ width: textWidth + 6 }} aria-hidden="true" />}
         <input
           ref={inputRef}
