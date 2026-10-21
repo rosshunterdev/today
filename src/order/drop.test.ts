@@ -1,6 +1,6 @@
 import { describe, it, expect } from 'vitest';
 import type { CollisionDetection } from '@dnd-kit/core';
-import { collide, resolveDrop, CORNER_ID, LIST_DROP_ID, OLD_DROP_ID, type ListId } from './drop';
+import { collide, resolveDrop, BIN_ID, CORNER_ID, LIST_DROP_ID, OLD_DROP_ID, type ListId } from './drop';
 
 const lists = { today: ['t1', 't2', 't3'], week: ['g1', 'g2'] };
 
@@ -49,10 +49,17 @@ describe('resolveDrop', () => {
     expect(resolveDrop(lists, 'o1', CORNER_ID.today, ['o1'])).toEqual({ kind: 'transfer', from: 'old', to: 'today', id: 'o1', prevId: 't3', nextId: null });
     expect(resolveDrop(lists, 't1', CORNER_ID.today)).toEqual({ kind: 'none' });
   });
+
+  it('bins a line from any list, and nothing that isn’t a line', () => {
+    expect(resolveDrop(lists, 't2', BIN_ID)).toEqual({ kind: 'bin', from: 'today', id: 't2' });
+    expect(resolveDrop(lists, 'g1', BIN_ID)).toEqual({ kind: 'bin', from: 'week', id: 'g1' });
+    expect(resolveDrop(lists, 'o1', BIN_ID, ['o1'])).toEqual({ kind: 'bin', from: 'old', id: 'o1' });
+    expect(resolveDrop(lists, 'unknown', BIN_ID)).toEqual({ kind: 'none' });
+  });
 });
 
 describe('collide', () => {
-  type Box = { id: string; list: ListId | 'old'; top: number; left: number; width: number; height: number };
+  type Box = { id: string; list?: ListId | 'old'; top: number; left: number; width: number; height: number };
   const rect = (b: Omit<Box, 'id' | 'list'>) => ({ ...b, right: b.left + b.width, bottom: b.top + b.height });
 
   // Desktop-ish layout: today's page on the left with two lines, the week note bottom-right with one goal.
@@ -128,5 +135,28 @@ describe('collide', () => {
   it('a drop on the back-to-today corner means today, even over an old page or the week', () => {
     expect(run('old', { x: 40, y: 760 }, phoneMore)).toEqual([CORNER_ID.today]);
     expect(run('week', { x: 40, y: 760 }, phoneLongWeek)).toEqual([CORNER_ID.today]);
+  });
+
+  // Wide screens: the bin sits in the bottom-right corner of the week page.
+  const wideWithBin: Box[] = [...boxes, { id: BIN_ID, top: 700, left: 1100, width: 48, height: 48 }];
+
+  it('a drop on the bin means bin, even over the week', () => {
+    expect(run('today', { x: 1120, y: 720 }, wideWithBin)).toEqual([BIN_ID]);
+  });
+
+  // Phones: while a line is lifted the bin floats over today's lines, above the corners.
+  const phoneWithBin: Box[] = [
+    { id: LIST_DROP_ID.today, list: 'today', top: 0, left: 0, width: 400, height: 800 },
+    { id: 't8', list: 'today', top: 620, left: 0, width: 400, height: 36 },
+    { id: BIN_ID, top: 608, left: 172, width: 56, height: 56 },
+    { id: CORNER_ID.week, list: 'week', top: 720, left: 280, width: 120, height: 80 },
+  ];
+
+  it('on a phone, a drop on the floating bin means bin, even over a line', () => {
+    expect(run('today', { x: 200, y: 636 }, phoneWithBin)).toEqual([BIN_ID]);
+  });
+
+  it('keyboard drags never land in the bin, even when it is nearest', () => {
+    expect(run('today', null, [...boxes, { id: BIN_ID, top: 80, left: 0, width: 600, height: 36 }])[0]).toBe('t1');
   });
 });

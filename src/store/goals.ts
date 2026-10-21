@@ -44,6 +44,18 @@ export const setGoalDone = (id: string, done: boolean) => patch(id, { done, done
 export const setGoalNotes = (id: string, notes: string) => patch(id, { notes });
 export const deleteGoal = (id: string) => patch(id, { deleted: true });
 
+// Same as restoreTask: back where it was, or just before a goal written into that place since.
+export function restoreGoal(id: string): Promise<void> {
+  return db.transaction('rw', db.goals, async () => {
+    const row = await db.goals.get(id);
+    if (!row) return;
+    const live = await listWeek(row.week);
+    if (!live.some((g) => g.position === row.position)) return patch(id, { deleted: false });
+    const before = live.filter((g) => g.position < row.position).pop();
+    await patch(id, { deleted: false, position: positionBetween(before?.position ?? null, row.position) });
+  });
+}
+
 export function moveGoal(id: string, prevId: string | null, nextId: string | null): Promise<void> {
   return db.transaction('rw', db.goals, async () => {
     const prev = prevId ? await db.goals.get(prevId) : undefined;

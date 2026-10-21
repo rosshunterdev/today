@@ -26,12 +26,16 @@ export async function mouseDrag(page: Page, line: Locator, target: Locator) {
 }
 
 // Long-press then drag, through real touch events (Playwright's touchscreen can only tap).
-export async function touchDrag(page: Page, line: Locator, target: Locator) {
+// whileLifted runs once the line is picked up, before it moves: for checking the page mid-drag.
+export async function touchDrag(page: Page, line: Locator, target: Locator, whileLifted?: () => Promise<void>) {
   const from = await center(line);
-  const to = await center(target);
   const cdp = await page.context().newCDPSession(page);
   await cdp.send('Input.dispatchTouchEvent', { type: 'touchStart', touchPoints: [from] });
   await page.waitForTimeout(450);
+  // Measured once the line is lifted: some targets (the phone bin) only appear during a drag.
+  await target.waitFor({ state: 'visible' });
+  const to = await center(target);
+  await whileLifted?.();
   for (let i = 1; i <= 15; i++) {
     const t = i / 15;
     await cdp.send('Input.dispatchTouchEvent', {

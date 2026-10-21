@@ -51,6 +51,19 @@ export const setNotes = (id: string, notes: string) => patch(id, { notes });
 export const setDone = (id: string, done: boolean) => patch(id, { done, doneAt: done ? nowIso() : null });
 export const deleteTask = (id: string) => patch(id, { deleted: true });
 
+// A binned line goes back where it was. A line written since may have been given that same place,
+// so then it slots in just before that line: two lines on one position would break inserts between them.
+export function restoreTask(id: string): Promise<void> {
+  return db.transaction('rw', db.tasks, async () => {
+    const row = await db.tasks.get(id);
+    if (!row) return;
+    const live = await listDay(row.day);
+    if (!live.some((t) => t.position === row.position)) return patch(id, { deleted: false });
+    const before = live.filter((t) => t.position < row.position).pop();
+    await patch(id, { deleted: false, position: positionBetween(before?.position ?? null, row.position) });
+  });
+}
+
 export function moveTask(id: string, prevId: string | null, nextId: string | null): Promise<void> {
   return db.transaction('rw', db.tasks, async () => {
     const prev = prevId ? await db.tasks.get(prevId) : undefined;

@@ -1,7 +1,7 @@
 import { describe, it, expect, beforeEach } from 'vitest';
 import { db } from './db';
 import { binPage, listOldPages, pageLineToGoal, pageLineToTask, pageLineToTodayEnd } from './pages';
-import { addTask, listDay, setDone, setMark } from './tasks';
+import { addTask, deleteTask, listDay, restoreTask, setDone, setMark } from './tasks';
 import { addGoal, listWeek } from './goals';
 
 const TODAY = '2026-10-20';
@@ -106,5 +106,15 @@ describe('pageLineToTodayEnd under fast taps', () => {
     const rows = await listDay(TODAY);
     expect(new Set(rows.map((t) => t.position)).size).toBe(3);
     expect(rows.map((t) => t.text)).toEqual(['a', 'call bank', 'tax form']);
+  });
+});
+
+describe('binning an old line', () => {
+  it('hides the page once its last line is binned, and undo brings the page back', async () => {
+    const line = await addTask(FRI, { text: 'call bank' });
+    await deleteTask(line.id);
+    expect(await listOldPages(TODAY)).toEqual([]);
+    await restoreTask(line.id);
+    expect((await listOldPages(TODAY)).map((p) => p.lines.map((l) => l.text))).toEqual([['call bank']]);
   });
 });
