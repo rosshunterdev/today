@@ -776,11 +776,17 @@ body:has(.kbd-bar) .corner {
     background: var(--desk);
   }
 
+  /* The whole journal grows with the window: 1x at 1024px, about 1.2x at 1920px, at most 1.5x.
+     Everything is sized in rem, so text, rows and dots grow together. % and rem keep the browser's font size setting. */
+  html {
+    font-size: clamp(100%, calc(0.77rem + 0.36vw), 150%);
+  }
+
   .book {
     position: relative;
     display: flex;
     justify-content: center;
-    width: min(100% - 3rem, 75rem);
+    width: calc(100% - 3rem);
     height: calc(100dvh - 3rem);
     margin: 1.5rem auto;
     padding: 0.5rem 1.75rem 0.5rem 0.5rem; /* room on the right for the elastic band */
@@ -803,7 +809,6 @@ body:has(.kbd-bar) .corner {
   /* Each page scrolls on its own. The dots scroll with the writing; the gutter shadow stays at the fold. */
   .page {
     flex: 1 1 0;
-    max-width: 36rem;
     min-height: 0;
     height: 100%;
     overflow-y: auto;
