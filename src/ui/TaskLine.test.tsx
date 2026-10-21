@@ -152,6 +152,7 @@ describe('notes', () => {
     expect(toggle()).toHaveAttribute('data-has', 'false');
     await user.click(toggle());
     const box = await screen.findByRole('textbox', { name: 'Notes' });
+    expect(box).toHaveFocus();
     await user.type(box, 'ask about projects{Enter}will she review it');
     await waitFor(async () => expect((await listDay(DAY))[0].notes).toBe('ask about projects\nwill she review it'));
     expect(lines()).toHaveLength(1);
@@ -159,6 +160,16 @@ describe('notes', () => {
     await waitFor(() => expect(notesBox()).toBeNull());
     expect(toggle()).toHaveAttribute('data-has', 'true');
     expect(toggle()).toHaveFocus();
+  });
+
+  it('a line with a note starts with it open, without taking the cursor', async () => {
+    const t = await addTask(DAY, { text: 'message manager' });
+    await setNotes(t.id, 'ask about projects');
+    render(<NotebookPage day={DAY} />);
+    const box = await screen.findByRole('textbox', { name: 'Notes' });
+    expect(box).toHaveValue('ask about projects');
+    expect(box).not.toHaveFocus();
+    expect(toggle()).toHaveAttribute('aria-expanded', 'true');
   });
 
   it('a stroke across the open note never crosses the line off', async () => {

@@ -18,16 +18,34 @@ test('desktop: a note survives a reload and a move into the week', async ({ page
   await savedNote(page, 'ask about software projects\nwill she review my CV');
   await page.screenshot({ path: 'e2e/screenshots/desktop-notes.png', animations: 'disabled' });
 
+  // A saved note comes back open under its line, without the cursor in it.
   await page.reload();
   await expect(toggleOf(tasks(page).nth(0))).toHaveAttribute('data-has', 'true');
-  await toggleOf(tasks(page).nth(0)).click();
   await expect(notesBox(page)).toHaveValue('ask about software projects\nwill she review my CV');
-  await page.keyboard.press('Escape');
+  await expect(notesBox(page)).not.toBeFocused();
 
   await mouseDrag(page, lineOf(tasks(page).nth(0)), lineOf(page.getByRole('textbox', { name: 'New goal', exact: true })));
   await expect(goals(page)).toHaveCount(1);
-  await toggleOf(goals(page).nth(0)).click();
   await expect(notesBox(page)).toHaveValue('ask about software projects\nwill she review my CV');
+});
+
+test('desktop: a note is still open under its line on the next day’s old page', async ({ page }, testInfo) => {
+  test.skip(testInfo.project.name !== 'desktop', 'old pages sit beside today on wide screens');
+  await page.clock.setFixedTime(new Date(2026, 9, 19, 9, 0));
+  await page.goto('/');
+  await write(page, ['message manager']);
+  await expect(tasks(page)).toHaveCount(1);
+  await tasks(page).nth(0).hover();
+  await toggleOf(tasks(page).nth(0)).click();
+  await page.keyboard.type('ask about software projects');
+  await savedNote(page, 'ask about software projects');
+
+  await page.clock.setFixedTime(new Date(2026, 9, 20, 9, 0));
+  await page.reload();
+  const oldTask = page.getByRole('textbox', { name: 'Old task', exact: true });
+  await expect(oldTask).toHaveValue('message manager');
+  await expect(notesBox(page)).toHaveValue('ask about software projects');
+  await page.screenshot({ path: 'e2e/screenshots/desktop-old-notes.png', animations: 'disabled' });
 });
 
 test('phone: tapping the right end of a line edits it instead of opening a hidden note', async ({ page }, testInfo) => {

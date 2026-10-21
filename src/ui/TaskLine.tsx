@@ -45,7 +45,10 @@ export function TaskLine(props: TaskLineProps) {
   const notesRef = useRef<HTMLTextAreaElement>(null);
   const toggleRef = useRef<HTMLButtonElement>(null);
   const [notes, setNotesText] = useState(task.notes ?? '');
-  const [notesOpen, setNotesOpen] = useState(false);
+  // A line with a note shows it, like writing under the line, wherever the line is drawn.
+  // Only a note opened with ✎ takes the cursor, so a page never jumps into a note as it loads.
+  const [notesOpen, setNotesOpen] = useState(() => hasNotes(task.notes));
+  const [openedByHand, setOpenedByHand] = useState(false);
   const noted = hasNotes(notes);
   const { attributes, listeners, setNodeRef, setActivatorNodeRef, transform, transition, isDragging } = useSortable({
     id: task.id,
@@ -209,7 +212,10 @@ export function TaskLine(props: TaskLineProps) {
           aria-expanded={notesOpen}
           data-has={noted}
           onPointerDown={(e) => e.stopPropagation()}
-          onClick={() => setNotesOpen((open) => !open)}
+          onClick={() => {
+            setNotesOpen((open) => !open);
+            setOpenedByHand(true);
+          }}
         >
           <PencilIcon />
         </button>
@@ -227,7 +233,7 @@ export function TaskLine(props: TaskLineProps) {
             rows={1}
             value={notes}
             readOnly={readOnly}
-            autoFocus={!readOnly}
+            autoFocus={!readOnly && openedByHand}
             onChange={(e) => {
               setNotesText(e.target.value);
               onNotes?.(e.target.value);
