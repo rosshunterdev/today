@@ -18,4 +18,10 @@ describe('isStrike', () => {
     expect(isStrike(100, 0, 400)).toBe(false);
     expect(isStrike(120, 0, 400)).toBe(true);
   });
+  it('never needs more than 30% of a 544px line, however wide the page grows', () => {
+    expect(isStrike(164, 0, 544)).toBe(true);
+    expect(isStrike(170, 0, 871)).toBe(true); // a 1920px screen
+    expect(isStrike(170, 0, 1857)).toBe(true); // a 4K screen
+    expect(isStrike(160, 0, 1857)).toBe(false);
+  });
 });

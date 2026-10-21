@@ -53,6 +53,16 @@ test('desktop: the open book fills the screen and grows with it', async ({ page 
   expect(Math.abs(left.width - right.width)).toBeLessThan(2);
   await page.screenshot({ path: 'e2e/screenshots/desktop-wide.png', animations: 'disabled' });
 
+  // Crossing off takes no longer a stroke than it did on the narrower page.
+  const first = page.locator('li.line').first();
+  const line = (await first.boundingBox())!;
+  const y = line.y + line.height / 2;
+  await page.mouse.move(line.x + 70, y);
+  await page.mouse.down();
+  await page.mouse.move(line.x + 300, y + 2, { steps: 10 });
+  await page.mouse.up();
+  await expect(first).toHaveAttribute('data-done', 'true');
+
   // 1x at the breakpoint, so nothing jumps there, and no more than 1.5x on very wide screens.
   await page.setViewportSize({ width: 1024, height: 768 });
   expect(await rootPx(page)).toBeCloseTo(16, 0);
