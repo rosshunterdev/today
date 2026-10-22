@@ -55,6 +55,8 @@ test('phone: the bin appears while a line is lifted, and undo brings the line ba
   // Binning again before the slip goes: the slip sits where the bin appears, so it steps aside while a line is lifted.
   await touchDrag(page, lineOf(tasks(page).nth(0)), bin);
   await expect(slip).toContainText('binned “groceries”');
+  // The slip shows before the list redraws: wait for the line to go, or the next press lands where it used to be.
+  await expect(tasks(page)).toHaveCount(1);
   await touchDrag(page, lineOf(tasks(page).nth(0)), bin, async () => {
     await expect(slip).toBeHidden({ timeout: 500 }); // short: the slip would also go by itself after 5s
   });

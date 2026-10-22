@@ -28,6 +28,8 @@ export async function mouseDrag(page: Page, line: Locator, target: Locator) {
 // Long-press then drag, through real touch events (Playwright's touchscreen can only tap).
 // whileLifted runs once the line is picked up, before it moves: for checking the page mid-drag.
 export async function touchDrag(page: Page, line: Locator, target: Locator, whileLifted?: () => Promise<void>) {
+  // Lines slide into place after the list changes. Wait until this one is still (a trial click does), or the press lands where it was.
+  await line.click({ trial: true });
   const from = await center(line);
   const cdp = await page.context().newCDPSession(page);
   await cdp.send('Input.dispatchTouchEvent', { type: 'touchStart', touchPoints: [from] });
