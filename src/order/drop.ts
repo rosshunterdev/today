@@ -1,20 +1,33 @@
 import { closestCenter, pointerWithin, type Collision, type CollisionDetection, type UniqueIdentifier } from '@dnd-kit/core';
 import { neighboursAfterMove } from './reorder';
 
-export type ListId = 'today' | 'week';
+export type ListId = 'today' | 'tomorrow' | 'week';
 // Where a dragged line can come from. Old page lines can be dragged out but never dropped onto.
 export type LineSource = ListId | 'old';
+// The folded corners turn between today's side and the week's side on phones. Tomorrow is on today's side, so it has none.
+export type CornerList = 'today' | 'week';
 
-export const LIST_DROP_ID: Record<ListId, string> = { today: 'list:today', week: 'list:week' };
+export const LIST_DROP_ID: Record<ListId, string> = { today: 'list:today', tomorrow: 'list:tomorrow', week: 'list:week' };
 // The folded page corners on phones. A line dropped on one goes to the end of that list.
-export const CORNER_ID: Record<ListId, string> = { today: 'corner:today', week: 'corner:week' };
+export const CORNER_ID: Record<CornerList, string> = { today: 'corner:today', week: 'corner:week' };
 export const OLD_DROP_ID = 'list:old';
 // The bin. A line dropped in it is thrown away (a soft delete, with an undo).
 export const BIN_ID = 'bin';
 
-const LISTS: ListId[] = ['today', 'week'];
+const LISTS: ListId[] = ['today', 'tomorrow', 'week'];
+// Lists that lie over another drop target (Tomorrow inside today's page, the week note on the desk):
+// while the pointer is on one, only its own targets count.
+const INNER: ListId[] = ['tomorrow', 'week'];
 const CORNERS = new Set<UniqueIdentifier>([CORNER_ID.today, CORNER_ID.week]);
-const CONTAINERS = new Set<UniqueIdentifier>([LIST_DROP_ID.today, LIST_DROP_ID.week, CORNER_ID.today, CORNER_ID.week, OLD_DROP_ID, BIN_ID]);
+const CONTAINERS = new Set<UniqueIdentifier>([
+  LIST_DROP_ID.today,
+  LIST_DROP_ID.tomorrow,
+  LIST_DROP_ID.week,
+  CORNER_ID.today,
+  CORNER_ID.week,
+  OLD_DROP_ID,
+  BIN_ID,
+]);
 
 export type Drop =
   | { kind: 'none' }
@@ -26,6 +39,7 @@ const NONE: Drop = { kind: 'none' };
 
 function targetOf(overId: string, lists: Record<ListId, string[]>): { list: ListId; index: number | null } | null {
   if (overId === LIST_DROP_ID.today || overId === CORNER_ID.today) return { list: 'today', index: null };
+  if (overId === LIST_DROP_ID.tomorrow) return { list: 'tomorrow', index: null };
   if (overId === LIST_DROP_ID.week || overId === CORNER_ID.week) return { list: 'week', index: null };
   for (const list of LISTS) {
     const index = lists[list].indexOf(overId);
@@ -56,7 +70,7 @@ export function resolveDrop(lists: Record<ListId, string[]>, activeId: string, o
 // Pointer first, so the line under the finger wins over the list around it.
 // The bin and the folded corners float over the pages, so a drop on one means that, whatever lies underneath.
 // Over the old pages there is no target: a drop there means nothing.
-// While the pointer is on the week, only week targets count.
+// While the pointer is on Tomorrow or the week, only that list's targets count.
 // Off every target (blank desk) there is no target, so the drop writes nothing.
 // Keyboard drags have no pointer: they use the nearest line in the item's own list.
 export const collide: CollisionDetection = (args) => {
@@ -74,8 +88,8 @@ export const collide: CollisionDetection = (args) => {
   const corner = within.find((c) => CORNERS.has(c.id));
   if (corner) return [corner];
   if (within.some((c) => c.id === OLD_DROP_ID)) return [];
-  const onWeek = within.some((c) => CONTAINERS.has(c.id) && listOf(c.id) === 'week');
-  const candidates: Collision[] = onWeek ? within.filter((c) => listOf(c.id) === 'week') : within;
+  const inner = INNER.find((list) => within.some((c) => CONTAINERS.has(c.id) && listOf(c.id) === list));
+  const candidates: Collision[] = inner ? within.filter((c) => listOf(c.id) === inner) : within;
   const lines = candidates.filter((c) => !CONTAINERS.has(c.id));
   if (lines.length > 0) return lines;
   return candidates;

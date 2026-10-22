@@ -37,7 +37,7 @@ export function DragBoard({ day, week, children }: { day: string; week: string; 
 
   function handleDragEnd({ active, over }: DragEndEvent) {
     setDragText(null);
-    const drop = resolveDrop({ today: taskIds, week: goalIds }, String(active.id), over ? String(over.id) : null, oldIds);
+    const drop = resolveDrop({ today: taskIds, tomorrow: [], week: goalIds }, String(active.id), over ? String(over.id) : null, oldIds);
     if (drop.kind === 'bin') {
       void bin({ from: drop.from, id: drop.id, text: String(active.data.current?.text ?? '') });
     } else if (drop.kind === 'reorder') {
