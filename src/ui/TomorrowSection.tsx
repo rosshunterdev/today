@@ -33,7 +33,13 @@ export function TomorrowSection({ day }: { day: string }) {
     <section className="tomorrow" data-open={open} ref={setNodeRef}>
       <h2 className="tomorrow-heading">
         {hasLines ? (
-          'Tomorrow'
+          // Laid out like the button, with the arrow kept as an unseen spacer, so the word stays put when the first line lands.
+          <span className="tomorrow-label">
+            <span className="tomorrow-fold" aria-hidden="true">
+              ▸
+            </span>
+            Tomorrow
+          </span>
         ) : (
           <button
             type="button"

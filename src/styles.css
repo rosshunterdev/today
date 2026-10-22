@@ -518,10 +518,19 @@ body {
   font-weight: 600;
 }
 
-.tomorrow-toggle {
+.tomorrow-toggle,
+.tomorrow-label {
   display: inline-flex;
   align-items: center;
   gap: 0.4rem;
+}
+
+/* With lines there is nothing to fold: the arrow keeps its room but isn't drawn. */
+.tomorrow-label .tomorrow-fold {
+  visibility: hidden;
+}
+
+.tomorrow-toggle {
   min-height: 2.75rem;
   margin: -0.25rem 0; /* a full-size target that still fits the row */
   padding: 0 0.5rem 0 0;

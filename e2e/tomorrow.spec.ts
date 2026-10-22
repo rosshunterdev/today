@@ -4,16 +4,34 @@ import { goals, lineOf, mouseDrag, tasks, write } from './helpers';
 const tomorrowTasks = (page: Page) => page.getByRole('textbox', { name: 'Tomorrow task', exact: true });
 const toggle = (page: Page) => page.getByRole('button', { name: 'Tomorrow', exact: true });
 
+// Where the word "Tomorrow" starts in its heading, whether it sits in the fold button or not.
+const wordLeft = (page: Page) =>
+  page.locator('.tomorrow-heading').evaluate((heading) => {
+    const walker = document.createTreeWalker(heading, NodeFilter.SHOW_TEXT);
+    while (walker.nextNode()) {
+      if (walker.currentNode.textContent?.includes('Tomorrow')) {
+        const range = document.createRange();
+        range.selectNodeContents(walker.currentNode);
+        return range.getBoundingClientRect().left;
+      }
+    }
+    throw new Error('no "Tomorrow" in the heading');
+  });
+
 test('a line written in Tomorrow on Thursday evening is on Friday’s page', async ({ page }, testInfo) => {
   await page.clock.setFixedTime(new Date(2026, 9, 22, 21, 0));
   await page.goto('/');
   await write(page, ['groceries']);
   await toggle(page).click();
   await expect(page.getByRole('textbox', { name: 'New tomorrow task', exact: true })).toBeFocused();
+  const before = await wordLeft(page);
   await page.keyboard.type('reply to Sam');
   await page.keyboard.press('Enter');
   // Wait until the line is saved, or the reload can land before the write.
   await expect(tomorrowTasks(page)).toHaveCount(1);
+  // The fold button goes once Tomorrow has a line, but the heading's word stays where it was.
+  await expect(toggle(page)).toHaveCount(0);
+  expect(await wordLeft(page)).toBeCloseTo(before, 0);
   await page.screenshot({ path: `e2e/screenshots/${testInfo.project.name}-tomorrow.png`, animations: 'disabled' });
 
   await page.clock.setFixedTime(new Date(2026, 9, 23, 4, 1));
