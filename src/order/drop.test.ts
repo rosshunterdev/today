@@ -136,6 +136,12 @@ describe('collide', () => {
     expect(run('week', { x: 150, y: 500 }, withTomorrow)).toEqual([LIST_DROP_ID.today]); // below Tomorrow is today's paper
   });
 
+  it('a Tomorrow line let go on the paper below Tomorrow stays put, but above it moves to today', () => {
+    expect(run('tomorrow', { x: 150, y: 500 }, withTomorrow)).toEqual([]);
+    expect(run('tomorrow', { x: 150, y: 220 }, withTomorrow)).toEqual([LIST_DROP_ID.today]);
+    expect(run('tomorrow', { x: 1000, y: 610 }, withTomorrow)).toEqual([LIST_DROP_ID.week]);
+  });
+
   it('keyboard drags (no pointer) fall back to the nearest line in their own list', () => {
     expect(run('today', null)[0]).toBe('t1');
   });

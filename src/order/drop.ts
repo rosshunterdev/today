@@ -71,6 +71,7 @@ export function resolveDrop(lists: Record<ListId, string[]>, activeId: string, o
 // The bin and the folded corners float over the pages, so a drop on one means that, whatever lies underneath.
 // Over the old pages there is no target: a drop there means nothing.
 // While the pointer is on Tomorrow or the week, only that list's targets count.
+// A Tomorrow line let go on today's paper below Tomorrow means nothing: on paper, everything under that heading is tomorrow's.
 // Off every target (blank desk) there is no target, so the drop writes nothing.
 // Keyboard drags have no pointer: they use the nearest line in the item's own list.
 export const collide: CollisionDetection = (args) => {
@@ -92,5 +93,7 @@ export const collide: CollisionDetection = (args) => {
   const candidates: Collision[] = inner ? within.filter((c) => listOf(c.id) === inner) : within;
   const lines = candidates.filter((c) => !CONTAINERS.has(c.id));
   if (lines.length > 0) return lines;
+  const tomorrow = args.droppableRects.get(LIST_DROP_ID.tomorrow);
+  if (own === 'tomorrow' && !inner && tomorrow && args.pointerCoordinates.y > tomorrow.bottom) return [];
   return candidates;
 };
