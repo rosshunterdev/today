@@ -217,6 +217,13 @@ export function TaskLine(props: TaskLineProps) {
             setNotesOpen((open) => !open);
             setOpenedByHand(true);
           }}
+          // Escape folds the note from ✎ as it does from inside the note.
+          onKeyDown={(e) => {
+            if (e.key === 'Escape' && notesOpen) {
+              e.preventDefault();
+              setNotesOpen(false);
+            }
+          }}
         >
           <PencilIcon />
         </button>

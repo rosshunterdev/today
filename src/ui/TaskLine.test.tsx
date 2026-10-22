@@ -172,6 +172,19 @@ describe('notes', () => {
     expect(toggle()).toHaveAttribute('aria-expanded', 'true');
   });
 
+  it('Escape on ✎ folds an open note and leaves the cursor on ✎', async () => {
+    const user = userEvent.setup();
+    const t = await addTask(DAY, { text: 'message manager' });
+    await setNotes(t.id, 'ask about projects');
+    render(<NotebookPage day={DAY} />);
+    await screen.findByRole('textbox', { name: 'Notes for message manager' });
+    toggle().focus();
+    await user.keyboard('{Escape}');
+    await waitFor(() => expect(notesBox()).toBeNull());
+    expect(toggle()).toHaveAttribute('aria-expanded', 'false');
+    expect(toggle()).toHaveFocus();
+  });
+
   it('names each ✎ and its note after the line, so a screen reader can tell them apart', async () => {
     const user = userEvent.setup();
     await addTask(DAY, { text: 'gym' });
