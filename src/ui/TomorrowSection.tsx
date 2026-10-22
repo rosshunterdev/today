@@ -29,6 +29,10 @@ export function TomorrowSection({ day }: { day: string }) {
             aria-controls="tomorrow-lines"
             onClick={() => setOpenedByTap((was) => !was)}
           >
+            {/* A span, not CSS content: browsers read generated content into the button's name. */}
+            <span className="tomorrow-fold" aria-hidden="true">
+              ▸
+            </span>
             Tomorrow
           </button>
         )}

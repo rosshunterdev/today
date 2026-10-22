@@ -532,12 +532,12 @@ body {
   cursor: pointer;
 }
 
-.tomorrow-toggle::before {
-  content: '▸';
+.tomorrow-fold {
+  display: inline-block;
   transition: rotate 150ms ease;
 }
 
-.tomorrow-toggle[aria-expanded='true']::before {
+.tomorrow-toggle[aria-expanded='true'] .tomorrow-fold {
   rotate: 90deg;
 }
 
@@ -547,7 +547,7 @@ body {
 }
 
 @media (prefers-reduced-motion: reduce) {
-  .tomorrow-toggle::before {
+  .tomorrow-fold {
     transition: none;
   }
 }
