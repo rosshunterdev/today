@@ -95,15 +95,13 @@ describe('OldPages', () => {
     await waitFor(() => expect(oldLines()).toHaveLength(0));
   });
 
-  it('shows the pencil only on lines with notes, and the note is read-only', async () => {
-    const user = userEvent.setup();
+  it('shows the pencil only on lines with notes, and the note is open and read-only', async () => {
     const t = await addTask(MON, { text: 'email Sam' });
     await setNotes(t.id, 'ask about the invoice');
     await addTask(MON, { text: 'call bank' });
     render(<Live />);
     const toggles = await screen.findAllByRole('button', { name: 'Notes' });
     expect(toggles).toHaveLength(1);
-    await user.click(toggles[0]);
     const box = await screen.findByRole('textbox', { name: 'Notes' });
     expect(box).toHaveValue('ask about the invoice');
     expect(box).toHaveAttribute('readonly');
