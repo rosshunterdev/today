@@ -1,6 +1,6 @@
 import { describe, it, expect, beforeEach, afterEach, vi } from 'vitest';
 import { db } from './db';
-import { listDay, addTask, updateText, setIndent, setMark, setDone, deleteTask, moveTask, restoreTask } from './tasks';
+import { listDay, addTask, updateText, setIndent, setMark, setDone, setNotes, deleteTask, moveTask, restoreTask, taskToDay } from './tasks';
 
 const DAY = '2026-10-02';
 const texts = async () => (await listDay(DAY)).map((t) => t.text);
@@ -100,5 +100,33 @@ describe('tasks store', () => {
     await addTask(DAY, { afterId: b.id, text: 'after b' });
     await addTask(DAY, { afterId: c.id, text: 'after c' });
     expect(await texts()).toEqual(['a', 'b', 'after b', 'c', 'after c']);
+  });
+});
+
+describe('taskToDay', () => {
+  const TODAY = '2026-10-22';
+  const TOMORROW = '2026-10-23';
+
+  it('moves a line to another day between neighbours, open, keeping indent, mark and note, and soft-deletes the original', async () => {
+    const a = await addTask(TOMORROW, { text: 'a' });
+    const b = await addTask(TOMORROW, { text: 'b' });
+    const line = await addTask(TODAY, { text: 'reply to Sam', indent: 1 });
+    await setMark(line.id, 'bang');
+    await setNotes(line.id, 'about the PR');
+    await setDone(line.id, true);
+
+    const moved = await taskToDay(line.id, TOMORROW, a.id, b.id);
+    expect(moved).toMatchObject({ day: TOMORROW, text: 'reply to Sam', indent: 1, mark: 'bang', notes: 'about the PR', done: false, doneAt: null, deleted: false });
+    expect(moved!.id).not.toBe(line.id);
+    expect((await listDay(TOMORROW)).map((t) => t.text)).toEqual(['a', 'reply to Sam', 'b']);
+    expect(await listDay(TODAY)).toEqual([]);
+    expect((await db.tasks.get(line.id))!.deleted).toBe(true);
+  });
+
+  it('writes nothing for a line that is gone', async () => {
+    const line = await addTask(TODAY, { text: 'once' });
+    await taskToDay(line.id, TOMORROW, null, null);
+    expect(await taskToDay(line.id, TOMORROW, null, null)).toBeNull();
+    expect(await listDay(TOMORROW)).toHaveLength(1);
   });
 });

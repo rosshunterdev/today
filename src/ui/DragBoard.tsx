@@ -12,9 +12,9 @@ import {
   type DragStartEvent,
 } from '@dnd-kit/core';
 import { sortableKeyboardCoordinates } from '@dnd-kit/sortable';
-import { listDay, moveTask } from '../store/tasks';
+import { listDay, moveTask, taskToDay } from '../store/tasks';
 import { goalToTask, listWeek, moveGoal, taskToGoal } from '../store/goals';
-import { listOldPages, pageLineToGoal, pageLineToTask } from '../store/pages';
+import { listOldPages, pageLineToGoal } from '../store/pages';
 import { collide, resolveDrop } from '../order/drop';
 import { useBin } from './useBin';
 
@@ -46,7 +46,7 @@ export function DragBoard({ day, week, children }: { day: string; week: string; 
       if (drop.from === 'old') {
         void (drop.to === 'week'
           ? pageLineToGoal(drop.id, week, drop.prevId, drop.nextId)
-          : pageLineToTask(drop.id, day, drop.prevId, drop.nextId));
+          : taskToDay(drop.id, day, drop.prevId, drop.nextId));
       } else {
         void (drop.to === 'week'
           ? taskToGoal(drop.id, week, drop.prevId, drop.nextId)

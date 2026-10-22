@@ -1,8 +1,8 @@
 import { describe, it, expect, beforeEach } from 'vitest';
 import { db } from './db';
-import { addTask, listDay, setNotes } from './tasks';
+import { addTask, listDay, setNotes, taskToDay } from './tasks';
 import { addGoal, bringOverGoals, goalToTask, listWeek, setGoalNotes, taskToGoal } from './goals';
-import { pageLineToGoal, pageLineToTask } from './pages';
+import { pageLineToGoal } from './pages';
 
 const DAY = '2026-10-20';
 const OLD = '2026-10-16';
@@ -50,7 +50,7 @@ describe('notes', () => {
     const b = await addTask(OLD, { text: 'book flights' });
     await setNotes(a.id, 'ref 1234');
     await setNotes(b.id, 'check dates');
-    expect((await pageLineToTask(a.id, DAY, null, null))!.notes).toBe('ref 1234');
+    expect((await taskToDay(a.id, DAY, null, null))!.notes).toBe('ref 1234');
     expect((await pageLineToGoal(b.id, WEEK, null, null))!.notes).toBe('check dates');
   });
 
