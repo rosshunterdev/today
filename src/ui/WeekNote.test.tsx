@@ -32,8 +32,8 @@ describe('WeekNote', () => {
     const user = userEvent.setup();
     await addGoal(WEEK, { text: 'assignment' });
     render(<WeekNote week={WEEK} />);
-    await user.click(await screen.findByRole('button', { name: 'Notes' }));
-    await user.type(await screen.findByRole('textbox', { name: 'Notes' }), 'chapter 2');
+    await user.click(await screen.findByRole('button', { name: 'Notes for assignment' }));
+    await user.type(await screen.findByRole('textbox', { name: 'Notes for assignment' }), 'chapter 2');
     await waitFor(async () => expect((await listWeek(WEEK))[0].notes).toBe('chapter 2'));
   });
 

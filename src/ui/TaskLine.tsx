@@ -50,6 +50,7 @@ export function TaskLine(props: TaskLineProps) {
   const [notesOpen, setNotesOpen] = useState(() => hasNotes(task.notes));
   const [openedByHand, setOpenedByHand] = useState(false);
   const noted = hasNotes(notes);
+  const notesLabel = `Notes for ${text.trim() || 'line'}`;
   const { attributes, listeners, setNodeRef, setActivatorNodeRef, transform, transition, isDragging } = useSortable({
     id: task.id,
     data: { list, text: task.text },
@@ -208,7 +209,7 @@ export function TaskLine(props: TaskLineProps) {
           type="button"
           ref={toggleRef}
           className="notes-toggle"
-          aria-label="Notes"
+          aria-label={notesLabel}
           aria-expanded={notesOpen}
           data-has={noted}
           onPointerDown={(e) => e.stopPropagation()}
@@ -229,7 +230,7 @@ export function TaskLine(props: TaskLineProps) {
           <textarea
             ref={notesRef}
             className="notes"
-            aria-label="Notes"
+            aria-label={notesLabel}
             rows={1}
             value={notes}
             readOnly={readOnly}

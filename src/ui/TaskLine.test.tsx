@@ -143,15 +143,15 @@ describe('TaskLine as a goal', () => {
 });
 
 describe('notes', () => {
-  const toggle = () => screen.getByRole('button', { name: 'Notes' });
-  const notesBox = () => screen.queryByRole('textbox', { name: 'Notes' });
+  const toggle = () => screen.getByRole('button', { name: /^Notes for / });
+  const notesBox = () => screen.queryByRole('textbox', { name: /^Notes for / });
 
   it('opens from ✎, saves as you type, keeps Enter inside the note, and folds on Escape', async () => {
     const user = userEvent.setup();
     await renderWith('message manager');
     expect(toggle()).toHaveAttribute('data-has', 'false');
     await user.click(toggle());
-    const box = await screen.findByRole('textbox', { name: 'Notes' });
+    const box = await screen.findByRole('textbox', { name: /^Notes for / });
     expect(box).toHaveFocus();
     await user.type(box, 'ask about projects{Enter}will she review it');
     await waitFor(async () => expect((await listDay(DAY))[0].notes).toBe('ask about projects\nwill she review it'));
@@ -166,17 +166,28 @@ describe('notes', () => {
     const t = await addTask(DAY, { text: 'message manager' });
     await setNotes(t.id, 'ask about projects');
     render(<NotebookPage day={DAY} />);
-    const box = await screen.findByRole('textbox', { name: 'Notes' });
+    const box = await screen.findByRole('textbox', { name: /^Notes for / });
     expect(box).toHaveValue('ask about projects');
     expect(box).not.toHaveFocus();
     expect(toggle()).toHaveAttribute('aria-expanded', 'true');
+  });
+
+  it('names each ✎ and its note after the line, so a screen reader can tell them apart', async () => {
+    const user = userEvent.setup();
+    await addTask(DAY, { text: 'gym' });
+    await addTask(DAY, { text: '' });
+    render(<NotebookPage day={DAY} />);
+    await waitFor(() => expect(lines()).toHaveLength(2));
+    expect(screen.getByRole('button', { name: 'Notes for line' })).toBeInTheDocument();
+    await user.click(screen.getByRole('button', { name: 'Notes for gym' }));
+    expect(await screen.findByRole('textbox', { name: 'Notes for gym' })).toHaveFocus();
   });
 
   it('a stroke across the open note never crosses the line off', async () => {
     const user = userEvent.setup();
     await renderWith('gym');
     await user.click(toggle());
-    const box = await screen.findByRole('textbox', { name: 'Notes' });
+    const box = await screen.findByRole('textbox', { name: /^Notes for / });
     fireEvent.pointerDown(box, { clientX: 10, clientY: 50, pointerType: 'touch' });
     fireEvent.pointerUp(window, { clientX: 250, clientY: 52, pointerType: 'touch' });
     await pause();

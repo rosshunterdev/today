@@ -1,8 +1,8 @@
 import { test, expect, type Locator, type Page } from '@playwright/test';
 import { goals, lineOf, mouseDrag, savedNote, tasks, write } from './helpers';
 
-const toggleOf = (input: Locator) => lineOf(input).getByRole('button', { name: 'Notes', exact: true });
-const notesBox = (page: Page) => page.getByRole('textbox', { name: 'Notes', exact: true });
+const toggleOf = (input: Locator) => lineOf(input).getByRole('button', { name: /^Notes for / });
+const notesBox = (page: Page) => page.getByRole('textbox', { name: /^Notes for / });
 
 test('desktop: a note survives a reload and a move into the week', async ({ page }, testInfo) => {
   test.skip(testInfo.project.name !== 'desktop', 'mouse drag');
