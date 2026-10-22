@@ -28,8 +28,9 @@ export function TomorrowSection({ day }: { day: string }) {
     setKeptOpen(opening);
   }
 
+  // No aria-label: the heading names the section, so a screen reader says "Tomorrow" once, not as region, heading and button.
   return (
-    <section className="tomorrow" aria-label="Tomorrow" data-open={open} ref={setNodeRef}>
+    <section className="tomorrow" data-open={open} ref={setNodeRef}>
       <h2 className="tomorrow-heading">
         {hasLines ? (
           'Tomorrow'
