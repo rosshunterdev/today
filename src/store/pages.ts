@@ -2,7 +2,7 @@ import { db } from './db';
 import type { Goal, Task } from '../model';
 import { positionBetween } from '../order/position';
 import { pageLines } from '../day/pages';
-import { listDay, nowIso } from './tasks';
+import { listDay, nowIso, taskToDay } from './tasks';
 
 export interface OldPage {
   day: string;
@@ -28,33 +28,6 @@ export async function listOldPages(today: string): Promise<OldPage[]> {
     .reverse()
     .map((day) => ({ day, lines: pageLines(byDay.get(day)!, day) }))
     .filter((p) => p.lines.length > 0);
-}
-
-// Same shape as taskToGoal: a new row on the other side plus a soft delete here, in one transaction.
-// A moved line always arrives open.
-export function pageLineToTask(id: string, today: string, prevId: string | null, nextId: string | null): Promise<Task | null> {
-  return db.transaction('rw', db.tasks, async () => {
-    const line = await db.tasks.get(id);
-    if (!line || line.deleted) return null;
-    const prev = prevId ? await db.tasks.get(prevId) : undefined;
-    const next = nextId ? await db.tasks.get(nextId) : undefined;
-    const now = nowIso();
-    const task: Task = {
-      ...line,
-      id: crypto.randomUUID(),
-      day: today,
-      notes: line.notes ?? '',
-      done: false,
-      doneAt: null,
-      position: positionBetween(prev?.position ?? null, next?.position ?? null),
-      createdAt: now,
-      updatedAt: now,
-      deleted: false,
-    };
-    await db.tasks.add(task);
-    await db.tasks.update(id, { deleted: true, updatedAt: now });
-    return task;
-  });
 }
 
 export function pageLineToGoal(id: string, week: string, prevId: string | null, nextId: string | null): Promise<Goal | null> {
@@ -83,12 +56,12 @@ export function pageLineToGoal(id: string, week: string, prevId: string | null, 
 }
 
 // The > on an old line: the same move as dropping it at the end of today.
-// Read and move in one rw transaction (pageLineToTask joins it), so fast taps on two lines queue up
+// Read and move in one rw transaction (taskToDay joins it), so fast taps on two lines queue up
 // instead of both claiming the slot after the same last line.
 export function pageLineToTodayEnd(id: string, today: string): Promise<Task | null> {
   return db.transaction('rw', db.tasks, async () => {
     const rows = await listDay(today);
-    return pageLineToTask(id, today, rows[rows.length - 1]?.id ?? null, null);
+    return taskToDay(id, today, rows[rows.length - 1]?.id ?? null, null);
   });
 }
 

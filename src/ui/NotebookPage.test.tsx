@@ -1,10 +1,11 @@
 // @vitest-environment jsdom
-import { describe, it, expect, beforeEach } from 'vitest';
+import { describe, it, expect, beforeEach, afterEach, vi } from 'vitest';
 import { render, screen, waitFor } from '@testing-library/react';
 import userEvent from '@testing-library/user-event';
 import { NotebookPage } from './NotebookPage';
 import { db } from '../store/db';
 import { addTask, listDay } from '../store/tasks';
+import { mockPointerCoarse } from '../test/media';
 
 const DAY = '2026-10-02';
 const lines = () => screen.queryAllByRole('textbox', { name: 'Task' });
@@ -111,5 +112,35 @@ describe('NotebookPage writing', () => {
     await waitFor(() => expect(li(0)).toHaveAttribute('data-indent', '1'));
     await user.keyboard('{Shift>}{Tab}{/Shift}');
     await waitFor(() => expect(li(0)).toHaveAttribute('data-indent', '0'));
+  });
+});
+
+describe('NotebookPage for tomorrow', () => {
+  afterEach(() => {
+    vi.restoreAllMocks();
+  });
+
+  it('names its lines apart from today’s and uses its own prompt', async () => {
+    render(<NotebookPage day={DAY} list="tomorrow" placeholder="what's on tomorrow?" startFocus={false} />);
+    const writing = await screen.findByRole('textbox', { name: 'New tomorrow task' });
+    expect(writing).toHaveAttribute('placeholder', "what's on tomorrow?");
+    await addTask(DAY, { text: 'reply to Sam' });
+    expect(await screen.findByRole('textbox', { name: 'Tomorrow task' })).toHaveValue('reply to Sam');
+    expect(screen.queryAllByRole('textbox', { name: 'Task' })).toHaveLength(0);
+    expect(screen.queryByRole('textbox', { name: 'New task' })).toBeNull();
+  });
+
+  it('leaves the cursor alone when startFocus is false, even with a mouse', async () => {
+    render(<NotebookPage day={DAY} list="tomorrow" startFocus={false} />);
+    const writing = await screen.findByRole('textbox', { name: 'New tomorrow task' });
+    await new Promise((r) => setTimeout(r, 20)); // let any focus effect run
+    expect(writing).not.toHaveFocus();
+  });
+
+  it('takes the cursor when startFocus is true, even on a phone', async () => {
+    mockPointerCoarse(true);
+    render(<NotebookPage day={DAY} list="tomorrow" startFocus />);
+    const writing = await screen.findByRole('textbox', { name: 'New tomorrow task' });
+    await waitFor(() => expect(writing).toHaveFocus());
   });
 });

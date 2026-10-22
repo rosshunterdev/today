@@ -71,3 +71,30 @@ export function moveTask(id: string, prevId: string | null, nextId: string | nul
     await patch(id, { position: positionBetween(prev?.position ?? null, next?.position ?? null) });
   });
 }
+
+// A line moved to another day: a new row there plus a soft delete here, in one transaction (the same shape as taskToGoal).
+// A moved line always arrives open, keeping its text, indent, mark and note.
+export function taskToDay(id: string, day: string, prevId: string | null, nextId: string | null): Promise<Task | null> {
+  return db.transaction('rw', db.tasks, async () => {
+    const line = await db.tasks.get(id);
+    if (!line || line.deleted) return null;
+    const prev = prevId ? await db.tasks.get(prevId) : undefined;
+    const next = nextId ? await db.tasks.get(nextId) : undefined;
+    const now = nowIso();
+    const task: Task = {
+      ...line,
+      id: crypto.randomUUID(),
+      day,
+      notes: line.notes ?? '',
+      done: false,
+      doneAt: null,
+      position: positionBetween(prev?.position ?? null, next?.position ?? null),
+      createdAt: now,
+      updatedAt: now,
+      deleted: false,
+    };
+    await db.tasks.add(task);
+    await db.tasks.update(id, { deleted: true, updatedAt: now });
+    return task;
+  });
+}

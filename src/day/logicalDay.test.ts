@@ -1,5 +1,5 @@
 import { describe, it, expect } from 'vitest';
-import { logicalDay, dayLabel, dayParts, daysBetween } from './logicalDay';
+import { logicalDay, dayLabel, dayParts, daysBetween, nextDay } from './logicalDay';
 
 describe('logicalDay', () => {
   it('counts 03:59 as the previous day', () => {
@@ -39,5 +39,22 @@ describe('dayParts', () => {
   it('splits a day into the header number, weekday and month', () => {
     expect(dayParts('2026-10-20')).toEqual({ number: 20, weekday: 'Tuesday', month: 'October' });
     expect(dayParts('2027-01-01')).toEqual({ number: 1, weekday: 'Friday', month: 'January' });
+  });
+});
+
+describe('nextDay', () => {
+  it('gives the next calendar day', () => {
+    expect(nextDay('2026-10-22')).toBe('2026-10-23');
+  });
+  it('crosses month and year ends', () => {
+    expect(nextDay('2026-10-31')).toBe('2026-11-01');
+    expect(nextDay('2026-12-31')).toBe('2027-01-01');
+  });
+  it('is not thrown off by daylight saving', () => {
+    // NZ clocks go forward early on 27 Sep 2026 (a 23-hour day) and back early on 4 Apr 2027 (25 hours).
+    expect(nextDay('2026-09-26')).toBe('2026-09-27');
+    expect(nextDay('2026-09-27')).toBe('2026-09-28');
+    expect(nextDay('2027-04-03')).toBe('2027-04-04');
+    expect(nextDay('2027-04-04')).toBe('2027-04-05');
   });
 });

@@ -50,4 +50,36 @@ describe('App', () => {
     render(<App />);
     expect(await screen.findByRole('button', { name: 'this week and 1 old page' })).toBeInTheDocument();
   });
+
+  it('shows lines written for tomorrow under Tomorrow, then on today’s page after 04:00', async () => {
+    vi.useFakeTimers({ toFake: ['Date'] });
+    vi.setSystemTime(new Date(2026, 9, 22, 21, 0));
+    await addTask('2026-10-23', { text: 'reply to Sam' });
+    render(<App />);
+    expect(await screen.findByRole('textbox', { name: 'Tomorrow task' })).toHaveValue('reply to Sam');
+    expect(screen.queryAllByRole('textbox', { name: 'Task' })).toHaveLength(0);
+
+    vi.setSystemTime(new Date(2026, 9, 23, 4, 1));
+    act(() => {
+      fireEvent(window, new Event('focus'));
+    });
+    expect(await screen.findByRole('textbox', { name: 'Task' })).toHaveValue('reply to Sam');
+    expect(screen.queryAllByRole('textbox', { name: 'Tomorrow task' })).toHaveLength(0);
+    expect(await screen.findByRole('button', { name: 'Tomorrow' })).toHaveAttribute('aria-expanded', 'false');
+  });
+
+  it('folds an empty Tomorrow opened by hand when the day turns', async () => {
+    const user = userEvent.setup();
+    vi.useFakeTimers({ toFake: ['Date'] });
+    vi.setSystemTime(new Date(2026, 9, 22, 21, 0));
+    render(<App />);
+    await user.click(await screen.findByRole('button', { name: 'Tomorrow' }));
+    expect(screen.getByRole('button', { name: 'Tomorrow' })).toHaveAttribute('aria-expanded', 'true');
+
+    vi.setSystemTime(new Date(2026, 9, 23, 4, 1));
+    act(() => {
+      fireEvent(window, new Event('focus'));
+    });
+    await waitFor(() => expect(screen.getByRole('button', { name: 'Tomorrow' })).toHaveAttribute('aria-expanded', 'false'));
+  });
 });

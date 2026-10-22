@@ -2,7 +2,7 @@ import { describe, it, expect } from 'vitest';
 import type { CollisionDetection } from '@dnd-kit/core';
 import { collide, resolveDrop, BIN_ID, CORNER_ID, LIST_DROP_ID, OLD_DROP_ID, type ListId } from './drop';
 
-const lists = { today: ['t1', 't2', 't3'], week: ['g1', 'g2'] };
+const lists = { today: ['t1', 't2', 't3'], tomorrow: ['m1', 'm2'], week: ['g1', 'g2'] };
 
 describe('resolveDrop', () => {
   it('reorders within a list like arrayMove', () => {
@@ -39,15 +39,31 @@ describe('resolveDrop', () => {
   });
 
   it('drops into an empty list as its only item', () => {
-    const empty = { today: ['t1'], week: [] };
+    const empty = { today: ['t1'], tomorrow: [], week: [] };
     expect(resolveDrop(empty, 't1', CORNER_ID.week)).toEqual({ kind: 'transfer', from: 'today', to: 'week', id: 't1', prevId: null, nextId: null });
-    expect(resolveDrop({ today: [], week: ['g1'] }, 'g1', LIST_DROP_ID.today)).toEqual({ kind: 'transfer', from: 'week', to: 'today', id: 'g1', prevId: null, nextId: null });
+    expect(resolveDrop({ today: [], tomorrow: [], week: ['g1'] }, 'g1', LIST_DROP_ID.today)).toEqual({ kind: 'transfer', from: 'week', to: 'today', id: 'g1', prevId: null, nextId: null });
   });
 
   it('appends to today from the back-to-today corner, and ignores a drop on a line’s own corner', () => {
     expect(resolveDrop(lists, 'g1', CORNER_ID.today)).toEqual({ kind: 'transfer', from: 'week', to: 'today', id: 'g1', prevId: 't3', nextId: null });
     expect(resolveDrop(lists, 'o1', CORNER_ID.today, ['o1'])).toEqual({ kind: 'transfer', from: 'old', to: 'today', id: 'o1', prevId: 't3', nextId: null });
     expect(resolveDrop(lists, 't1', CORNER_ID.today)).toEqual({ kind: 'none' });
+  });
+
+  it('moves lines into Tomorrow from today, the week and old pages', () => {
+    expect(resolveDrop(lists, 't2', 'm2')).toEqual({ kind: 'transfer', from: 'today', to: 'tomorrow', id: 't2', prevId: 'm1', nextId: 'm2' });
+    expect(resolveDrop(lists, 'g1', LIST_DROP_ID.tomorrow)).toEqual({ kind: 'transfer', from: 'week', to: 'tomorrow', id: 'g1', prevId: 'm2', nextId: null });
+    expect(resolveDrop(lists, 'o1', LIST_DROP_ID.tomorrow, ['o1'])).toEqual({ kind: 'transfer', from: 'old', to: 'tomorrow', id: 'o1', prevId: 'm2', nextId: null });
+    // The folded header is the whole drop target while Tomorrow is empty.
+    expect(resolveDrop({ ...lists, tomorrow: [] }, 't1', LIST_DROP_ID.tomorrow)).toEqual({ kind: 'transfer', from: 'today', to: 'tomorrow', id: 't1', prevId: null, nextId: null });
+  });
+
+  it('moves a Tomorrow line back to today or into the week, reorders it, and bins it', () => {
+    expect(resolveDrop(lists, 'm1', LIST_DROP_ID.today)).toEqual({ kind: 'transfer', from: 'tomorrow', to: 'today', id: 'm1', prevId: 't3', nextId: null });
+    expect(resolveDrop(lists, 'm1', 'g1')).toEqual({ kind: 'transfer', from: 'tomorrow', to: 'week', id: 'm1', prevId: null, nextId: 'g1' });
+    expect(resolveDrop(lists, 'm1', 'm2')).toEqual({ kind: 'reorder', list: 'tomorrow', id: 'm1', prevId: 'm2', nextId: null });
+    expect(resolveDrop(lists, 'm1', LIST_DROP_ID.tomorrow)).toEqual({ kind: 'none' });
+    expect(resolveDrop(lists, 'm1', BIN_ID)).toEqual({ kind: 'bin', from: 'tomorrow', id: 'm1' });
   });
 
   it('bins a line from any list, and nothing that isn’t a line', () => {
@@ -104,6 +120,26 @@ describe('collide', () => {
 
   it('finds nothing over the old pages stack, even with today’s line underneath', () => {
     expect(run('old', { x: 450, y: 130 })).toEqual([]);
+  });
+
+  // Tomorrow sits under today's lines, inside today's page.
+  const withTomorrow: Box[] = [
+    ...boxes,
+    { id: LIST_DROP_ID.tomorrow, list: 'tomorrow', top: 300, left: 0, width: 600, height: 108 },
+    { id: 'm1', list: 'tomorrow', top: 336, left: 0, width: 600, height: 36 },
+  ];
+
+  it('over Tomorrow, only its own targets count, though today’s page lies underneath', () => {
+    expect(run('today', { x: 150, y: 318 }, withTomorrow)).toEqual([LIST_DROP_ID.tomorrow]); // the header
+    expect(run('week', { x: 150, y: 390 }, withTomorrow)).toEqual([LIST_DROP_ID.tomorrow]); // blank rows in Tomorrow
+    expect(run('today', { x: 150, y: 350 }, withTomorrow)).toEqual(['m1']);
+    expect(run('week', { x: 150, y: 500 }, withTomorrow)).toEqual([LIST_DROP_ID.today]); // below Tomorrow is today's paper
+  });
+
+  it('a Tomorrow line let go on the paper below Tomorrow stays put, but above it moves to today', () => {
+    expect(run('tomorrow', { x: 150, y: 500 }, withTomorrow)).toEqual([]);
+    expect(run('tomorrow', { x: 150, y: 220 }, withTomorrow)).toEqual([LIST_DROP_ID.today]);
+    expect(run('tomorrow', { x: 1000, y: 610 }, withTomorrow)).toEqual([LIST_DROP_ID.week]);
   });
 
   it('keyboard drags (no pointer) fall back to the nearest line in their own list', () => {

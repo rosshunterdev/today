@@ -1,7 +1,7 @@
 import { describe, it, expect, beforeEach } from 'vitest';
 import { db } from './db';
-import { binPage, listOldPages, pageLineToGoal, pageLineToTask, pageLineToTodayEnd } from './pages';
-import { addTask, deleteTask, listDay, restoreTask, setDone, setMark } from './tasks';
+import { binPage, listOldPages, pageLineToGoal, pageLineToTodayEnd } from './pages';
+import { addTask, deleteTask, listDay, restoreTask, setDone, setMark, taskToDay } from './tasks';
 import { addGoal, listWeek } from './goals';
 
 const TODAY = '2026-10-20';
@@ -42,7 +42,7 @@ describe('moving a page line', () => {
     const before = (await db.tasks.get(line.id))!.updatedAt;
     await pause();
 
-    const moved = await pageLineToTask(line.id, TODAY, a.id, b.id);
+    const moved = await taskToDay(line.id, TODAY, a.id, b.id);
     expect(moved).toMatchObject({ day: TODAY, text: 'call bank', indent: 1, mark: 'star', done: false, doneAt: null });
     expect((await listDay(TODAY)).map((t) => t.text)).toEqual(['a', 'call bank', 'b']);
     const original = (await db.tasks.get(line.id))!;
@@ -62,8 +62,8 @@ describe('moving a page line', () => {
 
   it('writes nothing when the line was already moved', async () => {
     const line = await addTask(FRI, { text: 'once' });
-    await pageLineToTask(line.id, TODAY, null, null);
-    expect(await pageLineToTask(line.id, TODAY, null, null)).toBeNull();
+    await taskToDay(line.id, TODAY, null, null);
+    expect(await taskToDay(line.id, TODAY, null, null)).toBeNull();
     expect(await pageLineToGoal(line.id, WEEK, null, null)).toBeNull();
     expect(await listDay(TODAY)).toHaveLength(1);
     expect(await listWeek(WEEK)).toHaveLength(0);

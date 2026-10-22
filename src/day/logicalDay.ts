@@ -19,6 +19,13 @@ export function dayToDate(day: string): Date {
   return new Date(y, m - 1, d);
 }
 
+// The day after: tomorrow's page. Steps the calendar date, not 24 hours, so daylight saving can't skip or repeat a day.
+export function nextDay(day: string): string {
+  const date = dayToDate(day);
+  date.setDate(date.getDate() + 1);
+  return dateToDay(date);
+}
+
 export function dayLabel(day: string): { weekday: string; date: string } {
   const date = dayToDate(day);
   return {

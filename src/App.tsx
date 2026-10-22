@@ -7,6 +7,8 @@ import { NotebookPage } from './ui/NotebookPage';
 import { DragBoard } from './ui/DragBoard';
 import { WeekNote } from './ui/WeekNote';
 import { OldPages } from './ui/OldPages';
+import { TomorrowSection } from './ui/TomorrowSection';
+import { nextDay } from './day/logicalDay';
 import { PageCorner } from './ui/PageCorner';
 import { listOldPages } from './store/pages';
 import { weekOf } from './day/week';
@@ -19,6 +21,7 @@ type Side = 'today' | 'more';
 export function App() {
   const today = useToday();
   const week = weekOf(today);
+  const tomorrow = nextDay(today);
   const pages = useLiveQuery(() => listOldPages(today), [today]) ?? [];
   const [side, setSide] = useState<Side>('today');
   const [turned, setTurned] = useState(false);
@@ -38,12 +41,14 @@ export function App() {
 
   return (
     <BinProvider>
-      <DragBoard day={today} week={week}>
+      <DragBoard day={today} tomorrow={tomorrow} week={week}>
         {/* Wide screens show both pages as an open book; phones show one side at a time. */}
         <div className="book" data-side={side} data-turned={turned}>
           <TodayPage>
             <DayHeader day={today} />
             <NotebookPage day={today} />
+            {/* Keyed on the day, so the 4am turn starts a fresh, folded Tomorrow. */}
+            <TomorrowSection key={tomorrow} day={tomorrow} />
             <PageCorner to="week" label={moreLabel} onTurn={() => turn('more')} />
           </TodayPage>
           <aside className="page more-page" aria-label="This week and old pages">
