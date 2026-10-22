@@ -27,4 +27,13 @@ describe('CarryOverNote', () => {
     await user.click(screen.getByRole('button', { name: 'Bring over' }));
     expect(onBring).toHaveBeenCalledWith(['b']);
   });
+
+  it("shows a line with no words by its note's first line", async () => {
+    const user = userEvent.setup();
+    const blank = { id: 'c', text: ' ', notes: '\nask Sam about the invoice\nby Friday' };
+    render(<CarryOverNote label="Last week" items={[...items, blank]} onBring={() => {}} onDismiss={() => {}} />);
+    await user.click(screen.getByRole('button', { name: 'Last week: 3 left' }));
+    expect(screen.getByRole('checkbox', { name: 'ask Sam about the invoice' })).toBeInTheDocument();
+    expect(screen.getByText('–')).toHaveAttribute('aria-hidden', 'true');
+  });
 });

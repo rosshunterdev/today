@@ -100,9 +100,9 @@ describe('OldPages', () => {
     await setNotes(t.id, 'ask about the invoice');
     await addTask(MON, { text: 'call bank' });
     render(<Live />);
-    const toggles = await screen.findAllByRole('button', { name: 'Notes' });
+    const toggles = await screen.findAllByRole('button', { name: /^Notes for / });
     expect(toggles).toHaveLength(1);
-    const box = await screen.findByRole('textbox', { name: 'Notes' });
+    const box = await screen.findByRole('textbox', { name: 'Notes for email Sam' });
     expect(box).toHaveValue('ask about the invoice');
     expect(box).toHaveAttribute('readonly');
   });

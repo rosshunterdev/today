@@ -648,6 +648,10 @@ body {
   accent-color: var(--ink);
 }
 
+.leftovers-panel .leftovers-note {
+  color: var(--ink-soft);
+}
+
 .leftovers-actions {
   display: flex;
   gap: 1rem;
