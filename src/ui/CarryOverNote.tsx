@@ -3,10 +3,13 @@ import { useState } from 'react';
 export interface CarryOverNoteProps {
   label: string;
   fromLabel?: string;
-  items: { id: string; text: string }[];
+  items: { id: string; text: string; notes?: string }[];
   onBring: (ids: string[]) => void;
   onDismiss: () => void;
 }
+
+// The first written line of a note.
+const firstLine = (notes = '') => notes.split('\n').find((line) => line.trim() !== '')?.trim() ?? '';
 
 // The "N left" note and its picker, shared by day leftovers and week leftovers.
 export function CarryOverNote({ label, fromLabel = label, items, onBring, onDismiss }: CarryOverNoteProps) {
@@ -46,7 +49,14 @@ export function CarryOverNote({ label, fromLabel = label, items, onBring, onDism
           <li key={item.id}>
             <label>
               <input type="checkbox" checked={picked.has(item.id)} onChange={() => toggle(item.id)} />
-              {item.text}
+              {item.text.trim() ? (
+                item.text
+              ) : (
+                // A line with no words is known by its note, written as under a line.
+                <span className="leftovers-note">
+                  <span aria-hidden="true">–</span> {firstLine(item.notes)}
+                </span>
+              )}
             </label>
           </li>
         ))}
