@@ -26,6 +26,7 @@ Task apps tend to feel worse than paper. Paper is always ready, crossing things 
 - **Reorder:** drag the dotted grip on desktop, or long-press and drag on a phone.
 - **Bin:** drag a line into the bin to throw it away, with five seconds to undo it (Ctrl+Z works too).
 - **Old pages:** unfinished tasks from earlier days stay listed under the week. Tap > to send a line to today, or drag it onto today or into the week, and bin the page once it's done.
+- **Tomorrow:** a folded heading on the bottom edge of today's page for writing tomorrow's list the evening before. Tap it to start writing, or drag lines into it from today, the week and old pages. At 4am its lines are today's.
 - **Notes:** tap the pencil at the end of a line to unfold a note under it, for the details behind a short task.
 - **This week:** goals for the week on the facing page (a folded corner away on a phone). Drag a task onto it, drag a goal back to today, and bring last week's unfinished goals forward.
 - **Night pages:** a moon in the header turns the journal dark, and it stays that way on that device.
