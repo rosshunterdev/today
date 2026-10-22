@@ -48,8 +48,8 @@ function targetOf(overId: string, lists: Record<ListId, string[]>): { list: List
   return null;
 }
 
-// What a drop means, from the ids of both lists in their current order.
-// On a line in the other list the item lands in front of it; on the list itself (or its corner) it goes last.
+// What a drop means, from the ids of each list in their current order, plus the old page lines (which can only leave).
+// On a line in another list the item lands in front of it; on the list itself (or its corner) it goes last.
 export function resolveDrop(lists: Record<ListId, string[]>, activeId: string, overId: string | null, old: string[] = []): Drop {
   const from: LineSource | undefined = old.includes(activeId) ? 'old' : LISTS.find((list) => lists[list].includes(activeId));
   if (!from || overId === null || overId === activeId) return NONE;

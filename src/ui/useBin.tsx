@@ -18,7 +18,7 @@ export interface BinApi {
 // How long the undo slip stays, unless the pointer or focus is on it.
 export const SLIP_MS = 5000;
 
-// Goals live in their own table; today's lines and old page lines are both tasks.
+// Goals live in their own table; today's, Tomorrow's and old page lines are all tasks.
 const remove = (line: BinnedLine) => (line.from === 'week' ? deleteGoal(line.id) : deleteTask(line.id));
 const restore = (line: BinnedLine) => (line.from === 'week' ? restoreGoal(line.id) : restoreTask(line.id));
 
