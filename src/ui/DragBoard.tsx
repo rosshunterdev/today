@@ -18,9 +18,10 @@ import { listOldPages, pageLineToGoal } from '../store/pages';
 import { collide, resolveDrop } from '../order/drop';
 import { useBin } from './useBin';
 
-// One drag context for today's page, the week note and the old pages, so a line can move between them.
-export function DragBoard({ day, week, children }: { day: string; week: string; children: ReactNode }) {
+// One drag context for today's page, Tomorrow, the week note and the old pages, so a line can move between them.
+export function DragBoard({ day, tomorrow, week, children }: { day: string; tomorrow: string; week: string; children: ReactNode }) {
   const taskIds = useLiveQuery(async () => (await listDay(day)).map((t) => t.id), [day]) ?? [];
+  const tomorrowIds = useLiveQuery(async () => (await listDay(tomorrow)).map((t) => t.id), [tomorrow]) ?? [];
   const goalIds = useLiveQuery(async () => (await listWeek(week)).map((g) => g.id), [week]) ?? [];
   const oldIds = useLiveQuery(async () => (await listOldPages(day)).flatMap((p) => p.lines.map((l) => l.id)), [day]) ?? [];
   const { bin } = useBin();
@@ -37,20 +38,19 @@ export function DragBoard({ day, week, children }: { day: string; week: string; 
 
   function handleDragEnd({ active, over }: DragEndEvent) {
     setDragText(null);
-    const drop = resolveDrop({ today: taskIds, tomorrow: [], week: goalIds }, String(active.id), over ? String(over.id) : null, oldIds);
+    const drop = resolveDrop({ today: taskIds, tomorrow: tomorrowIds, week: goalIds }, String(active.id), over ? String(over.id) : null, oldIds);
     if (drop.kind === 'bin') {
       void bin({ from: drop.from, id: drop.id, text: String(active.data.current?.text ?? '') });
     } else if (drop.kind === 'reorder') {
-      void (drop.list === 'today' ? moveTask : moveGoal)(drop.id, drop.prevId, drop.nextId);
+      void (drop.list === 'week' ? moveGoal : moveTask)(drop.id, drop.prevId, drop.nextId);
     } else if (drop.kind === 'transfer') {
-      if (drop.from === 'old') {
-        void (drop.to === 'week'
-          ? pageLineToGoal(drop.id, week, drop.prevId, drop.nextId)
-          : taskToDay(drop.id, day, drop.prevId, drop.nextId));
+      const { from, to, id, prevId, nextId } = drop;
+      if (to === 'week') {
+        void (from === 'old' ? pageLineToGoal : taskToGoal)(id, week, prevId, nextId);
       } else {
-        void (drop.to === 'week'
-          ? taskToGoal(drop.id, week, drop.prevId, drop.nextId)
-          : goalToTask(drop.id, day, drop.prevId, drop.nextId));
+        // Today and Tomorrow are both days of tasks: a goal becomes a task there, any other line moves day.
+        const target = to === 'today' ? day : tomorrow;
+        void (from === 'week' ? goalToTask : taskToDay)(id, target, prevId, nextId);
       }
     }
   }
