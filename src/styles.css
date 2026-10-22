@@ -502,6 +502,56 @@ body {
   font-size: 1rem;
 }
 
+/* Tomorrow: folded under today's lines until tapped (D-030). One blank row above keeps it on the grid. */
+.tomorrow {
+  margin-top: var(--row);
+}
+
+.tomorrow-heading {
+  display: flex;
+  align-items: center;
+  height: var(--row);
+  margin: 0;
+  padding-left: 1rem;
+  color: var(--ink-soft);
+  font-size: 1.3rem;
+  font-weight: 600;
+}
+
+.tomorrow-toggle {
+  display: inline-flex;
+  align-items: center;
+  gap: 0.4rem;
+  min-height: 2.75rem;
+  margin: -0.25rem 0; /* a full-size target that still fits the row */
+  padding: 0 0.5rem 0 0;
+  border: 0;
+  background: transparent;
+  color: inherit;
+  font: inherit;
+  cursor: pointer;
+}
+
+.tomorrow-toggle::before {
+  content: '▸';
+  transition: rotate 150ms ease;
+}
+
+.tomorrow-toggle[aria-expanded='true']::before {
+  rotate: 90deg;
+}
+
+.tomorrow-toggle:focus-visible {
+  outline: 2px solid var(--ink);
+  outline-offset: 2px;
+}
+
+@media (prefers-reduced-motion: reduce) {
+  .tomorrow-toggle::before {
+    transition: none;
+  }
+}
+
 /* Last week's unfinished goals, offered at the top of the week. */
 .leftovers {
   display: flex;

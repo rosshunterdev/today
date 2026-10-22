@@ -7,14 +7,30 @@ import { TaskLine } from './TaskLine';
 import { GhostLine } from './GhostLine';
 import { usePointerCoarse } from './usePointerCoarse';
 import { KeyboardBar } from './KeyboardBar';
+import type { ListId } from '../order/drop';
 
 export const GHOST = 'ghost';
 
-export function NotebookPage({ day }: { day: string }) {
+// Tomorrow's lines are named apart from today's, for screen readers and so each list's lines can be found on their own.
+const NAMES = {
+  today: { line: 'Task', ghost: 'New task' },
+  tomorrow: { line: 'Tomorrow task', ghost: 'New tomorrow task' },
+};
+
+interface NotebookPageProps {
+  day: string;
+  list?: Extract<ListId, 'today' | 'tomorrow'>;
+  placeholder?: string;
+  // Whether the cursor starts in the writing line. Left out, it does on mouse/trackpad devices only:
+  // phones can't raise the keyboard without a tap, so focusing there would only show the bar with no keyboard.
+  startFocus?: boolean;
+}
+
+export function NotebookPage({ day, list = 'today', placeholder = "what's on today?", startFocus }: NotebookPageProps) {
   const tasks = useLiveQuery(() => listDay(day), [day]);
-  // Cursor starts in the writing line on mouse/trackpad devices. Phones can't raise the
-  // keyboard without a tap, so focusing there would only show the bar with no keyboard.
-  const [focusId, setFocusId] = useState<string | null>(() => (window.matchMedia('(pointer: coarse)').matches ? null : GHOST));
+  const [focusId, setFocusId] = useState<string | null>(() =>
+    (startFocus ?? !window.matchMedia('(pointer: coarse)').matches) ? GHOST : null,
+  );
   const [activeId, setActiveId] = useState<string | null>(null);
   const [ghostIndent, setGhostIndent] = useState<0 | 1>(0);
   const clearFocus = useCallback(() => setFocusId(null), []);
@@ -58,7 +74,8 @@ export function NotebookPage({ day }: { day: string }) {
             <TaskLine
               key={task.id}
               task={task}
-              list="today"
+              list={list}
+              label={NAMES[list].line}
               coarse={coarse}
               focusRequested={focusId === task.id}
               onFocusHandled={clearFocus}
@@ -74,7 +91,8 @@ export function NotebookPage({ day }: { day: string }) {
           ))}
           <GhostLine
             indent={ghostIndent}
-            placeholder={tasks.length === 0 ? "what's on today?" : ''}
+            label={NAMES[list].ghost}
+            placeholder={tasks.length === 0 ? placeholder : ''}
             focusRequested={focusId === GHOST}
             onFocusHandled={clearFocus}
             onFocusChange={trackFocus(GHOST)}
