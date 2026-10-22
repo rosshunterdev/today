@@ -3,6 +3,7 @@ import { goals, lineOf, mouseDrag, tasks, write } from './helpers';
 
 const tomorrowTasks = (page: Page) => page.getByRole('textbox', { name: 'Tomorrow task', exact: true });
 const toggle = (page: Page) => page.getByRole('button', { name: 'Tomorrow', exact: true });
+const tomorrowValues = (page: Page) => tomorrowTasks(page).evaluateAll((lines) => lines.map((line) => (line as HTMLInputElement).value));
 
 // Where the word "Tomorrow" starts in its heading, whether it sits in the fold button or not.
 const wordLeft = (page: Page) =>
@@ -77,4 +78,45 @@ test('desktop: lines drag into Tomorrow from today and the week, and back to tod
 
   await page.getByRole('button', { name: 'Night pages', exact: true }).click();
   await page.screenshot({ path: 'e2e/screenshots/desktop-tomorrow-night.png', animations: 'disabled' });
+});
+
+test('desktop: Tomorrow takes old lines, reorders, sends a line to the week, and gets a binned line back on undo', async ({ page }, testInfo) => {
+  test.skip(testInfo.project.name !== 'desktop', 'mouse drag');
+  // Monday's unfinished line is on an old page by Tuesday evening.
+  await page.clock.setFixedTime(new Date(2026, 9, 19, 9, 0));
+  await page.goto('/');
+  await write(page, ['call bank']);
+  await expect(tasks(page)).toHaveCount(1);
+  await page.clock.setFixedTime(new Date(2026, 9, 20, 21, 0));
+  await page.reload();
+  const oldTasks = page.getByRole('textbox', { name: 'Old task', exact: true });
+  await expect(oldTasks).toHaveCount(1);
+
+  await mouseDrag(page, lineOf(oldTasks.nth(0)), toggle(page));
+  await expect(oldTasks).toHaveCount(0);
+  await expect(tomorrowTasks(page)).toHaveCount(1);
+  await expect(tomorrowTasks(page).nth(0)).toHaveValue('call bank');
+
+  await page.getByRole('textbox', { name: 'New tomorrow task', exact: true }).click();
+  for (const line of ['email Sam', 'book flights']) {
+    await page.keyboard.type(line);
+    await page.keyboard.press('Enter');
+  }
+  await expect(tomorrowTasks(page)).toHaveCount(3);
+
+  // Dropped on Tomorrow's first line, its last line moves to the top.
+  await mouseDrag(page, lineOf(tomorrowTasks(page).nth(2)), lineOf(tomorrowTasks(page).nth(0)));
+  await expect.poll(() => tomorrowValues(page)).toEqual(['book flights', 'call bank', 'email Sam']);
+
+  await mouseDrag(page, lineOf(tomorrowTasks(page).nth(2)), lineOf(page.getByRole('textbox', { name: 'New goal', exact: true })));
+  await expect(goals(page)).toHaveCount(1);
+  await expect(goals(page).nth(0)).toHaveValue('email Sam');
+  await expect(tomorrowTasks(page)).toHaveCount(2);
+
+  // Undo puts a binned line back in Tomorrow, where it was.
+  await mouseDrag(page, lineOf(tomorrowTasks(page).nth(0)), page.locator('.bin'));
+  await expect.poll(() => tomorrowValues(page)).toEqual(['call bank']);
+  await page.locator('.slip-region').getByRole('button', { name: 'undo', exact: true }).click();
+  await expect.poll(() => tomorrowValues(page)).toEqual(['book flights', 'call bank']);
+  await expect(tasks(page)).toHaveCount(0);
 });
