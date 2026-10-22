@@ -62,6 +62,23 @@ describe('TomorrowSection', () => {
     expect(screen.getByRole('heading', { name: 'Tomorrow', level: 2 })).toBeInTheDocument();
   });
 
+  it('stays open with the cursor in its writing line when its only line is cleared away, then folds by hand', async () => {
+    const user = userEvent.setup();
+    await addTask(TOMORROW, { text: 'x' });
+    render(<TomorrowSection day={TOMORROW} />);
+    const line = await screen.findByRole('textbox', { name: 'Tomorrow task' });
+    await user.clear(line);
+    await user.keyboard('{Backspace}');
+
+    await waitFor(() => expect(lines()).toHaveLength(0));
+    await waitFor(() => expect(writing()).toHaveFocus());
+    expect(toggle()).toHaveAttribute('aria-expanded', 'true');
+
+    await user.click(toggle()!);
+    expect(toggle()).toHaveAttribute('aria-expanded', 'false');
+    expect(writing()).toBeNull();
+  });
+
   it('is open on load when tomorrow already has lines, without taking the cursor', async () => {
     await addTask(TOMORROW, { text: 'review PR' });
     render(<TomorrowSection day={TOMORROW} />);
