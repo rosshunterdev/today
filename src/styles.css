@@ -502,9 +502,28 @@ body {
   font-size: 1rem;
 }
 
-/* Tomorrow: folded under today's lines until tapped (D-030). One blank row above keeps it on the grid. */
+/* Tomorrow: folded on the bottom edge of today's page until tapped, and growing upward as it fills (D-030, D-031).
+   Today's page is a column; Tomorrow takes the free space above it, with at least one blank row after today's lines. */
+.today-page {
+  display: flex;
+  flex-direction: column;
+  /* Whole rows of writing space, so Tomorrow on the bottom edge lands on the dot grid. The part row goes under it. */
+  padding-bottom: calc(
+    env(safe-area-inset-bottom) + 7rem +
+      mod(100dvh - env(safe-area-inset-top) - env(safe-area-inset-bottom) - 7rem, var(--row))
+  );
+}
+
+.today-page > * {
+  flex: none;
+}
+
+.today-page > .lines {
+  margin-bottom: var(--row);
+}
+
 .tomorrow {
-  margin-top: var(--row);
+  margin-top: auto;
 }
 
 .tomorrow-heading {
@@ -1011,6 +1030,8 @@ body:has(.kbd-bar) .slip-region {
   }
 
   .today-page {
+    /* As on phones: the page is the book's height (100dvh less 4rem), and 3rem stays free under the last row. */
+    padding-bottom: calc(3rem + mod(100dvh - 7rem, var(--row)));
     border-radius: 0.375rem 0 0 0.375rem;
   }
 

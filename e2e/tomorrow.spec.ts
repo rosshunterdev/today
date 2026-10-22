@@ -19,6 +19,39 @@ const wordLeft = (page: Page) =>
     throw new Error('no "Tomorrow" in the heading');
   });
 
+// Where Tomorrow sits on today's page: its heading's distance below today's first line, in rows,
+// and the gap between the section's bottom and the bottom of the page's writing space, in px.
+const tomorrowPlace = (page: Page) =>
+  page.locator('main').evaluate((main) => {
+    const line = main.querySelector('.lines > .line')!.getBoundingClientRect();
+    const heading = main.querySelector('.tomorrow-heading')!.getBoundingClientRect();
+    const section = main.querySelector('.tomorrow')!.getBoundingClientRect();
+    const writingBottom = main.getBoundingClientRect().bottom - parseFloat(getComputedStyle(main).paddingBottom);
+    return { rows: (heading.top - line.top) / line.height, gap: writingBottom - section.bottom };
+  });
+
+test('Tomorrow sits on the bottom edge of today’s page, on the dot grid, and grows upward', async ({ page }) => {
+  await page.clock.setFixedTime(new Date(2026, 9, 22, 21, 0));
+  await page.goto('/');
+  await write(page, ['groceries']);
+  await expect(tasks(page)).toHaveCount(1);
+
+  const folded = await tomorrowPlace(page);
+  expect(folded.rows).toBeGreaterThan(5);
+  expect(folded.rows).toBeCloseTo(Math.round(folded.rows), 1);
+  expect(folded.gap).toBeCloseTo(0, 0);
+
+  await toggle(page).click();
+  await expect(page.getByRole('textbox', { name: 'New tomorrow task', exact: true })).toBeFocused();
+  await page.keyboard.type('reply to Sam');
+  await page.keyboard.press('Enter');
+  await expect(tomorrowTasks(page)).toHaveCount(1);
+  // One row up for the line and one for the writing line under it; the bottom stays put.
+  const grown = await tomorrowPlace(page);
+  expect(grown.rows).toBeCloseTo(folded.rows - 2, 1);
+  expect(grown.gap).toBeCloseTo(0, 0);
+});
+
 test('a line written in Tomorrow on Thursday evening is on Friday’s page', async ({ page }, testInfo) => {
   await page.clock.setFixedTime(new Date(2026, 9, 22, 21, 0));
   await page.goto('/');
