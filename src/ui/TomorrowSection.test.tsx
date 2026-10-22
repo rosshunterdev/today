@@ -25,7 +25,13 @@ describe('TomorrowSection', () => {
     render(<TomorrowSection day={TOMORROW} />);
     expect(await screen.findByRole('button', { name: 'Tomorrow' })).toHaveAttribute('aria-expanded', 'false');
     expect(writing()).toBeNull();
-    expect(screen.getByRole('region', { name: 'Tomorrow' })).toBeInTheDocument();
+  });
+
+  it('says its name once: a heading holding the fold button, with no region around it', async () => {
+    render(<TomorrowSection day={TOMORROW} />);
+    const heading = await screen.findByRole('heading', { name: 'Tomorrow', level: 2 });
+    expect(heading).toContainElement(toggle());
+    expect(screen.queryByRole('region')).toBeNull();
   });
 
   it('opens on click with the cursor in its writing line, and folds again while empty', async () => {

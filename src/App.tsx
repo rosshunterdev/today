@@ -63,7 +63,8 @@ export function App() {
   );
 }
 
-// The whole page is a drop target, so a goal dropped anywhere on the paper lands on today.
+// The whole page is a drop target, so a goal or old line dropped on the paper around the lists lands on today.
+// A Tomorrow line let go below Tomorrow stays put (see `collide`).
 function TodayPage({ children }: { children: ReactNode }) {
   const { setNodeRef } = useDroppable({ id: LIST_DROP_ID.today, data: { list: 'today' } });
   return (

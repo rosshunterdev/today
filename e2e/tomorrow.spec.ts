@@ -3,6 +3,54 @@ import { goals, lineOf, mouseDrag, tasks, write } from './helpers';
 
 const tomorrowTasks = (page: Page) => page.getByRole('textbox', { name: 'Tomorrow task', exact: true });
 const toggle = (page: Page) => page.getByRole('button', { name: 'Tomorrow', exact: true });
+const tomorrowValues = (page: Page) => tomorrowTasks(page).evaluateAll((lines) => lines.map((line) => (line as HTMLInputElement).value));
+
+// Where the word "Tomorrow" starts in its heading, whether it sits in the fold button or not.
+const wordLeft = (page: Page) =>
+  page.locator('.tomorrow-heading').evaluate((heading) => {
+    const walker = document.createTreeWalker(heading, NodeFilter.SHOW_TEXT);
+    while (walker.nextNode()) {
+      if (walker.currentNode.textContent?.includes('Tomorrow')) {
+        const range = document.createRange();
+        range.selectNodeContents(walker.currentNode);
+        return range.getBoundingClientRect().left;
+      }
+    }
+    throw new Error('no "Tomorrow" in the heading');
+  });
+
+// Where Tomorrow sits on today's page: its heading's distance below today's first line, in rows,
+// and the gap between the section's bottom and the bottom of the page's writing space, in px.
+const tomorrowPlace = (page: Page) =>
+  page.locator('main').evaluate((main) => {
+    const line = main.querySelector('.lines > .line')!.getBoundingClientRect();
+    const heading = main.querySelector('.tomorrow-heading')!.getBoundingClientRect();
+    const section = main.querySelector('.tomorrow')!.getBoundingClientRect();
+    const writingBottom = main.getBoundingClientRect().bottom - parseFloat(getComputedStyle(main).paddingBottom);
+    return { rows: (heading.top - line.top) / line.height, gap: writingBottom - section.bottom };
+  });
+
+test('Tomorrow sits on the bottom edge of today’s page, on the dot grid, and grows upward', async ({ page }) => {
+  await page.clock.setFixedTime(new Date(2026, 9, 22, 21, 0));
+  await page.goto('/');
+  await write(page, ['groceries']);
+  await expect(tasks(page)).toHaveCount(1);
+
+  const folded = await tomorrowPlace(page);
+  expect(folded.rows).toBeGreaterThan(5);
+  expect(folded.rows).toBeCloseTo(Math.round(folded.rows), 1);
+  expect(folded.gap).toBeCloseTo(0, 0);
+
+  await toggle(page).click();
+  await expect(page.getByRole('textbox', { name: 'New tomorrow task', exact: true })).toBeFocused();
+  await page.keyboard.type('reply to Sam');
+  await page.keyboard.press('Enter');
+  await expect(tomorrowTasks(page)).toHaveCount(1);
+  // One row up for the line and one for the writing line under it; the bottom stays put.
+  const grown = await tomorrowPlace(page);
+  expect(grown.rows).toBeCloseTo(folded.rows - 2, 1);
+  expect(grown.gap).toBeCloseTo(0, 0);
+});
 
 test('a line written in Tomorrow on Thursday evening is on Friday’s page', async ({ page }, testInfo) => {
   await page.clock.setFixedTime(new Date(2026, 9, 22, 21, 0));
@@ -10,10 +58,14 @@ test('a line written in Tomorrow on Thursday evening is on Friday’s page', asy
   await write(page, ['groceries']);
   await toggle(page).click();
   await expect(page.getByRole('textbox', { name: 'New tomorrow task', exact: true })).toBeFocused();
+  const before = await wordLeft(page);
   await page.keyboard.type('reply to Sam');
   await page.keyboard.press('Enter');
   // Wait until the line is saved, or the reload can land before the write.
   await expect(tomorrowTasks(page)).toHaveCount(1);
+  // The fold button goes once Tomorrow has a line, but the heading's word stays where it was.
+  await expect(toggle(page)).toHaveCount(0);
+  expect(await wordLeft(page)).toBeCloseTo(before, 0);
   await page.screenshot({ path: `e2e/screenshots/${testInfo.project.name}-tomorrow.png`, animations: 'disabled' });
 
   await page.clock.setFixedTime(new Date(2026, 9, 23, 4, 1));
@@ -59,4 +111,45 @@ test('desktop: lines drag into Tomorrow from today and the week, and back to tod
 
   await page.getByRole('button', { name: 'Night pages', exact: true }).click();
   await page.screenshot({ path: 'e2e/screenshots/desktop-tomorrow-night.png', animations: 'disabled' });
+});
+
+test('desktop: Tomorrow takes old lines, reorders, sends a line to the week, and gets a binned line back on undo', async ({ page }, testInfo) => {
+  test.skip(testInfo.project.name !== 'desktop', 'mouse drag');
+  // Monday's unfinished line is on an old page by Tuesday evening.
+  await page.clock.setFixedTime(new Date(2026, 9, 19, 9, 0));
+  await page.goto('/');
+  await write(page, ['call bank']);
+  await expect(tasks(page)).toHaveCount(1);
+  await page.clock.setFixedTime(new Date(2026, 9, 20, 21, 0));
+  await page.reload();
+  const oldTasks = page.getByRole('textbox', { name: 'Old task', exact: true });
+  await expect(oldTasks).toHaveCount(1);
+
+  await mouseDrag(page, lineOf(oldTasks.nth(0)), toggle(page));
+  await expect(oldTasks).toHaveCount(0);
+  await expect(tomorrowTasks(page)).toHaveCount(1);
+  await expect(tomorrowTasks(page).nth(0)).toHaveValue('call bank');
+
+  await page.getByRole('textbox', { name: 'New tomorrow task', exact: true }).click();
+  for (const line of ['email Sam', 'book flights']) {
+    await page.keyboard.type(line);
+    await page.keyboard.press('Enter');
+  }
+  await expect(tomorrowTasks(page)).toHaveCount(3);
+
+  // Dropped on Tomorrow's first line, its last line moves to the top.
+  await mouseDrag(page, lineOf(tomorrowTasks(page).nth(2)), lineOf(tomorrowTasks(page).nth(0)));
+  await expect.poll(() => tomorrowValues(page)).toEqual(['book flights', 'call bank', 'email Sam']);
+
+  await mouseDrag(page, lineOf(tomorrowTasks(page).nth(2)), lineOf(page.getByRole('textbox', { name: 'New goal', exact: true })));
+  await expect(goals(page)).toHaveCount(1);
+  await expect(goals(page).nth(0)).toHaveValue('email Sam');
+  await expect(tomorrowTasks(page)).toHaveCount(2);
+
+  // Undo puts a binned line back in Tomorrow, where it was.
+  await mouseDrag(page, lineOf(tomorrowTasks(page).nth(0)), page.locator('.bin'));
+  await expect.poll(() => tomorrowValues(page)).toEqual(['call bank']);
+  await page.locator('.slip-region').getByRole('button', { name: 'undo', exact: true }).click();
+  await expect.poll(() => tomorrowValues(page)).toEqual(['book flights', 'call bank']);
+  await expect(tasks(page)).toHaveCount(0);
 });

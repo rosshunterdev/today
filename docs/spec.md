@@ -44,6 +44,8 @@ Layout: a dot-grid journal. Dot-grid paper, a handwritten-style font, the day's 
 - ! and ? sit in the margin; a star highlights the line instead. Freehand drawing is not in v1.
 - Crossing off is a horizontal stroke across the line, like running a pen through it. The same stroke across a crossed-off task un-crosses it. Tap/click only ever places the cursor for editing.
 
+**Tomorrow.** A "Tomorrow" heading sits folded on the bottom edge of today's page, for writing the next day's list the evening before. Tapping it opens a writing line under it. It stays open while it has lines and grows upward as they are written, leaving blank paper between today's lines and Tomorrow. Lines can be dragged into it from today, the week and old pages (a drop on the folded heading adds to the end), and back out to today or the week. At 4am its lines are simply today's lines.
+
 **Old pages.** Each morning today's page starts blank. Every earlier day that still has unfinished lines is listed under This week, newest first. Lines on an old page can be crossed off, sent to the end of today with the > at the end of the line, or dragged onto today or into This week (the line moves), but nothing can be added or edited. When every line is crossed off the page greys out and offers "bin page"; a page can also be binned early, which takes a second tap ("bin 3 open lines?") because binning can't be undone. The point is to keep a backlog in view without crowding today's list.
 
 **Notes.** Any task or goal can hold a free-text note, like writing on the back of the card. A small pencil at the end of a line (shown while you're on the line, always when a note exists) unfolds the note in place under the line; Escape or the pencil folds it. Enter adds a new line inside the note. Notes move with their line everywhere and are read-only on old pages. A line with blank text but a note still counts as a real line.
@@ -60,6 +62,7 @@ Layout: a dot-grid journal. Dot-grid paper, a handwritten-style font, the day's 
 
 - Logical day = date of (device local time minus 4 hours). 02:30 Friday belongs to Thursday.
 - The page shown is always the current logical day. If the app is left open across 04:00, it switches to the new day on next focus or interaction.
+- Tomorrow's lines are tasks dated the next logical day. At 04:00 they are the new day's lines, with nothing copied.
 - A day ends at 04:00 on the next calendar day. An old page shows that day's lines that were unfinished when it ended: still open, or crossed off since (`done_at` after the day end). Blank and deleted lines never count.
 - An old page appears for every earlier day with at least one such line, unless its day record is `binned`.
 - Moving a line off an old page soft-deletes it there and creates it on today (same `text`, `indent`, `mark`) or as a goal, always open.

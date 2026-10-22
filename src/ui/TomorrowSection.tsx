@@ -5,7 +5,7 @@ import { listDay } from '../store/tasks';
 import { LIST_DROP_ID } from '../order/drop';
 import { NotebookPage } from './NotebookPage';
 
-// Tomorrow: folded under today's lines until tapped, and open whenever it has lines (D-030).
+// Tomorrow: folded on the bottom edge of today's page until tapped, and open whenever it has lines (D-030, D-031).
 // Open comes from the data, so it survives reloads; the 4am turn remounts it (keyed on the day in App), folding it again.
 export function TomorrowSection({ day }: { day: string }) {
   const hasLines = useLiveQuery(async () => (await listDay(day)).length > 0, [day]);
@@ -28,11 +28,18 @@ export function TomorrowSection({ day }: { day: string }) {
     setKeptOpen(opening);
   }
 
+  // No aria-label: the heading names the section, so a screen reader says "Tomorrow" once, not as region, heading and button.
   return (
-    <section className="tomorrow" aria-label="Tomorrow" data-open={open} ref={setNodeRef}>
+    <section className="tomorrow" data-open={open} ref={setNodeRef}>
       <h2 className="tomorrow-heading">
         {hasLines ? (
-          'Tomorrow'
+          // Laid out like the button, with the arrow kept as an unseen spacer, so the word stays put when the first line lands.
+          <span className="tomorrow-label">
+            <span className="tomorrow-fold" aria-hidden="true">
+              ▸
+            </span>
+            Tomorrow
+          </span>
         ) : (
           <button
             type="button"
