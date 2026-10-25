@@ -1,6 +1,20 @@
 import { describe, it, expect, beforeEach } from 'vitest';
 import { db } from './db';
-import { applyPulled, countDirty, dirtyRows, getWatermark, markPushed, repairPositions, setWatermark } from './syncState';
+import {
+  applyPulled,
+  claimDevice,
+  countDirty,
+  dirtyRows,
+  getOwner,
+  getWatermark,
+  keepLocalLines,
+  markPushed,
+  removeLocalLines,
+  repairPositions,
+  setWatermark,
+  wipeLocal,
+} from './syncState';
+import { addTask } from './tasks';
 import { makeGoal, makeTask } from '../test/factories';
 
 const T1 = '2026-10-25T01:00:00.000Z';
@@ -91,5 +105,55 @@ describe('repairPositions', () => {
     expect(b.updatedAt > T1).toBe(true);
     expect((await db.tasks.get('gone'))!.position).toBe('a0');
     expect((await db.goals.get('g2'))!.position > 'a0').toBe(true);
+  });
+});
+
+describe('device ownership', () => {
+  it('claims an empty device without asking', async () => {
+    expect(await claimDevice('u1')).toBe('ready');
+    expect(await getOwner()).toBe('u1');
+  });
+
+  it('asks before adding lines already on the device to an account', async () => {
+    await addTask('2026-10-25', { text: 'milk' });
+    expect(await claimDevice('u1')).toBe('ask');
+    expect(await getOwner()).toBeNull();
+  });
+
+  it("doesn't ask again for the device's own account", async () => {
+    await claimDevice('u1');
+    await addTask('2026-10-25', { text: 'milk' });
+    expect(await claimDevice('u1')).toBe('ready');
+  });
+
+  it('asks when someone else signs in on a device with lines', async () => {
+    await claimDevice('u1');
+    await addTask('2026-10-25', { text: 'milk' });
+    expect(await claimDevice('u2')).toBe('ask');
+  });
+
+  it('keep: everything goes up again and pulls start over', async () => {
+    const t = await addTask('2026-10-25', { text: 'milk' });
+    await db.tasks.update(t.id, { syncedAt: t.updatedAt });
+    await setWatermark('tasks', '2026-10-25T01:00:00.000Z');
+    await keepLocalLines('u1');
+    expect((await db.tasks.get(t.id))!.dirty).toBe(1);
+    expect(await getWatermark('tasks')).toBeNull();
+    expect(await getOwner()).toBe('u1');
+  });
+
+  it('remove: the device is emptied and claimed', async () => {
+    await addTask('2026-10-25', { text: 'milk' });
+    await removeLocalLines('u1');
+    expect(await db.tasks.count()).toBe(0);
+    expect(await getOwner()).toBe('u1');
+  });
+
+  it('wipe clears every table, the owner included', async () => {
+    await addTask('2026-10-25', { text: 'milk' });
+    await claimDevice('u1');
+    await wipeLocal();
+    expect(await db.tasks.count()).toBe(0);
+    expect(await getOwner()).toBeNull();
   });
 });
