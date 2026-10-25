@@ -18,7 +18,9 @@ const TIMES = new Set(['doneAt', 'createdAt', 'updatedAt']);
 
 const snake = (field: string) => field.replace(/[A-Z]/g, (c) => `_${c.toLowerCase()}`);
 
-export function toServer(table: TableName, local: Record<string, unknown>): Record<string, unknown> {
+// Takes any row object: the model's interfaces (Task, Goal...) have no index signature.
+export function toServer(table: TableName, input: object): Record<string, unknown> {
+  const local = input as Record<string, unknown>;
   const row: Record<string, unknown> = {};
   for (const field of FIELDS[table]) {
     // Rows written before notes existed have none; the server column is not null.
