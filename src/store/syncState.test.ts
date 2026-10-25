@@ -1,7 +1,7 @@
 import { describe, it, expect, beforeEach } from 'vitest';
 import { db } from './db';
-import { applyPulled, countDirty, dirtyRows, getWatermark, markPushed, setWatermark } from './syncState';
-import { makeTask } from '../test/factories';
+import { applyPulled, countDirty, dirtyRows, getWatermark, markPushed, repairPositions, setWatermark } from './syncState';
+import { makeGoal, makeTask } from '../test/factories';
 
 const T1 = '2026-10-25T01:00:00.000Z';
 const T2 = '2026-10-25T02:00:00.000Z';
@@ -71,5 +71,25 @@ describe('watermarks', () => {
     await setWatermark('tasks', T1);
     expect(await getWatermark('tasks')).toBe(T1);
     expect(await getWatermark('goals')).toBeNull();
+  });
+});
+
+describe('repairPositions', () => {
+  it("fixes clashes on the given days and weeks as ordinary edits, and leaves deleted lines alone", async () => {
+    await db.tasks.bulkAdd([
+      makeTask({ id: 'a', day: '2026-10-25', position: 'a0', updatedAt: T1 }),
+      makeTask({ id: 'b', day: '2026-10-25', position: 'a0', updatedAt: T1 }),
+      makeTask({ id: 'gone', day: '2026-10-25', position: 'a0', updatedAt: T1, deleted: true }),
+    ]);
+    await db.goals.bulkAdd([
+      makeGoal({ id: 'g1', week: '2026-10-19', position: 'a0', updatedAt: T1 }),
+      makeGoal({ id: 'g2', week: '2026-10-19', position: 'a0', updatedAt: T1 }),
+    ]);
+    await repairPositions(['2026-10-25'], ['2026-10-19']);
+    const b = (await db.tasks.get('b'))!;
+    expect(b.position > 'a0').toBe(true);
+    expect(b.updatedAt > T1).toBe(true);
+    expect((await db.tasks.get('gone'))!.position).toBe('a0');
+    expect((await db.goals.get('g2'))!.position > 'a0').toBe(true);
   });
 });

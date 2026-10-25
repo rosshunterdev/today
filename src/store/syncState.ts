@@ -1,6 +1,8 @@
 import type { Table } from 'dexie';
 import { db, type SyncFields } from './db';
 import { KEY, type LocalRow, type TableName } from '../sync/rows';
+import { positionRepairs } from '../order/repair';
+import { nowIso } from './tasks';
 
 export type { TableName } from '../sync/rows';
 
@@ -40,6 +42,20 @@ export function markPushed(name: TableName, rows: LocalRow[]): Promise<void> {
     const now = await t.bulkGet(keys);
     for (const [i, row] of rows.entries()) {
       if (now[i]?.updatedAt === row.updatedAt) await t.update(keys[i], { syncedAt: row.updatedAt });
+    }
+  });
+}
+
+export function repairPositions(days: string[], weeks: string[]): Promise<void> {
+  return db.transaction('rw', db.tasks, db.goals, async () => {
+    const now = nowIso();
+    for (const day of days) {
+      const live = (await db.tasks.where('day').equals(day).toArray()).filter((t) => !t.deleted);
+      for (const m of positionRepairs(live)) await db.tasks.update(m.id, { position: m.position, updatedAt: now });
+    }
+    for (const week of weeks) {
+      const live = (await db.goals.where('week').equals(week).toArray()).filter((g) => !g.deleted);
+      for (const m of positionRepairs(live)) await db.goals.update(m.id, { position: m.position, updatedAt: now });
     }
   });
 }
