@@ -29,7 +29,7 @@ describe('schema v3 upgrade', () => {
       ],
     );
     const { db } = await import('./db');
-    expect(db.verno).toBe(3);
+    expect(db.verno).toBe(4);
     expect(await db.days.get('2026-10-02')).toMatchObject({ binned: true });
     expect((await db.days.get('2026-10-02'))!.updatedAt > OLD).toBe(true);
     expect(await db.days.get('2026-10-06')).toBeUndefined();
@@ -46,6 +46,18 @@ describe('schema v3 upgrade', () => {
     const { db } = await import('./db');
     expect(await db.days.count()).toBe(0);
     expect(await db.tasks.get('t')).toBeDefined();
+    db.close();
+  });
+});
+
+describe('schema v4 upgrade', () => {
+  it('marks every existing row dirty and adds an empty meta table', async () => {
+    await seedV2([{ day: '2026-10-05', leftoversDismissed: false, updatedAt: OLD }], [makeTask({ id: 't', day: '2026-10-02' })]);
+    const { db } = await import('./db');
+    expect(db.verno).toBe(4);
+    expect(await db.tasks.get('t')).toMatchObject({ dirty: 1, syncedAt: null });
+    expect(await db.days.get('2026-10-05')).toMatchObject({ dirty: 1 });
+    expect(await db.meta.count()).toBe(0);
     db.close();
   });
 });
