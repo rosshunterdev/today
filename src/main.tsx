@@ -8,6 +8,10 @@ import './styles.css';
 import { App } from './App';
 import { requestPersistentStorage } from './store/persist';
 import { checkForUpdates } from './pwa/checkForUpdates';
+import { SyncProvider } from './sync/SyncProvider';
+import { supabase } from './sync/client';
+import { supabaseAuth } from './sync/auth';
+import { supabaseRemote } from './sync/remote';
 
 void requestPersistentStorage();
 
@@ -22,6 +26,8 @@ registerSW({
 
 createRoot(document.getElementById('root')!).render(
   <StrictMode>
-    <App />
+    <SyncProvider auth={supabase ? supabaseAuth(supabase) : null} remote={supabase ? supabaseRemote(supabase) : null}>
+      <App />
+    </SyncProvider>
   </StrictMode>,
 );

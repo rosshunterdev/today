@@ -127,6 +127,124 @@ body {
   outline-offset: 2px;
 }
 
+/* The cloud sits left of the moon and takes over pushing the pair to the right edge. */
+.sync {
+  position: relative;
+  align-self: flex-start;
+  margin: 0.75rem 0 0 auto;
+}
+
+.sync + .theme-switch {
+  margin-left: 0;
+}
+
+.sync-button {
+  position: relative;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  width: 2.75rem;
+  height: 2.75rem;
+  padding: 0;
+  border: 0;
+  border-radius: 50%;
+  background: transparent;
+  color: var(--ink-soft);
+  cursor: pointer;
+}
+
+.sync-button svg {
+  width: 1.4rem;
+  height: 1.4rem;
+}
+
+.sync-button:focus-visible {
+  outline: 2px solid var(--ink);
+  outline-offset: 2px;
+}
+
+.sync-dot {
+  position: absolute;
+  top: 0.7rem;
+  right: 0.55rem;
+  width: 0.45rem;
+  height: 0.45rem;
+  border-radius: 50%;
+  background: var(--ink);
+}
+
+/* A slip of the same paper, lying on the page under the cloud. */
+.sync-card {
+  position: absolute;
+  top: calc(100% + 0.25rem);
+  right: 0;
+  z-index: 20;
+  width: min(19rem, calc(100vw - 2rem));
+  padding: 0.9rem 1rem;
+  border-radius: 0.4rem;
+  background: var(--paper);
+  color: var(--ink);
+  font-size: 1.05rem;
+  box-shadow: 0 0.4rem 1.2rem var(--shadow);
+}
+
+.sync-card p {
+  margin: 0 0 0.6rem;
+}
+
+.sync-card .sync-status {
+  color: var(--ink-soft);
+}
+
+.sync-card label {
+  display: grid;
+  gap: 0.25rem;
+  color: var(--ink-soft);
+}
+
+.sync-card input {
+  font: inherit;
+  color: var(--ink);
+  background: transparent;
+  border: 0;
+  border-bottom: 1.5px solid var(--ink-faint);
+  padding: 0.2rem 0;
+}
+
+.sync-card input:focus {
+  outline: none;
+  border-bottom-color: var(--ink);
+}
+
+.sync-actions {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 0.5rem 1rem;
+  margin-top: 0.75rem;
+}
+
+.sync-actions button {
+  font: inherit;
+  padding: 0.3rem 0;
+  border: 0;
+  background: transparent;
+  color: var(--ink);
+  text-decoration: underline;
+  text-underline-offset: 0.2em;
+  cursor: pointer;
+}
+
+.sync-actions button:disabled {
+  color: var(--ink-faint);
+  cursor: default;
+}
+
+.sync-card [role='alert'] {
+  margin: 0.6rem 0 0;
+  color: var(--ink);
+  font-weight: 600;
+}
+
 .lines {
   margin: 0;
   padding: 0;
