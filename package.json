@@ -9,6 +9,7 @@
     "preview": "vite preview",
     "test": "vitest run",
     "test:watch": "vitest",
+    "test:rls": "vitest run --config vitest.rls.config.ts",
     "e2e": "playwright test"
   },
   "dependencies": {
