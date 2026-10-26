@@ -202,7 +202,15 @@ body {
   color: var(--ink-soft);
 }
 
+.sync-card label + label {
+  margin-top: 0.6rem;
+}
+
+/* Inputs size to the card: left alone they're 600px wide and push the card off the page. */
 .sync-card input {
+  box-sizing: border-box;
+  width: 100%;
+  min-width: 0;
   font: inherit;
   color: var(--ink);
   background: transparent;

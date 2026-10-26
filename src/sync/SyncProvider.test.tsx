@@ -42,40 +42,39 @@ describe('SyncProvider', () => {
     expect(phase()).toBe('off');
   });
 
-  it('signs in with a code on an empty device and brings the lines down', async () => {
+  it('signs in with a password on an empty device and brings the lines down', async () => {
+    auth.accounts.set('alex', 'long enough');
     remote.seed('tasks', toServer('tasks', makeTask({ id: 'p', day: DAY, text: 'from my phone' })));
     mount();
     await waitFor(() => expect(phase()).toBe('signedOut'));
-    await act(() => api.sendCode('me@example.com'));
-    expect(auth.sent).toEqual(['me@example.com']);
-    expect(phase()).toBe('codeSent');
-    await act(() => api.verifyCode('123456'));
+    await act(() => api.signIn('alex', 'long enough'));
     await waitFor(() => expect(phase()).toBe('signedIn'));
+    expect(api.username).toBe('alex');
     await waitFor(async () => expect((await listDay(DAY)).map((t) => t.text)).toEqual(['from my phone']));
   });
 
-  it('rejects a wrong code and stays on the code step', async () => {
+  it('creates an account and signs straight in', async () => {
     mount();
     await waitFor(() => expect(phase()).toBe('signedOut'));
-    await act(() => api.sendCode('me@example.com'));
-    await expect(api.verifyCode('000000')).rejects.toThrow();
-    expect(phase()).toBe('codeSent');
+    await act(() => api.signUp('alex', 'long enough'));
+    await waitFor(() => expect(phase()).toBe('signedIn'));
+    expect(auth.accounts.get('alex')).toBe('long enough');
   });
 
-  it('stays on the code step when a late signed-out event arrives', async () => {
+  it('rejects a wrong password and stays signed out', async () => {
+    auth.accounts.set('alex', 'long enough');
     mount();
     await waitFor(() => expect(phase()).toBe('signedOut'));
-    await act(() => api.sendCode('me@example.com'));
-    auth.emit(null); // Supabase's first event can land after the code was sent
+    await expect(api.signIn('alex', 'not it at all')).rejects.toThrow();
     await act(() => new Promise((r) => setTimeout(r, 20)));
-    expect(phase()).toBe('codeSent');
+    expect(phase()).toBe('signedOut');
   });
 
   it('asks before adding lines already here, and keep sends them up', async () => {
     const t = await addTask(DAY, { text: 'typed before signing in' });
     mount();
     await waitFor(() => expect(phase()).toBe('signedOut'));
-    auth.emit({ id: 'user-1', email: 'me@example.com' });
+    auth.emit({ id: 'user-1', username: 'alex' });
     await waitFor(() => expect(phase()).toBe('asking'));
     expect(remote.rows.tasks.size).toBe(0);
     await act(() => api.keepLines());
@@ -85,7 +84,7 @@ describe('SyncProvider', () => {
   it('remove empties the device instead', async () => {
     await addTask(DAY, { text: 'scratch' });
     mount();
-    auth.emit({ id: 'user-1', email: 'me@example.com' });
+    auth.emit({ id: 'user-1', username: 'alex' });
     await waitFor(() => expect(phase()).toBe('asking'));
     await act(() => api.removeLines());
     expect(phase()).toBe('signedIn');
@@ -96,7 +95,7 @@ describe('SyncProvider', () => {
   it('signs out after syncing, and empties the device', async () => {
     await claimDevice('user-1');
     mount();
-    auth.emit({ id: 'user-1', email: 'me@example.com' });
+    auth.emit({ id: 'user-1', username: 'alex' });
     await waitFor(() => expect(phase()).toBe('signedIn'));
     await addTask(DAY, { text: 'milk' });
     let result: { unsynced: number } | null = { unsynced: -1 };
@@ -112,7 +111,7 @@ describe('SyncProvider', () => {
   it("warns instead of signing out when changes can't be sent", async () => {
     await claimDevice('user-1');
     mount();
-    auth.emit({ id: 'user-1', email: 'me@example.com' });
+    auth.emit({ id: 'user-1', username: 'alex' });
     await waitFor(() => expect(phase()).toBe('signedIn'));
     remote.push = async () => {
       throw new Error('offline');
@@ -130,21 +129,21 @@ describe('SyncProvider', () => {
   it('a lapsed session keeps lines and resumes without asking', async () => {
     await claimDevice('user-1');
     mount();
-    auth.emit({ id: 'user-1', email: 'me@example.com' });
+    auth.emit({ id: 'user-1', username: 'alex' });
     await waitFor(() => expect(phase()).toBe('signedIn'));
     await addTask(DAY, { text: 'milk' });
     auth.emit(null); // refresh failed, or signed out elsewhere
     await waitFor(() => expect(phase()).toBe('lapsed'));
     expect(await db.tasks.count()).toBe(1);
     expect(await getOwner()).toBe('user-1');
-    auth.emit({ id: 'user-1', email: 'me@example.com' });
+    auth.emit({ id: 'user-1', username: 'alex' });
     await waitFor(() => expect(phase()).toBe('signedIn'));
   });
 
   it('delete account empties the device', async () => {
     await claimDevice('user-1');
     mount();
-    auth.emit({ id: 'user-1', email: 'me@example.com' });
+    auth.emit({ id: 'user-1', username: 'alex' });
     await waitFor(() => expect(phase()).toBe('signedIn'));
     await addTask(DAY, { text: 'milk' });
     await act(() => api.deleteAccount());

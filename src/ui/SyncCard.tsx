@@ -1,5 +1,6 @@
 import { useEffect, useRef, useState, type FormEvent, type ReactNode } from 'react';
 import { useSync, type SyncApi } from '../sync/SyncProvider';
+import { AuthFailure, type AuthFailureReason } from '../sync/auth';
 
 const plural = (n: number, word: string) => `${n} ${word}${n === 1 ? '' : 's'}`;
 
@@ -37,13 +38,13 @@ export function SyncCard({ id, onClose }: { id: string; onClose: () => void }) {
     };
   }, [onClose]);
 
-  async function attempt(action: () => Promise<void>, failure: string) {
+  async function attempt(action: () => Promise<void>, failure: string | ((e: unknown) => string)) {
     setBusy(true);
     setError(null);
     try {
       await action();
-    } catch {
-      setError(failure);
+    } catch (e) {
+      setError(typeof failure === 'string' ? failure : failure(e));
     } finally {
       setBusy(false);
     }
@@ -59,23 +60,16 @@ export function SyncCard({ id, onClose }: { id: string; onClose: () => void }) {
   let body: ReactNode;
   if (sync.phase === 'signedOut' || sync.phase === 'lapsed') {
     body = (
-      <EmailStep
+      <AccountStep
         intro={
           sync.phase === 'lapsed'
             ? "You were signed out, so changes here aren't syncing. Sign in again to catch up."
             : 'Sign in to see your pages on your other devices.'
         }
         busy={busy}
-        onSubmit={(email) => attempt(() => sync.sendCode(email), "Couldn't send a code. Try again in a minute.")}
-      />
-    );
-  } else if (sync.phase === 'codeSent') {
-    body = (
-      <CodeStep
-        email={sync.email ?? ''}
-        busy={busy}
-        onSubmit={(code) => attempt(() => sync.verifyCode(code), "That code didn't work. Check it, or send a new one.")}
-        onRestart={sync.restart}
+        onSubmit={(creating, username, password) =>
+          attempt(() => (creating ? sync.signUp : sync.signIn)(username, password), failureText)
+        }
       />
     );
   } else if (sync.phase === 'asking') {
@@ -84,7 +78,7 @@ export function SyncCard({ id, onClose }: { id: string; onClose: () => void }) {
         <p>This device already has lines on it.</p>
         <div className="sync-actions">
           <button type="button" disabled={busy} onClick={() => attempt(sync.keepLines, "Couldn't do that. Try again.")}>
-            Add them to {sync.email}
+            Add them to {sync.username}
           </button>
           <button type="button" disabled={busy} onClick={() => attempt(sync.removeLines, "Couldn't do that. Try again.")}>
             Remove from this device
@@ -123,7 +117,7 @@ export function SyncCard({ id, onClose }: { id: string; onClose: () => void }) {
   } else {
     body = (
       <>
-        <p>Synced as {sync.email}</p>
+        <p>Synced as {sync.username}</p>
         <p className="sync-status">{statusLine(sync)}</p>
         <div className="sync-actions">
           <button type="button" disabled={busy || !sync.online} onClick={() => signOut(false)}>
@@ -145,57 +139,66 @@ export function SyncCard({ id, onClose }: { id: string; onClose: () => void }) {
   );
 }
 
-function EmailStep({ intro, busy, onSubmit }: { intro: string; busy: boolean; onSubmit: (email: string) => void }) {
-  const [email, setEmail] = useState('');
-  return (
-    <form
-      onSubmit={(e: FormEvent) => {
-        e.preventDefault();
-        onSubmit(email.trim());
-      }}
-    >
-      <p>{intro}</p>
-      <label>
-        Email
-        <input type="email" autoComplete="email" required value={email} onChange={(e) => setEmail(e.target.value)} />
-      </label>
-      <div className="sync-actions">
-        <button type="submit" disabled={busy}>
-          Send code
-        </button>
-      </div>
-    </form>
-  );
-}
+const failures: Record<AuthFailureReason, string> = {
+  username: 'Usernames are 3 to 20 letters, numbers or _.',
+  taken: 'That username is taken. Pick another, or sign in.',
+  weak: 'Use a password of at least 8 characters.',
+  wrong: 'Wrong username or password.',
+  other: "Couldn't reach the cloud. Try again in a minute.",
+};
 
-function CodeStep({ email, busy, onSubmit, onRestart }: { email: string; busy: boolean; onSubmit: (code: string) => void; onRestart: () => void }) {
-  const [code, setCode] = useState('');
+const failureText = (e: unknown) => failures[e instanceof AuthFailure ? e.reason : 'other'];
+
+function AccountStep({
+  intro,
+  busy,
+  onSubmit,
+}: {
+  intro: string;
+  busy: boolean;
+  onSubmit: (creating: boolean, username: string, password: string) => void;
+}) {
+  const [creating, setCreating] = useState(false);
+  const [username, setUsername] = useState('');
+  const [password, setPassword] = useState('');
   return (
     <form
       onSubmit={(e: FormEvent) => {
         e.preventDefault();
-        onSubmit(code.trim());
+        onSubmit(creating, username.trim(), password);
       }}
     >
-      <p>We sent a code to {email}.</p>
+      <p>{creating ? "Pick a username and password. There's no reset, so keep the password somewhere safe." : intro}</p>
       <label>
-        Code
+        Username
         <input
-          inputMode="numeric"
-          autoComplete="one-time-code"
-          pattern="[0-9]{6,10}"
-          maxLength={10}
+          autoComplete="username"
+          autoCapitalize="none"
+          autoCorrect="off"
+          spellCheck={false}
+          maxLength={20}
           required
-          value={code}
-          onChange={(e) => setCode(e.target.value)}
+          value={username}
+          onChange={(e) => setUsername(e.target.value)}
+        />
+      </label>
+      <label>
+        Password
+        <input
+          type="password"
+          autoComplete={creating ? 'new-password' : 'current-password'}
+          minLength={creating ? 8 : undefined}
+          required
+          value={password}
+          onChange={(e) => setPassword(e.target.value)}
         />
       </label>
       <div className="sync-actions">
         <button type="submit" disabled={busy}>
-          Sign in
+          {creating ? 'Create account' : 'Sign in'}
         </button>
-        <button type="button" onClick={onRestart}>
-          Use another email
+        <button type="button" onClick={() => setCreating((c) => !c)}>
+          {creating ? 'Sign in instead' : 'Create an account'}
         </button>
       </div>
     </form>

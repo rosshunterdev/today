@@ -3,18 +3,18 @@ import { describe, it, expect, vi } from 'vitest';
 import { render, screen } from '@testing-library/react';
 import userEvent from '@testing-library/user-event';
 import { SyncContext, type SyncApi } from '../sync/SyncProvider';
+import { AuthFailure } from '../sync/auth';
 import { CloudButton } from './CloudButton';
 
 function api(overrides: Partial<SyncApi> = {}): SyncApi {
   return {
     phase: 'signedOut',
-    email: null,
+    username: null,
     status: 'idle',
     pending: 0,
     online: true,
-    sendCode: vi.fn(async () => {}),
-    verifyCode: vi.fn(async () => {}),
-    restart: vi.fn(),
+    signIn: vi.fn(async () => {}),
+    signUp: vi.fn(async () => {}),
     keepLines: vi.fn(async () => {}),
     removeLines: vi.fn(async () => {}),
     signOut: vi.fn(async () => null),
@@ -41,51 +41,67 @@ describe('CloudButton', () => {
     expect(screen.queryByRole('button')).toBeNull();
   });
 
-  it('sends a code to the email typed', async () => {
+  async function fill(username: string, password: string) {
+    await userEvent.type(screen.getByLabelText('Username'), username);
+    await userEvent.type(screen.getByLabelText('Password'), password);
+  }
+
+  it('signs in with the username and password typed', async () => {
     const value = api();
     show(value);
     await open();
-    await userEvent.type(screen.getByLabelText('Email', { exact: true }), 'me@example.com');
-    await userEvent.click(screen.getByRole('button', { name: 'Send code' }));
-    expect(value.sendCode).toHaveBeenCalledWith('me@example.com');
+    await fill(' alex ', 'long enough');
+    await userEvent.click(screen.getByRole('button', { name: 'Sign in' }));
+    expect(value.signIn).toHaveBeenCalledWith('alex', 'long enough');
   });
 
-  it('signs in with the code', async () => {
-    const value = api({ phase: 'codeSent', email: 'me@example.com' });
+  it('creates an account instead', async () => {
+    const value = api();
     show(value);
     await open();
-    expect(screen.getByText('We sent a code to me@example.com.')).toBeInTheDocument();
-    await userEvent.type(screen.getByLabelText('Code', { exact: true }), '123456');
-    await userEvent.click(screen.getByRole('button', { name: 'Sign in' }));
-    expect(value.verifyCode).toHaveBeenCalledWith('123456');
+    await userEvent.click(screen.getByRole('button', { name: 'Create an account' }));
+    expect(screen.getByLabelText('Password')).toHaveAttribute('autocomplete', 'new-password');
+    await fill('alex', 'long enough');
+    await userEvent.click(screen.getByRole('button', { name: 'Create account' }));
+    expect(value.signUp).toHaveBeenCalledWith('alex', 'long enough');
+    expect(value.signIn).not.toHaveBeenCalled();
   });
 
-  it('says so when the code is wrong', async () => {
-    show(api({ phase: 'codeSent', email: 'me@example.com', verifyCode: async () => Promise.reject(new Error('bad')) }));
+  it('says so when the password is wrong', async () => {
+    show(api({ signIn: async () => Promise.reject(new AuthFailure('wrong')) }));
     await open();
-    await userEvent.type(screen.getByLabelText('Code', { exact: true }), '000000');
+    await fill('alex', 'not it at all');
     await userEvent.click(screen.getByRole('button', { name: 'Sign in' }));
-    expect(await screen.findByRole('alert')).toHaveTextContent("That code didn't work.");
+    expect(await screen.findByRole('alert')).toHaveTextContent('Wrong username or password.');
+  });
+
+  it('says so when the username is taken', async () => {
+    show(api({ signUp: async () => Promise.reject(new AuthFailure('taken')) }));
+    await open();
+    await userEvent.click(screen.getByRole('button', { name: 'Create an account' }));
+    await fill('alex', 'long enough');
+    await userEvent.click(screen.getByRole('button', { name: 'Create account' }));
+    expect(await screen.findByRole('alert')).toHaveTextContent('That username is taken.');
   });
 
   it('asks before adding lines on this device to the account', async () => {
-    const value = api({ phase: 'asking', email: 'me@example.com' });
+    const value = api({ phase: 'asking', username: 'alex' });
     show(value);
     await open('Sync (a question is waiting)');
-    await userEvent.click(screen.getByRole('button', { name: 'Add them to me@example.com' }));
+    await userEvent.click(screen.getByRole('button', { name: 'Add them to alex' }));
     expect(value.keepLines).toHaveBeenCalled();
   });
 
   it('shows changes waiting with a dot and in the card', async () => {
-    show(api({ phase: 'signedIn', email: 'me@example.com', pending: 3 }));
+    show(api({ phase: 'signedIn', username: 'alex', pending: 3 }));
     await open('Sync (changes waiting)');
-    expect(screen.getByText('Synced as me@example.com')).toBeInTheDocument();
+    expect(screen.getByText('Synced as alex')).toBeInTheDocument();
     expect(screen.getByText('3 changes waiting to sync.')).toBeInTheDocument();
   });
 
   it('warns before signing out with changes that never synced', async () => {
     const signOut = vi.fn(async (force?: boolean) => (force ? null : { unsynced: 2 }));
-    show(api({ phase: 'signedIn', email: 'me@example.com', signOut }));
+    show(api({ phase: 'signedIn', username: 'alex', signOut }));
     await open();
     await userEvent.click(screen.getByRole('button', { name: 'Sign out' }));
     expect(screen.getByText("2 changes haven't synced. Sign out and lose them?")).toBeInTheDocument();
@@ -94,14 +110,14 @@ describe('CloudButton', () => {
   });
 
   it("can't sign out while offline", async () => {
-    show(api({ phase: 'signedIn', email: 'me@example.com', online: false }));
+    show(api({ phase: 'signedIn', username: 'alex', online: false }));
     await open();
     expect(screen.getByRole('button', { name: 'Sign out' })).toBeDisabled();
     expect(screen.getByText("Offline. Changes will sync when you're back.")).toBeInTheDocument();
   });
 
   it('confirms before deleting the account', async () => {
-    const value = api({ phase: 'signedIn', email: 'me@example.com' });
+    const value = api({ phase: 'signedIn', username: 'alex' });
     show(value);
     await open();
     await userEvent.click(screen.getByRole('button', { name: 'Delete account' }));

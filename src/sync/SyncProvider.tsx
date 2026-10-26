@@ -6,18 +6,17 @@ import { syncOnce } from './engine';
 import { createSyncLoop, type SyncLoop } from './loop';
 import { claimDevice, countDirty, getOwner, keepLocalLines, removeLocalLines, wipeLocal } from '../store/syncState';
 
-export type Phase = 'off' | 'signedOut' | 'codeSent' | 'asking' | 'signedIn' | 'lapsed';
+export type Phase = 'off' | 'signedOut' | 'asking' | 'signedIn' | 'lapsed';
 export type Status = 'idle' | 'syncing' | 'synced' | 'failed';
 
 export interface SyncApi {
   phase: Phase;
-  email: string | null;
+  username: string | null;
   status: Status;
   pending: number;
   online: boolean;
-  sendCode(email: string): Promise<void>;
-  verifyCode(code: string): Promise<void>;
-  restart(): void;
+  signIn(username: string, password: string): Promise<void>;
+  signUp(username: string, password: string): Promise<void>;
   keepLines(): Promise<void>;
   removeLines(): Promise<void>;
   signOut(force?: boolean): Promise<{ unsynced: number } | null>;
@@ -28,13 +27,12 @@ const nothing = async () => {};
 
 const OFF: SyncApi = {
   phase: 'off',
-  email: null,
+  username: null,
   status: 'idle',
   pending: 0,
   online: true,
-  sendCode: nothing,
-  verifyCode: nothing,
-  restart: () => {},
+  signIn: nothing,
+  signUp: nothing,
   keepLines: nothing,
   removeLines: nothing,
   signOut: async () => null,
@@ -70,7 +68,7 @@ function useOnline(): boolean {
 
 function Connected({ auth, remote, children }: { auth: AuthApi; remote: Remote; children: ReactNode }) {
   const [phase, setPhase] = useState<Phase>('signedOut');
-  const [email, setEmail] = useState<string | null>(null);
+  const [username, setUsername] = useState<string | null>(null);
   const [status, setStatus] = useState<Status>('idle');
   const online = useOnline();
   const pending = useLiveQuery(countDirty, [], 0);
@@ -82,7 +80,7 @@ function Connected({ auth, remote, children }: { auth: AuthApi; remote: Remote; 
     () =>
       auth.onChange(async (user) => {
         if (user) {
-          setEmail(user.email);
+          setUsername(user.username);
           if (userId.current === user.id) return; // a token refresh, nothing new
           userId.current = user.id;
           setPhase((await claimDevice(user.id)) === 'ask' ? 'asking' : 'signedIn');
@@ -95,9 +93,7 @@ function Connected({ auth, remote, children }: { auth: AuthApi; remote: Remote; 
           return;
         }
         // Signed out without asking (refresh failed, deleted elsewhere): this device's lines stay.
-        // The first event can land after a code was sent; it never takes the person off the code step.
-        const next = (await getOwner()) ? 'lapsed' : 'signedOut';
-        setPhase((p) => (p === 'codeSent' ? p : next));
+        setPhase((await getOwner()) ? 'lapsed' : 'signedOut');
       }),
     [auth],
   );
@@ -148,19 +144,13 @@ function Connected({ auth, remote, children }: { auth: AuthApi; remote: Remote; 
 
   const api: SyncApi = {
     phase,
-    email,
+    username,
     status,
     pending,
     online,
-    async sendCode(address) {
-      await auth.sendCode(address);
-      setEmail(address);
-      setPhase('codeSent');
-    },
-    async verifyCode(code) {
-      await auth.verifyCode(email ?? '', code); // the session change moves the phase on
-    },
-    restart: () => setPhase('signedOut'),
+    // The session change moves the phase on.
+    signIn: (name, password) => auth.signIn(name, password),
+    signUp: (name, password) => auth.signUp(name, password),
     async keepLines() {
       await keepLocalLines(userId.current!);
       setPhase('signedIn');
