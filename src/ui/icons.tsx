@@ -18,6 +18,14 @@ export function SunIcon() {
   );
 }
 
+export function CloudIcon() {
+  return (
+    <svg viewBox="0 0 24 24" aria-hidden="true" focusable="false">
+      <path {...PEN} d="M7 18.5h10.2a4 4 0 0 0 .6-7.95A5.6 5.6 0 0 0 7 9.3a4.6 4.6 0 0 0 0 9.2z" />
+    </svg>
+  );
+}
+
 export function PencilIcon() {
   return (
     <svg viewBox="0 0 24 24" aria-hidden="true" focusable="false">

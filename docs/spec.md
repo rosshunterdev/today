@@ -131,7 +131,7 @@ Both the local store (Dexie) and Supabase hold the same four tables.
 ┌───────────────────────────────┐        ┌──────────────────┐
 │ UI (React)                    │        │ Supabase         │
 │   ↕                           │        │  • Postgres      │
-│ store (Dexie / IndexedDB)     │ ⇄sync⇄ │  • Auth (email)  │
+│ store (Dexie / IndexedDB)     │ ⇄sync⇄ │  • Auth          │
 │   ↕                           │        │  • Row security  │
 │ sync                          │        └──────────────────┘
 └───────────────────────────────┘
@@ -148,14 +148,14 @@ Stack: React + TypeScript + Vite, vite-plugin-pwa, Dexie, Supabase JS client, Ve
 | `order` | pure functions: fractional position between two positions | nothing |
 | `store` | local reads/writes of tasks and days; sets `updated_at`; exposes live queries to the UI | Dexie |
 | `sync` | push/pull between store and Supabase; conflict resolution | store, Supabase client |
-| `auth` | email code sign-in, session state | Supabase client |
-| UI | notebook page, task line, old pages, sign-in screen | store, day, order, auth |
+| `auth` | username and password sign-in, session state | Supabase client |
+| UI | notebook page, task line, old pages, sync card | store, day, order, auth |
 
 The UI never calls Supabase directly. It only reads and writes `store`.
 
-**Auth.** Email + emailed 6-digit code (not magic link: on iOS a magic link opens Safari, not the installed PWA). Requires being online once, on first use. Supabase row-level security restricts every row to `user_id = auth.uid()`.
+**Auth.** Optional. The app works fully with no account; data stays on the device. A cloud button beside the moon opens a card to sign in, or create an account, with a username and password. Supabase needs an email, so a username is stored as `<name>@today.invalid`, a reserved domain that never receives mail; no email is ever sent and "Confirm email" is off. Usernames are 3 to 20 of a-z, 0-9 and _, ignoring case; passwords are at least 6 characters. There's no self-service reset: the owner sets a new password in the Supabase dashboard. The first sign-in on a device that already has lines asks whether to add them to the account or remove them. Signing out syncs first, warns about anything unsynced, then empties the device. Delete account removes the account and every row. Supabase row-level security restricts every row to `user_id = auth.uid()`.
 
-**Sync.** Triggers: app open, window focus, 2 seconds after the last local edit, and on reconnect. Push: local rows with `updated_at` newer than the last successful push. Pull: remote rows with `updated_at` newer than the last successful pull. Conflict: per row, the newer `updated_at` wins (last-write-wins). Fonts are cached by the service worker so the page renders offline.
+**Sync.** Triggers: app open, window focus, 2 seconds after the last local edit, and on reconnect. Push: local rows whose `updatedAt` differs from the `updatedAt` the server last confirmed. Pull: rows whose server-set `server_updated_at` is newer than the last pull (minus a minute, to catch late commits). Conflict: per row, the newer `updated_at` wins (last-write-wins); the server drops a write older than what it holds. After a pull, lines two devices gave the same position are spread out, the same way on every device. Fonts are cached by the service worker so the page renders offline.
 
 ## 7. Error handling
 
@@ -168,7 +168,7 @@ Rule: nothing ever stops the user writing.
 | Session expired, refresh fails | Keep working locally; show a quiet "sign in to sync" note. |
 | Browser storage eviction (iOS) | Call `navigator.storage.persist()` on start. Cloud copy is the backup; on a fresh store, pull restores data after sign-in. |
 | Device time zone changes | Logical day follows device clock. Odd rollover hour while travelling is accepted. |
-| First open while offline | Show sign-in screen explaining it needs a connection once. |
+| First open while offline | Works as usual; sign-in waits for a connection. |
 
 ## 8. Testing
 

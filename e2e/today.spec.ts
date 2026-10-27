@@ -32,6 +32,12 @@ test('write, cross off, survive reload', async ({ page }, testInfo) => {
   await expect(page.getByRole('textbox', { name: 'Task', exact: true }).nth(0)).toHaveValue('reply to Sam');
 });
 
+test('a build without sync keys shows no cloud', async ({ page }) => {
+  await page.goto('/');
+  await expect(page.getByRole('button', { name: 'Night pages', exact: true })).toBeVisible();
+  await expect(page.getByRole('button', { name: 'Sync', exact: true })).toHaveCount(0);
+});
+
 test('cross off and back with a click on the bullet', async ({ page }, testInfo) => {
   const phone = testInfo.project.name === 'phone';
   await page.goto('/');

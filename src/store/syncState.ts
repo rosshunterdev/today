@@ -65,6 +65,49 @@ export async function countDirty(): Promise<number> {
   return counts.reduce((a, b) => a + b, 0);
 }
 
+const OWNER = 'owner';
+
+export async function getOwner(): Promise<string | null> {
+  return (await db.meta.get(OWNER))?.value ?? null;
+}
+
+async function countLiveLines(): Promise<number> {
+  const [tasks, goals] = await Promise.all([
+    db.tasks.filter((t) => !t.deleted).count(),
+    db.goals.filter((g) => !g.deleted).count(),
+  ]);
+  return tasks + goals;
+}
+
+// Lines are never added to an account without asking (D-025).
+export async function claimDevice(userId: string): Promise<'ready' | 'ask'> {
+  if ((await getOwner()) === userId) return 'ready';
+  if ((await countLiveLines()) > 0) return 'ask';
+  await removeLocalLines(userId);
+  return 'ready';
+}
+
+export function keepLocalLines(userId: string): Promise<void> {
+  return db.transaction('rw', db.tables, async () => {
+    for (const name of SYNC_TABLES) await table(name).toCollection().modify({ syncedAt: null });
+    await db.meta.clear();
+    await db.meta.put({ key: OWNER, value: userId });
+  });
+}
+
+export function removeLocalLines(userId: string): Promise<void> {
+  return db.transaction('rw', db.tables, async () => {
+    await Promise.all(db.tables.map((t) => t.clear()));
+    await db.meta.put({ key: OWNER, value: userId });
+  });
+}
+
+export function wipeLocal(): Promise<void> {
+  return db.transaction('rw', db.tables, async () => {
+    await Promise.all(db.tables.map((t) => t.clear()));
+  });
+}
+
 const watermarkKey = (name: TableName) => `pulled:${name}`;
 
 export async function getWatermark(name: TableName): Promise<string | null> {
