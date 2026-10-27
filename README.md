@@ -48,6 +48,7 @@ Task apps tend to feel worse than paper. Paper is always ready, crossing things 
 ## How it's built
 
 - **The UI only talks to the store.** Components read and write through `src/store/*` and never touch the database directly, which leaves room for a sync layer later without changing the UI.
+- **Sync is optional and sits beside the store.** Signed-in devices sync through Supabase (Postgres with row-level security); a build without keys has no sync code paths at all. The UI reads sync state through one hook, `useSync()`.
 - **Pure logic is separate from React.** Day rollover, old page rules (`src/day/`) and line ordering (`src/order/`) are plain functions with their own unit tests.
 - **Fractional indexing for order.** Each line has a sortable string position, so moving a line between two others never renumbers the rest.
 - **Every write sets `updatedAt`, and deletes are soft.** This keeps the data ready for last-write-wins sync.
@@ -68,6 +69,7 @@ npm run preview   # serve the production build
 ```bash
 npm test          # unit and component tests (Vitest)
 npm run e2e       # end-to-end tests (Playwright; builds and serves on port 4173)
+npm run test:rls  # row-level security and sign-in tests against a Supabase project (needs .env.test.local)
 ```
 
 Unit tests run in the `Pacific/Auckland` time zone so the 4am rollover behaves the same on every machine. The end-to-end test writes two tasks, crosses one off, reloads, and checks that everything was saved, on both a desktop and a phone (Pixel 7) profile.
@@ -76,7 +78,6 @@ CI runs both suites, plus the type-check and build, on every pull request and pu
 
 ## Roadmap
 
-- Sign in with an emailed code and sync between devices (Supabase, with row-level security).
 - Deploy to Vercel.
 
 ## License
