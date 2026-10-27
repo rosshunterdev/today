@@ -76,10 +76,6 @@ Unit tests run in the `Pacific/Auckland` time zone so the 4am rollover behaves t
 
 CI runs both suites, plus the type-check and build, on every pull request and push to `main`.
 
-## Roadmap
-
-- Deploy to Vercel.
-
 ## License
 
 [MIT](LICENSE)
