@@ -142,7 +142,7 @@ export function SyncCard({ id, onClose }: { id: string; onClose: () => void }) {
 const failures: Record<AuthFailureReason, string> = {
   username: 'Usernames are 3 to 20 letters, numbers or _.',
   taken: 'That username is taken. Pick another, or sign in.',
-  weak: 'Use a password of at least 8 characters.',
+  weak: 'Use a password of at least 6 characters.',
   wrong: 'Wrong username or password.',
   other: "Couldn't reach the cloud. Try again in a minute.",
 };
@@ -187,7 +187,7 @@ function AccountStep({
         <input
           type="password"
           autoComplete={creating ? 'new-password' : 'current-password'}
-          minLength={creating ? 8 : undefined}
+          minLength={creating ? 6 : undefined}
           required
           value={password}
           onChange={(e) => setPassword(e.target.value)}

@@ -11,7 +11,7 @@ export function fakeAuth(): FakeAuth {
     },
     async signUp(username, password) {
       if (fake.accounts.has(username)) throw new AuthFailure('taken');
-      if (password.length < 8) throw new AuthFailure('weak');
+      if (password.length < 6) throw new AuthFailure('weak');
       fake.accounts.set(username, password);
       fake.emit({ id: 'user-1', username });
     },

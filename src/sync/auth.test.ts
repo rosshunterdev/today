@@ -40,10 +40,12 @@ describe('supabaseAuth', () => {
     await expect(api.signUp('alex', 'long enough')).rejects.toEqual(new AuthFailure(reason as AuthFailure['reason']));
   });
 
-  it('refuses a new password under 8 characters without asking the server', async () => {
+  it('refuses a new password under 6 characters without asking the server', async () => {
     const { auth, api } = client({ error: null });
     await expect(api.signUp('alex', 'short')).rejects.toEqual(new AuthFailure('weak'));
     expect(auth.signUp).not.toHaveBeenCalled();
+    await api.signUp('alex', 'sixsix');
+    expect(auth.signUp).toHaveBeenCalledWith({ email: 'alex@today.invalid', password: 'sixsix' });
   });
 
   it('refuses a username outside the rules without asking the server', async () => {

@@ -51,8 +51,8 @@ export function supabaseAuth(client: SupabaseClient): AuthApi {
   return {
     async signUp(username, password) {
       const email = emailFor(username);
-      // Supabase's own minimum is 6; the app asks for 8 (NIST's floor).
-      if (password.length < 8) throw new AuthFailure('weak');
+      // Supabase's own minimum; checked here so the card can say so before any request.
+      if (password.length < 6) throw new AuthFailure('weak');
       check(await client.auth.signUp({ email, password }));
     },
     async signIn(username, password) {
