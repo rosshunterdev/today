@@ -5,6 +5,7 @@ import { binPage, pageLineToTodayEnd, type OldPage } from '../store/pages';
 import { setDone } from '../store/tasks';
 import { isPageDone, pageTitle } from '../day/pages';
 import { OLD_DROP_ID } from '../order/drop';
+import { isHeading } from '../heading';
 import { TaskLine } from './TaskLine';
 import { usePointerCoarse } from './usePointerCoarse';
 
@@ -36,7 +37,7 @@ export function OldPages({ pages, today }: { pages: OldPage[]; today: string }) 
         <path d="M2 8 C30 4, 60 11, 90 7 S150 4, 178 8" />
       </svg>
       {pages.map((page) => {
-        const open = page.lines.filter((l) => !l.done).length;
+        const open = page.lines.filter((l) => !l.done && !isHeading(l.text)).length;
         const confirming = confirmDay === page.day;
         // Binning can't be undone, so a page with open lines takes a second tap.
         function handleBin() {
