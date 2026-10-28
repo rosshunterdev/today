@@ -77,7 +77,7 @@ jobs:
           cache: npm
       - if: env.SUPABASE_TEST_SECRET_KEY != ''
         run: npm ci
-      # Free projects pause after a week unused: if this fails to connect, restore today-staging in the dashboard.
+      # Free projects pause after a week unused: if this fails to connect, restore today-prod in the dashboard.
       - name: Row-level security tests
         if: env.SUPABASE_TEST_SECRET_KEY != ''
         run: npm run test:rls
