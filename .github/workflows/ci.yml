@@ -56,7 +56,7 @@ jobs:
           retention-days: 14
 
   rls:
-    name: Row-level security (staging Supabase)
+    name: Row-level security (Supabase)
     runs-on: ubuntu-latest
     timeout-minutes: 10
     env:
@@ -64,10 +64,10 @@ jobs:
       SUPABASE_TEST_PUBLISHABLE_KEY: ${{ secrets.SUPABASE_TEST_PUBLISHABLE_KEY }}
       SUPABASE_TEST_SECRET_KEY: ${{ secrets.SUPABASE_TEST_SECRET_KEY }}
     steps:
-      # Forks and fresh clones have no staging secrets: skip rather than fail.
-      - name: Skip without staging secrets
+      # Forks and fresh clones have no Supabase secrets: skip rather than fail.
+      - name: Skip without Supabase secrets
         if: env.SUPABASE_TEST_SECRET_KEY == ''
-        run: echo "::notice::No staging secrets; row-level security tests skipped."
+        run: echo "::notice::No Supabase secrets; row-level security tests skipped."
       - if: env.SUPABASE_TEST_SECRET_KEY != ''
         uses: actions/checkout@v5
       - if: env.SUPABASE_TEST_SECRET_KEY != ''
@@ -77,7 +77,7 @@ jobs:
           cache: npm
       - if: env.SUPABASE_TEST_SECRET_KEY != ''
         run: npm ci
-      # Free projects pause after a week unused: if this fails to connect, restore today-staging in the dashboard.
+      # Free projects pause after a week unused: if this fails to connect, restore today-prod in the dashboard.
       - name: Row-level security tests
         if: env.SUPABASE_TEST_SECRET_KEY != ''
         run: npm run test:rls
