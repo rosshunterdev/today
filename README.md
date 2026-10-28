@@ -4,6 +4,8 @@
 
 A today-only task list that feels like the pen-and-paper list you write each morning. It's an installable, offline-first web app (PWA) for phone and laptop.
 
+**Try it:** [today-seven-kappa.vercel.app](https://today-seven-kappa.vercel.app)
+
 <p>
   <img src="docs/screenshots/desktop.png" alt="Today on desktop: a dot-grid journal lying open, today's list on the left page with 'reply to Sam' crossed off, This week on the right page" width="560">
   &nbsp;
@@ -33,6 +35,7 @@ Task apps tend to feel worse than paper. Paper is always ready, crossing things 
 - **4am day boundary:** 02:30 Friday still counts as Thursday.
 - **Phone keyboard bar:** ⇥ / ⇤ buttons above the keyboard for sub-steps.
 - **Installable and offline:** works with no connection; data is stored on the device.
+- **Optional sync:** the cloud beside the moon signs in with a username and password, and the same pages show up on every device. Without an account, everything stays on the device.
 
 ## Stack
 
@@ -40,6 +43,7 @@ Task apps tend to feel worse than paper. Paper is always ready, crossing things 
 |---|---|
 | App | React, TypeScript, Vite |
 | Storage | Dexie (IndexedDB) |
+| Sync and accounts | Supabase (Postgres, Auth, row-level security) |
 | Drag and drop | dnd-kit |
 | Offline / install | vite-plugin-pwa (Workbox service worker) |
 | Tests | Vitest, Testing Library, fake-indexeddb, Playwright |
