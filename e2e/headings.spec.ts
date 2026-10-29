@@ -17,6 +17,11 @@ test('a heading is written, survives a reload, and turns back into a task', asyn
   await expect(page.locator('html')).toHaveAttribute('data-theme', 'night');
   await page.screenshot({ path: `e2e/screenshots/${testInfo.project.name}-headings-night.png`, animations: 'disabled' });
 
+  // A click on the label's first letters still lands the caret after the full text.
+  await headings(page).nth(0).click({ position: { x: 15, y: 10 } });
+  await page.keyboard.type('!');
+  await expect(headings(page).nth(0)).toHaveValue('# Job hunt!');
+
   await headings(page).nth(1).click();
   await expect(headings(page).nth(1)).toHaveValue('Admin:');
   await page.keyboard.press('End');

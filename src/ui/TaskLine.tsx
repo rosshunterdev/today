@@ -40,6 +40,7 @@ export interface TaskLineProps {
 export function TaskLine(props: TaskLineProps) {
   const { task, list, label = 'Task', readOnly = false, coarse, focusRequested, onFocusHandled, onFocusChange, onText, onEnter, onBackspaceEmpty, onIndent, onToggleDone, onCycleMark, onNotes, onMoveToday } = props;
   const inputRef = useRef<HTMLInputElement>(null);
+  const clickOpensHeading = useRef(false);
   const measureRef = useRef<HTMLSpanElement>(null);
   const [text, setText] = useState(task.text);
   // A heading is worked out from the text. Its # or : shows only while the line is being edited.
@@ -198,6 +199,16 @@ export function TaskLine(props: TaskLineProps) {
             onText(e.target.value);
           }}
           onKeyDown={onKeyDown}
+          // A click that opens a heading places its caret on mouseup, inside the shorter label, after the effect above.
+          onMouseDown={() => {
+            clickOpensHeading.current = heading !== null && document.activeElement !== inputRef.current;
+          }}
+          onClick={() => {
+            const el = inputRef.current;
+            if (!clickOpensHeading.current || !el) return;
+            clickOpensHeading.current = false;
+            el.setSelectionRange(el.value.length, el.value.length);
+          }}
           onFocus={() => {
             setEditing(true);
             onFocusChange(true);
