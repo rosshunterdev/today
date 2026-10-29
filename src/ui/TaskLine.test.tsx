@@ -6,6 +6,7 @@ import { NotebookPage } from './NotebookPage';
 import { TaskLine } from './TaskLine';
 import { db } from '../store/db';
 import { addTask, listDay, setNotes } from '../store/tasks';
+import { makeTask } from '../test/factories';
 
 const DAY = '2026-10-02';
 const lines = () => screen.queryAllByRole('textbox', { name: 'Task' });
@@ -295,5 +296,81 @@ describe('TaskLine on an old page', () => {
     renderOld('call bank', noop, onToggleDone);
     await user.click(screen.getByRole('button', { name: 'Cross off call bank' }));
     expect(onToggleDone).toHaveBeenCalledTimes(1);
+  });
+});
+
+describe('headings', () => {
+  const heading = () => screen.getByRole('textbox', { name: 'Heading' });
+
+  it('draws # and trailing-colon lines as labels, without the symbol', async () => {
+    await addTask(DAY, { text: '# Job hunt' });
+    await addTask(DAY, { text: 'Admin:' });
+    render(<NotebookPage day={DAY} />);
+    await waitFor(() => expect(screen.getAllByRole('textbox', { name: 'Heading' })).toHaveLength(2));
+    const [job, admin] = screen.getAllByRole('textbox', { name: 'Heading' });
+    expect(job).toHaveValue('Job hunt');
+    expect(admin).toHaveValue('Admin');
+    expect(job.closest('li')).toHaveAttribute('data-heading', 'true');
+    expect(screen.queryByRole('button', { name: /^Cross off/ })).toBeNull();
+    expect(screen.queryByRole('button', { name: /^Mark:/ })).toBeNull();
+  });
+
+  it('shows the symbol while editing, typing goes on the end, and it hides again on leaving', async () => {
+    const user = userEvent.setup();
+    await addTask(DAY, { text: '# Job hunt' });
+    render(<NotebookPage day={DAY} />);
+    await user.click(await screen.findByRole('textbox', { name: 'Heading' }));
+    expect(heading()).toHaveValue('# Job hunt');
+    await user.keyboard(' 2');
+    await waitFor(async () => expect((await listDay(DAY))[0].text).toBe('# Job hunt 2'));
+    await user.tab();
+    expect(heading()).toHaveValue('Job hunt 2');
+  });
+
+  it('becomes a task again when the symbol is deleted', async () => {
+    const user = userEvent.setup();
+    await addTask(DAY, { text: 'Admin:' });
+    render(<NotebookPage day={DAY} />);
+    await user.click(await screen.findByRole('textbox', { name: 'Heading' }));
+    await user.keyboard('{Backspace}');
+    await waitFor(() => expect(screen.getByRole('textbox', { name: 'Task' })).toHaveValue('Admin'));
+    expect(screen.getByRole('button', { name: 'Cross off Admin' })).toBeInTheDocument();
+  });
+
+  it('a stroke never crosses a heading off', async () => {
+    await addTask(DAY, { text: '# Job hunt' });
+    render(<NotebookPage day={DAY} />);
+    const line = (await screen.findByRole('textbox', { name: 'Heading' })).closest('li')!;
+    fireEvent.pointerDown(line, { clientX: 10, clientY: 10 });
+    fireEvent.pointerUp(window, { clientX: 250, clientY: 12 });
+    await pause();
+    expect((await listDay(DAY))[0].done).toBe(false);
+  });
+
+  it('ignores a stored cross, indent and star, and gets them back when the symbol goes', async () => {
+    const user = userEvent.setup();
+    await db.tasks.add(makeTask({ day: DAY, text: 'Admin:', done: true, doneAt: '2026-10-02T01:00:00.000Z', indent: 1, mark: 'star' }));
+    render(<NotebookPage day={DAY} />);
+    const line = (await screen.findByRole('textbox', { name: 'Heading' })).closest('li')!;
+    expect(line).toHaveAttribute('data-done', 'false');
+    expect(line).toHaveAttribute('data-indent', '0');
+    expect(line).not.toHaveAttribute('data-mark');
+    expect(line.querySelector('.strike, .star')).toBeNull();
+    await user.click(heading());
+    await user.keyboard('{Backspace}');
+    const task = await screen.findByRole('textbox', { name: 'Task' });
+    expect(task.closest('li')).toHaveAttribute('data-indent', '1');
+    expect(task.closest('li')).toHaveAttribute('data-done', 'true');
+    expect(task.closest('li')).toHaveAttribute('data-mark', 'star');
+  });
+
+  it('Tab on a heading does not indent it', async () => {
+    const user = userEvent.setup();
+    await addTask(DAY, { text: '# Job hunt' });
+    render(<NotebookPage day={DAY} />);
+    await user.click(await screen.findByRole('textbox', { name: 'Heading' }));
+    await user.tab();
+    await pause();
+    expect((await listDay(DAY))[0].indent).toBe(0);
   });
 });

@@ -6,6 +6,7 @@ import type { LineSource } from '../order/drop';
 import { isStrike } from './stroke';
 import { MARK_GLYPH } from '../marks';
 import { hasNotes } from '../day/leftovers';
+import { headingLabel } from '../heading';
 import { CrossIcon, DragDotsIcon, PencilIcon } from './icons';
 
 export interface LineItem {
@@ -39,8 +40,13 @@ export interface TaskLineProps {
 export function TaskLine(props: TaskLineProps) {
   const { task, list, label = 'Task', readOnly = false, coarse, focusRequested, onFocusHandled, onFocusChange, onText, onEnter, onBackspaceEmpty, onIndent, onToggleDone, onCycleMark, onNotes, onMoveToday } = props;
   const inputRef = useRef<HTMLInputElement>(null);
+  const clickOpensHeading = useRef(false);
   const measureRef = useRef<HTMLSpanElement>(null);
   const [text, setText] = useState(task.text);
+  // A heading is worked out from the text. Its # or : shows only while the line is being edited.
+  const [editing, setEditing] = useState(false);
+  const heading = headingLabel(text);
+  const shown = heading !== null && !editing ? heading : text;
   const [textWidth, setTextWidth] = useState(0);
   const notesRef = useRef<HTMLTextAreaElement>(null);
   const toggleRef = useRef<HTMLButtonElement>(null);
@@ -50,7 +56,7 @@ export function TaskLine(props: TaskLineProps) {
   const [notesOpen, setNotesOpen] = useState(() => hasNotes(task.notes));
   const [openedByHand, setOpenedByHand] = useState(false);
   const noted = hasNotes(notes);
-  const notesLabel = `Notes for ${text.trim() || 'line'}`;
+  const notesLabel = `Notes for ${(heading ?? text).trim() || 'line'}`;
   const { attributes, listeners, setNodeRef, setActivatorNodeRef, transform, transition, isDragging } = useSortable({
     id: task.id,
     data: { list, text: task.text },
@@ -86,15 +92,23 @@ export function TaskLine(props: TaskLineProps) {
     onFocusHandled();
   }, [focusRequested, onFocusHandled]);
 
+  // Focus swaps a heading's label for its full text, so put the caret after it.
+  useLayoutEffect(() => {
+    const el = inputRef.current;
+    if (!editing || heading === null || !el || document.activeElement !== el) return;
+    el.setSelectionRange(el.value.length, el.value.length);
+    // Only on starting an edit: typing moves the caret itself.
+  }, [editing]);
+
   useLayoutEffect(() => {
     setTextWidth(measureRef.current?.offsetWidth ?? 0);
-  }, [text, task.indent]);
+  }, [shown, task.indent]);
 
   function onKeyDown(e: KeyboardEvent<HTMLInputElement>) {
     if (e.key === 'Enter') {
       e.preventDefault();
       onEnter();
-    } else if (e.key === 'Tab' && onIndent) {
+    } else if (e.key === 'Tab' && onIndent && heading === null) {
       e.preventDefault();
       onIndent(e.shiftKey ? 0 : 1);
     } else if (e.key === 'Backspace' && text === '' && !noted) {
@@ -106,6 +120,7 @@ export function TaskLine(props: TaskLineProps) {
   // Listen for the release on window so a stroke that drifts off the line still counts.
   // pointercancel (the browser took over to scroll) ends the stroke without a strike.
   function onPointerDown(e: ReactPointerEvent<HTMLLIElement>) {
+    if (heading !== null) return; // a heading can't be crossed off
     // With a mouse, dragging inside the line being edited is text selection, not a strike.
     if (e.pointerType === 'mouse' && document.activeElement === inputRef.current && e.target === inputRef.current) return;
     const startX = e.clientX;
@@ -131,20 +146,21 @@ export function TaskLine(props: TaskLineProps) {
     <li
       ref={setNodeRef}
       className="line"
-      data-indent={task.indent ?? 0}
-      data-done={task.done}
-      data-mark={task.mark ?? undefined}
+      data-indent={heading !== null ? 0 : (task.indent ?? 0)}
+      data-done={task.done && heading === null}
+      data-mark={heading === null ? (task.mark ?? undefined) : undefined}
+      data-heading={heading !== null || undefined}
       data-dragging={isDragging}
       style={{ transform: CSS.Transform.toString(transform), transition }}
       onPointerDown={onPointerDown}
       onTouchStart={coarse ? (listeners?.onTouchStart as TouchEventHandler<HTMLLIElement> | undefined) : undefined}
     >
-      {onCycleMark && (
+      {onCycleMark && heading === null && (
         <button type="button" className="mark" aria-label={`Mark: ${task.mark ?? 'none'}`} onClick={onCycleMark}>
           {task.mark ? MARK_GLYPH[task.mark] : ''}
         </button>
       )}
-      {readOnly && task.mark && (
+      {readOnly && task.mark && heading === null && (
         <span className="mark" role="img" aria-label={`Mark: ${task.mark}`}>
           {MARK_GLYPH[task.mark]}
         </span>
@@ -156,38 +172,56 @@ export function TaskLine(props: TaskLineProps) {
       )}
       <div className="ink">
         {/* The single-click way to cross off: the stroke is a gesture, and not everyone can make one. */}
-        <button
-          type="button"
-          className="bullet"
-          aria-label={`Cross off ${text.trim() || 'line'}`}
-          aria-pressed={task.done}
-          onClick={() => {
-            onToggleDone();
-            inputRef.current?.blur();
-          }}
-        >
-          {task.done ? <CrossIcon /> : <span className="dot" />}
-        </button>
-        {task.mark === 'star' && <span className="star" style={{ width: textWidth + 6 }} aria-hidden="true" />}
+        {heading === null && (
+          <button
+            type="button"
+            className="bullet"
+            aria-label={`Cross off ${text.trim() || 'line'}`}
+            aria-pressed={task.done}
+            onClick={() => {
+              onToggleDone();
+              inputRef.current?.blur();
+            }}
+          >
+            {task.done ? <CrossIcon /> : <span className="dot" />}
+          </button>
+        )}
+        {task.mark === 'star' && heading === null && <span className="star" style={{ width: textWidth + 6 }} aria-hidden="true" />}
         <input
           ref={inputRef}
           className="line-text"
-          aria-label={label}
+          aria-label={heading !== null ? 'Heading' : label}
           readOnly={readOnly}
           enterKeyHint="next"
-          value={text}
+          value={shown}
           onChange={(e) => {
             setText(e.target.value);
             onText(e.target.value);
           }}
           onKeyDown={onKeyDown}
-          onFocus={() => onFocusChange(true)}
-          onBlur={() => onFocusChange(false)}
+          // A click that opens a heading places its caret on mouseup, inside the shorter label, after the effect above.
+          onMouseDown={() => {
+            clickOpensHeading.current = heading !== null && document.activeElement !== inputRef.current;
+          }}
+          onClick={() => {
+            const el = inputRef.current;
+            if (!clickOpensHeading.current || !el) return;
+            clickOpensHeading.current = false;
+            el.setSelectionRange(el.value.length, el.value.length);
+          }}
+          onFocus={() => {
+            setEditing(true);
+            onFocusChange(true);
+          }}
+          onBlur={() => {
+            setEditing(false);
+            onFocusChange(false);
+          }}
         />
         <span ref={measureRef} className="measure" aria-hidden="true">
-          {text}
+          {shown}
         </span>
-        {task.done && (
+        {task.done && heading === null && (
           <svg className="strike" style={{ width: textWidth + 4 }} viewBox="0 0 100 10" preserveAspectRatio="none" aria-hidden="true">
             <path d="M1 5.2 C30 4.6, 62 5.6, 99 4.8" pathLength={1} />
           </svg>
@@ -197,7 +231,7 @@ export function TaskLine(props: TaskLineProps) {
         <button
           type="button"
           className="move-today"
-          aria-label={`Move ${task.text.trim() || 'line'} to today`}
+          aria-label={`Move ${(headingLabel(task.text) ?? task.text).trim() || 'line'} to today`}
           onPointerDown={(e) => e.stopPropagation()}
           onClick={(e) => onMoveToday(e.currentTarget)}
         >

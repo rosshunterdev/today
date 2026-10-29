@@ -16,6 +16,10 @@ describe('isUnfinished', () => {
     expect(isUnfinished(makeTask({ text: '', notes: 'call back after 3' }))).toBe(true);
     expect(isUnfinished(makeTask({ text: '', notes: '  \n ' }))).toBe(false);
   });
+  it('never counts a heading, so last week’s headings are not offered again', () => {
+    expect(isUnfinished(makeTask({ text: 'Job hunt:' }))).toBe(false);
+    expect(isUnfinished(makeTask({ text: '# Admin', notes: 'gifts' }))).toBe(false);
+  });
 });
 
 describe('hasNotes', () => {

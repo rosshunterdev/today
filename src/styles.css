@@ -274,6 +274,20 @@ body {
   padding-left: calc(var(--text-x) + var(--indent));
 }
 
+/* A heading: a label written out into the bullet column, underlined, still on the row. */
+.line[data-heading='true'] {
+  padding-left: calc(var(--text-x) - 1.375rem);
+}
+
+.line[data-heading='true'] .line-text {
+  font-size: 1.15em;
+  font-weight: 600;
+  text-decoration: underline;
+  text-decoration-color: var(--ink-soft);
+  text-decoration-thickness: 2px;
+  text-underline-offset: 0.2em; /* 0.3em fell below the input's fixed height and was clipped */
+}
+
 .ink {
   position: relative;
   flex: 1;

@@ -17,7 +17,7 @@ Plus: paper is a pleasant canvas with room for personal expression.
 
 **Success.** The user opens this each morning instead of reaching for paper, and keeps doing so after the novelty wears off.
 
-**Core rule.** The app holds today, and nothing else. No backlog, projects, tags, due dates, priorities, reminders, stats or streaks.
+**Core rule.** The app holds today, and nothing else. No backlog, projects, tags, due dates, priorities, reminders, stats or streaks. Headings can group a page's lines the way they would on paper, but they are written words, not projects: nothing about them is kept between days.
 
 ## 2. Platforms
 
@@ -36,6 +36,7 @@ Layout: a dot-grid journal. Dot-grid paper, a handwritten-style font, the day's 
 | Cross off / undo | Drag the mouse across the line | Swipe a finger across the line |
 | Reorder | Drag the dotted grip that appears on hover at the line's left edge | Long-press, then drag |
 | Margin mark | Click the margin to cycle: none, star (highlights the line), !, ? | Tap the margin |
+| Make a heading | Start the line with `# ` or end it with `:` | Same |
 | Delete | Backspace on an empty line, or drag the line into the bin at the bottom right of the week page | Backspace on an empty line, or long-press and drag the line into the bin that appears above the corners |
 | Night pages | Click the moon in today's header | Tap the moon |
 
@@ -45,6 +46,8 @@ Layout: a dot-grid journal. Dot-grid paper, a handwritten-style font, the day's 
 - Crossing off is a horizontal stroke across the line, like running a pen through it. The same stroke across a crossed-off task un-crosses it. Tap/click only ever places the cursor for editing.
 
 **Tomorrow.** A "Tomorrow" heading sits folded on the bottom edge of today's page, for writing the next day's list the evening before. Tapping it opens a writing line under it. It stays open while it has lines and grows upward as they are written, leaving blank paper between today's lines and Tomorrow. Lines can be dragged into it from today, the week and old pages (a drop on the folded heading adds to the end), and back out to today or the week. At 4am its lines are simply today's lines.
+
+**Headings.** A line becomes a heading when it starts with `#` and a space (`# Job hunt`) or ends with a colon (`Job hunt:`), with words besides the symbol. A heading is a label, not a task: it has no bullet, can't be crossed off, takes no margin mark and is drawn without indent. The `#` or `:` is hidden once you leave the line and shows again while you edit it; deleting the symbol turns the heading back into an ordinary line. Headings move, delete and edit like any line, and work everywhere lines do (today, Tomorrow, This week). A heading doesn't own the lines under it: dragging it moves only the heading. Headings never count as unfinished, so they never keep an old page open; an old page shows a heading only when an unfinished line sits under it, before the next heading.
 
 **Old pages.** Each morning today's page starts blank. Every earlier day that still has unfinished lines is listed under This week, newest first. Lines on an old page can be crossed off, sent to the end of today with the > at the end of the line, or dragged onto today or into This week (the line moves), but nothing can be added or edited. When every line is crossed off the page greys out and offers "bin page"; a page can also be binned early, which takes a second tap ("bin 3 open lines?") because binning can't be undone. The point is to keep a backlog in view without crowding today's list.
 
@@ -70,7 +73,7 @@ Layout: a dot-grid journal. Dot-grid paper, a handwritten-style font, the day's 
 
 ## 5. Data model
 
-Both the local store (Dexie) and Supabase hold the same four tables.
+Both the local store (Dexie) and Supabase hold the same four tables. Headings add no field: whether a line is a heading is worked out from its `text` each time it is drawn.
 
 **tasks**
 
@@ -172,7 +175,7 @@ Rule: nothing ever stops the user writing.
 
 ## 8. Testing
 
-1. **Unit (Vitest):** `day` (04:00 boundary both sides, old page lines either side of the day end), `order` (positions between, before first, after last, many inserts), `sync` merge (newer wins, deletes propagate).
+1. **Unit (Vitest):** `day` (04:00 boundary both sides, old page lines either side of the day end), `order` (positions between, before first, after last, many inserts), `sync` merge (newer wins, deletes propagate), heading detection (`# ` and trailing `:`, a symbol alone is not a heading, `#1` is not a heading), old page lines with headings.
 2. **Component (Vitest + Testing Library):** Enter creates a line, Tab/Shift+Tab indents, Backspace on empty line deletes, horizontal drag/swipe toggles crossed-off, click places cursor, old pages cross off and bin.
 3. **End-to-end (Playwright):** write tasks, cross one off, reload, state persists. Also used for screenshot verification. To be added once there is UI (user to confirm).
 4. **Manual device pass:** install on phone and laptop; airplane mode, edit, reconnect; both devices match.

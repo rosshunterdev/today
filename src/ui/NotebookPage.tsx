@@ -3,6 +3,7 @@ import { useLiveQuery } from 'dexie-react-hooks';
 import { SortableContext, verticalListSortingStrategy } from '@dnd-kit/sortable';
 import { addTask, deleteTask, listDay, setDone, setIndent, setMark, setNotes, updateText } from '../store/tasks';
 import { nextMark } from '../marks';
+import { isHeading } from '../heading';
 import { TaskLine } from './TaskLine';
 import { GhostLine } from './GhostLine';
 import { usePointerCoarse } from './usePointerCoarse';
@@ -63,7 +64,7 @@ export function NotebookPage({ day, list = 'today', placeholder = "what's on tod
 
   function indentActive(indent: 0 | 1) {
     if (activeId === GHOST) setGhostIndent(indent);
-    else if (activeId) void setIndent(activeId, indent);
+    else if (activeId && !isHeading(tasks!.find((t) => t.id === activeId)?.text ?? '')) void setIndent(activeId, indent);
   }
 
   return (

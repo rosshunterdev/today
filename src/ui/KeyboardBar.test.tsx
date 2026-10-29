@@ -45,6 +45,18 @@ describe('KeyboardBar', () => {
     await waitFor(() => expect(ghost.closest('li')).toHaveAttribute('data-indent', '1'));
   });
 
+  it('does not indent a heading, like Tab', async () => {
+    mockPointerCoarse(true);
+    await db.tasks.clear();
+    await addTask(DAY, { text: '# Job hunt' });
+    const user = userEvent.setup();
+    render(<NotebookPage day={DAY} />);
+    await user.click(await screen.findByRole('textbox', { name: 'Heading' }));
+    await user.click(screen.getByRole('button', { name: 'Make sub-step' }));
+    await new Promise((r) => setTimeout(r, 50));
+    expect((await listDay(DAY))[0].indent).toBe(0);
+  });
+
   it('never appears with a mouse/trackpad', async () => {
     mockPointerCoarse(false);
     const user = userEvent.setup();
