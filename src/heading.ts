@@ -1,4 +1,4 @@
-// A heading is written, not stored: `# Job hunt` or `Job hunt:` on any line.
+// A heading is written, not stored: `# Garden` or `Garden:` on any line.
 const HASH = /^\s*#+\s+/;
 const COLON = /\s*:\s*$/;
 

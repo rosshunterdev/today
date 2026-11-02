@@ -3,18 +3,18 @@ import { headingLabel, isHeading } from './heading';
 
 describe('headingLabel', () => {
   it('reads a # and a space at the start', () => {
-    expect(headingLabel('# Job hunt')).toBe('Job hunt');
+    expect(headingLabel('# Garden')).toBe('Garden');
     expect(headingLabel('  #   Freelance  ')).toBe('Freelance');
     expect(headingLabel('## Admin')).toBe('Admin');
   });
 
   it('reads a colon at the end', () => {
-    expect(headingLabel('Job hunt:')).toBe('Job hunt');
+    expect(headingLabel('Garden:')).toBe('Garden');
     expect(headingLabel('Support work :  ')).toBe('Support work');
   });
 
   it('takes off both when both are written', () => {
-    expect(headingLabel('# Job hunt:')).toBe('Job hunt');
+    expect(headingLabel('# Garden:')).toBe('Garden');
   });
 
   it('leaves ordinary lines alone', () => {

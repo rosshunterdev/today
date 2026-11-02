@@ -303,12 +303,12 @@ describe('headings', () => {
   const heading = () => screen.getByRole('textbox', { name: 'Heading' });
 
   it('draws # and trailing-colon lines as labels, without the symbol', async () => {
-    await addTask(DAY, { text: '# Job hunt' });
+    await addTask(DAY, { text: '# Garden' });
     await addTask(DAY, { text: 'Admin:' });
     render(<NotebookPage day={DAY} />);
     await waitFor(() => expect(screen.getAllByRole('textbox', { name: 'Heading' })).toHaveLength(2));
     const [job, admin] = screen.getAllByRole('textbox', { name: 'Heading' });
-    expect(job).toHaveValue('Job hunt');
+    expect(job).toHaveValue('Garden');
     expect(admin).toHaveValue('Admin');
     expect(job.closest('li')).toHaveAttribute('data-heading', 'true');
     expect(screen.queryByRole('button', { name: /^Cross off/ })).toBeNull();
@@ -317,14 +317,14 @@ describe('headings', () => {
 
   it('shows the symbol while editing, typing goes on the end, and it hides again on leaving', async () => {
     const user = userEvent.setup();
-    await addTask(DAY, { text: '# Job hunt' });
+    await addTask(DAY, { text: '# Garden' });
     render(<NotebookPage day={DAY} />);
     await user.click(await screen.findByRole('textbox', { name: 'Heading' }));
-    expect(heading()).toHaveValue('# Job hunt');
+    expect(heading()).toHaveValue('# Garden');
     await user.keyboard(' 2');
-    await waitFor(async () => expect((await listDay(DAY))[0].text).toBe('# Job hunt 2'));
+    await waitFor(async () => expect((await listDay(DAY))[0].text).toBe('# Garden 2'));
     await user.tab();
-    expect(heading()).toHaveValue('Job hunt 2');
+    expect(heading()).toHaveValue('Garden 2');
   });
 
   it('becomes a task again when the symbol is deleted', async () => {
@@ -338,7 +338,7 @@ describe('headings', () => {
   });
 
   it('a stroke never crosses a heading off', async () => {
-    await addTask(DAY, { text: '# Job hunt' });
+    await addTask(DAY, { text: '# Garden' });
     render(<NotebookPage day={DAY} />);
     const line = (await screen.findByRole('textbox', { name: 'Heading' })).closest('li')!;
     fireEvent.pointerDown(line, { clientX: 10, clientY: 10 });
@@ -366,7 +366,7 @@ describe('headings', () => {
 
   it('Tab on a heading does not indent it', async () => {
     const user = userEvent.setup();
-    await addTask(DAY, { text: '# Job hunt' });
+    await addTask(DAY, { text: '# Garden' });
     render(<NotebookPage day={DAY} />);
     await user.click(await screen.findByRole('textbox', { name: 'Heading' }));
     await user.tab();

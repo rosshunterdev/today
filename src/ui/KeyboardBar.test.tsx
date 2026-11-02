@@ -48,7 +48,7 @@ describe('KeyboardBar', () => {
   it('does not indent a heading, like Tab', async () => {
     mockPointerCoarse(true);
     await db.tasks.clear();
-    await addTask(DAY, { text: '# Job hunt' });
+    await addTask(DAY, { text: '# Garden' });
     const user = userEvent.setup();
     render(<NotebookPage day={DAY} />);
     await user.click(await screen.findByRole('textbox', { name: 'Heading' }));

@@ -5,12 +5,12 @@ const headings = (page: Page) => page.getByRole('textbox', { name: 'Heading', ex
 
 test('a heading is written, survives a reload, and turns back into a task', async ({ page }, testInfo) => {
   await page.goto('/');
-  await write(page, ['# Job hunt', 'fix CV', 'Admin:', 'reply to gran']);
+  await write(page, ['# Garden', 'mow lawn', 'Admin:', 'reply to gran']);
   await expect(headings(page)).toHaveCount(2);
   await expect(tasks(page)).toHaveCount(2);
 
   await page.reload();
-  await expect(headings(page).nth(0)).toHaveValue('Job hunt');
+  await expect(headings(page).nth(0)).toHaveValue('Garden');
   await expect(lineOf(headings(page).nth(0)).getByRole('button', { name: /^Cross off/ })).toHaveCount(0);
   await page.screenshot({ path: `e2e/screenshots/${testInfo.project.name}-headings.png`, animations: 'disabled' });
   await page.getByRole('button', { name: 'Night pages', exact: true }).click();
@@ -20,7 +20,7 @@ test('a heading is written, survives a reload, and turns back into a task', asyn
   // A click on the label's first letters still lands the caret after the full text.
   await headings(page).nth(0).click({ position: { x: 15, y: 10 } });
   await page.keyboard.type('!');
-  await expect(headings(page).nth(0)).toHaveValue('# Job hunt!');
+  await expect(headings(page).nth(0)).toHaveValue('# Garden!');
 
   await headings(page).nth(1).click();
   await expect(headings(page).nth(1)).toHaveValue('Admin:');
