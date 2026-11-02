@@ -101,10 +101,10 @@ function Connected({ auth, remote, children }: { auth: AuthApi; remote: Remote; 
   useEffect(() => {
     if (phase !== 'signedIn') return;
     const l = createSyncLoop(
-      async () => {
+      async (active) => {
         if (!navigator.onLine) throw new Error('offline');
         setStatus('syncing');
-        await syncOnce(remote);
+        await syncOnce(remote, { active });
       },
       (ok) => setStatus(ok ? 'synced' : 'failed'),
     );
@@ -118,7 +118,7 @@ function Connected({ auth, remote, children }: { auth: AuthApi; remote: Remote; 
     window.addEventListener('online', now);
     document.addEventListener('visibilitychange', visible);
     return () => {
-      l.stop();
+      void l.stop();
       loop.current = null;
       window.removeEventListener('focus', now);
       window.removeEventListener('online', now);
@@ -132,7 +132,8 @@ function Connected({ auth, remote, children }: { auth: AuthApi; remote: Remote; 
 
   async function leave(action: () => Promise<void>) {
     leaving.current = true;
-    loop.current?.stop();
+    // Wait for a sync in progress, or it could put lines back after the wipe below.
+    await loop.current?.stop();
     try {
       await action();
     } catch (e) {

@@ -5,7 +5,7 @@ import { listDay } from '../store/tasks';
 import { LIST_DROP_ID } from '../order/drop';
 import { NotebookPage } from './NotebookPage';
 
-// Tomorrow: folded on the bottom edge of today's page until tapped, and open whenever it has lines (D-030, D-031).
+// Tomorrow: folded on the bottom edge of today's page until tapped, and open whenever it has lines.
 // Open comes from the data, so it survives reloads; the 4am turn remounts it (keyed on the day in App), folding it again.
 export function TomorrowSection({ day }: { day: string }) {
   const hasLines = useLiveQuery(async () => (await listDay(day)).length > 0, [day]);

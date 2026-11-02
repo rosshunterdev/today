@@ -56,28 +56,28 @@ jobs:
           retention-days: 14
 
   rls:
-    name: Row-level security (Supabase)
+    name: Row-level security (local Supabase)
     runs-on: ubuntu-latest
-    timeout-minutes: 10
-    env:
-      SUPABASE_TEST_URL: ${{ secrets.SUPABASE_TEST_URL }}
-      SUPABASE_TEST_PUBLISHABLE_KEY: ${{ secrets.SUPABASE_TEST_PUBLISHABLE_KEY }}
-      SUPABASE_TEST_SECRET_KEY: ${{ secrets.SUPABASE_TEST_SECRET_KEY }}
+    timeout-minutes: 15
     steps:
-      # Forks and fresh clones have no Supabase secrets: skip rather than fail.
-      - name: Skip without Supabase secrets
-        if: env.SUPABASE_TEST_SECRET_KEY == ''
-        run: echo "::notice::No Supabase secrets; row-level security tests skipped."
-      - if: env.SUPABASE_TEST_SECRET_KEY != ''
-        uses: actions/checkout@v5
-      - if: env.SUPABASE_TEST_SECRET_KEY != ''
-        uses: actions/setup-node@v5
+      - uses: actions/checkout@v5
+      - uses: actions/setup-node@v5
         with:
           node-version: 24
           cache: npm
-      - if: env.SUPABASE_TEST_SECRET_KEY != ''
-        run: npm ci
-      # Free projects pause after a week unused: if this fails to connect, restore today-prod in the dashboard.
+      - run: npm ci
+      - uses: supabase/setup-cli@v1
+        with:
+          version: 2.121.0
+      # A throwaway Supabase in Docker, built from supabase/migrations. No secrets, and no cloud project is touched.
+      - name: Start local Supabase
+        run: supabase start -x studio,imgproxy,mailpit,storage-api,realtime,edge-runtime,logflare,vector,supavisor,postgres-meta
+      # The local keys are the CLI's fixed development keys, not secrets.
+      - name: Point the tests at it
+        run: |
+          supabase status -o json | jq -r '
+            "SUPABASE_TEST_URL=\(.API_URL)",
+            "SUPABASE_TEST_PUBLISHABLE_KEY=\(.ANON_KEY)",
+            "SUPABASE_TEST_SECRET_KEY=\(.SERVICE_ROLE_KEY)"' >> "$GITHUB_ENV"
       - name: Row-level security tests
-        if: env.SUPABASE_TEST_SECRET_KEY != ''
         run: npm run test:rls

@@ -73,7 +73,7 @@ npm run preview   # serve the production build
 ```bash
 npm test          # unit and component tests (Vitest)
 npm run e2e       # end-to-end tests (Playwright; builds and serves on port 4173)
-npm run test:rls  # row-level security and sign-in tests against a Supabase project (needs .env.test.local)
+npm run test:rls  # row-level security and sign-in tests against a local Supabase (supabase start, then .env.test.local)
 ```
 
 Unit tests run in the `Pacific/Auckland` time zone so the 4am rollover behaves the same on every machine. The end-to-end test writes two tasks, crosses one off, reloads, and checks that everything was saved, on both a desktop and a phone (Pixel 7) profile.

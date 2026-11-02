@@ -109,11 +109,11 @@ describe('OldPages', () => {
 
   it('shows a heading above its open line, and the bin count leaves headings out', async () => {
     const user = userEvent.setup();
-    await addTask(MON, { text: '# Job hunt' });
-    await addTask(MON, { text: 'fix CV' });
+    await addTask(MON, { text: '# Garden' });
+    await addTask(MON, { text: 'mow lawn' });
     await addTask(MON, { text: 'apply to Xero' });
     render(<Live />);
-    expect(await screen.findByRole('textbox', { name: 'Heading' })).toHaveValue('Job hunt');
+    expect(await screen.findByRole('textbox', { name: 'Heading' })).toHaveValue('Garden');
     expect(oldLines()).toHaveLength(2);
     await user.click(screen.getByRole('button', { name: 'bin page' }));
     expect(screen.getByRole('button', { name: 'bin 2 open lines?' })).toBeInTheDocument();

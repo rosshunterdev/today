@@ -1,6 +1,6 @@
 import { describe, it, expect, beforeAll, afterAll } from 'vitest';
 import type { SupabaseClient } from '@supabase/supabase-js';
-import { admin, anon, conflictKeys, newUser, removeUser, samples, taskRow, T1, T2 } from './helpers';
+import { admin, anon, conflictKeys, newUser, removeTrackedUsers, samples, taskRow, T1, T2 } from './helpers';
 
 type User = { id: string; client: SupabaseClient };
 const tables = ['tasks', 'goals', 'days', 'weeks'] as const;
@@ -12,9 +12,8 @@ beforeAll(async () => {
   [a, b] = await Promise.all([newUser(), newUser()]);
 });
 
-afterAll(async () => {
-  await Promise.all([a, b].filter(Boolean).map((u) => removeUser(u.id)));
-});
+// Removes a, b and delete_account's user c, even if a test fails before c deletes itself.
+afterAll(removeTrackedUsers);
 
 describe.each(tables)('%s', (table) => {
   it("stamps the owner and the server's time on a new row", async () => {

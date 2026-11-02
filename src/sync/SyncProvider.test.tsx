@@ -150,4 +150,30 @@ describe('SyncProvider', () => {
     await waitFor(() => expect(phase()).toBe('signedOut'));
     expect(await db.tasks.count()).toBe(0);
   });
+
+  it("a sync still running when the account is deleted can't bring lines back", async () => {
+    remote.seed('tasks', toServer('tasks', makeTask({ id: 'p', day: DAY, text: 'from my phone' })));
+    let release!: () => void;
+    const gate = new Promise<void>((r) => (release = r));
+    const pull = remote.pull;
+    let waiting = false;
+    remote.pull = async (...args) => {
+      waiting = true;
+      await gate;
+      return pull(...args);
+    };
+    await claimDevice('user-1');
+    mount();
+    auth.emit({ id: 'user-1', username: 'alex' });
+    await waitFor(() => expect(phase()).toBe('signedIn'));
+    await waitFor(() => expect(waiting).toBe(true)); // a sync is part way, held at the gate
+    let deleted!: Promise<void>;
+    act(() => {
+      deleted = api.deleteAccount();
+    });
+    release();
+    await act(() => deleted);
+    await waitFor(() => expect(phase()).toBe('signedOut'));
+    expect(await db.tasks.count()).toBe(0);
+  });
 });

@@ -38,8 +38,8 @@ describe('pageLines', () => {
 
   it('keeps a heading only when an unfinished line sits under it, before the next heading', () => {
     const tasks = [
-      makeTask({ id: 'h1', day: DAY, text: '# Job hunt', position: 'a1' }),
-      makeTask({ id: 'cv', day: DAY, text: 'fix CV', position: 'a2' }),
+      makeTask({ id: 'h1', day: DAY, text: '# Garden', position: 'a1' }),
+      makeTask({ id: 'cv', day: DAY, text: 'mow lawn', position: 'a2' }),
       makeTask({ id: 'h2', day: DAY, text: 'Admin:', position: 'a3' }),
       makeTask({ id: 'gran', day: DAY, text: 'reply to gran', done: true, doneAt: '2026-10-19T09:00:00.000Z', position: 'a4' }),
       makeTask({ id: 'h3', day: DAY, text: '# Freelance', position: 'a5' }),
@@ -50,14 +50,14 @@ describe('pageLines', () => {
   });
 
   it('never makes a page from headings alone', () => {
-    expect(pageLines([makeTask({ day: DAY, text: '# Job hunt' })], DAY)).toEqual([]);
+    expect(pageLines([makeTask({ day: DAY, text: '# Garden' })], DAY)).toEqual([]);
   });
 
   it('skips a deleted heading and uses no heading for lines above the first one', () => {
     const tasks = [
       makeTask({ id: 'loose', day: DAY, text: 'buy milk', position: 'a1' }),
       makeTask({ id: 'gone', day: DAY, text: '# Old', deleted: true, position: 'a2' }),
-      makeTask({ id: 'cv', day: DAY, text: 'fix CV', position: 'a3' }),
+      makeTask({ id: 'cv', day: DAY, text: 'mow lawn', position: 'a3' }),
     ];
     expect(pageLines(tasks, DAY).map((t) => t.id)).toEqual(['loose', 'cv']);
   });
@@ -71,8 +71,8 @@ describe('isPageDone', () => {
   });
 
   it('ignores headings, which can never be crossed off', () => {
-    expect(isPageDone([{ done: false, text: '# Job hunt' }, { done: true, text: 'fix CV' }])).toBe(true);
-    expect(isPageDone([{ done: false, text: '# Job hunt' }])).toBe(false);
+    expect(isPageDone([{ done: false, text: '# Garden' }, { done: true, text: 'mow lawn' }])).toBe(true);
+    expect(isPageDone([{ done: false, text: '# Garden' }])).toBe(false);
   });
 });
 

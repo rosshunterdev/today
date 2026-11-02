@@ -79,7 +79,7 @@ async function countLiveLines(): Promise<number> {
   return tasks + goals;
 }
 
-// Lines are never added to an account without asking (D-025).
+// Lines are never added to an account without asking.
 export async function claimDevice(userId: string): Promise<'ready' | 'ask'> {
   if ((await getOwner()) === userId) return 'ready';
   if ((await countLiveLines()) > 0) return 'ask';

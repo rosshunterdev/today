@@ -3,7 +3,7 @@ import { useSync } from '../sync/SyncProvider';
 import { CloudIcon } from './icons';
 import { SyncCard } from './SyncCard';
 
-// Beside the moon (D-026). The dot means something needs a look: changes waiting, a lapsed session, or a question.
+// Beside the moon. The dot means something needs a look: changes waiting, a lapsed session, or a question.
 export function CloudButton() {
   const sync = useSync();
   const [open, setOpen] = useState(false);

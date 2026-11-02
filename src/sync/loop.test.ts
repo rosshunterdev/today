@@ -85,4 +85,31 @@ describe('createSyncLoop', () => {
     await vi.advanceTimersByTimeAsync(5000);
     expect(run).not.toHaveBeenCalled();
   });
+
+  it('tells a run in progress that it has been stopped', async () => {
+    let finish!: () => void;
+    let active!: () => boolean;
+    const loop = createSyncLoop((isActive) => {
+      active = isActive;
+      return new Promise<void>((r) => (finish = r));
+    }, () => {});
+    loop.request();
+    expect(active()).toBe(true);
+    void loop.stop();
+    expect(active()).toBe(false);
+    finish();
+  });
+
+  it('stop waits for a run in progress to finish', async () => {
+    let finish!: () => void;
+    const loop = createSyncLoop(() => new Promise<void>((r) => (finish = r)), () => {});
+    loop.request();
+    let stopped = false;
+    void loop.stop().then(() => (stopped = true));
+    await vi.advanceTimersByTimeAsync(0);
+    expect(stopped).toBe(false);
+    finish();
+    await vi.advanceTimersByTimeAsync(0);
+    expect(stopped).toBe(true);
+  });
 });
