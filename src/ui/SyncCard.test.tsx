@@ -84,6 +84,15 @@ describe('CloudButton', () => {
     expect(await screen.findByRole('alert')).toHaveTextContent('That username is taken.');
   });
 
+  it('says so when new accounts are closed', async () => {
+    show(api({ signUp: async () => Promise.reject(new AuthFailure('closed')) }));
+    await open();
+    await userEvent.click(screen.getByRole('button', { name: 'Create an account' }));
+    await fill('alex', 'long enough');
+    await userEvent.click(screen.getByRole('button', { name: 'Create account' }));
+    expect(await screen.findByRole('alert')).toHaveTextContent('Sync accounts are closed. The app works fully offline.');
+  });
+
   it('asks before adding lines on this device to the account', async () => {
     const value = api({ phase: 'asking', username: 'alex' });
     show(value);

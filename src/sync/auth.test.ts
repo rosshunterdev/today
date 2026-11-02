@@ -34,6 +34,8 @@ describe('supabaseAuth', () => {
     ['user_already_exists', 'taken'],
     ['weak_password', 'weak'],
     ['invalid_credentials', 'wrong'],
+    ['signup_disabled', 'closed'],
+    ['email_provider_disabled', 'closed'],
     ['over_request_rate_limit', 'other'],
   ])('turns %s into %s', async (code, reason) => {
     const { api } = client({ error: { code, message: code } });

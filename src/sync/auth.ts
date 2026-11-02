@@ -5,7 +5,7 @@ export interface SessionUser {
   username: string;
 }
 
-export type AuthFailureReason = 'username' | 'taken' | 'weak' | 'wrong' | 'other';
+export type AuthFailureReason = 'username' | 'taken' | 'weak' | 'wrong' | 'closed' | 'other';
 
 export class AuthFailure extends Error {
   constructor(readonly reason: AuthFailureReason) {
@@ -35,6 +35,9 @@ const reasons: Record<string, AuthFailureReason> = {
   email_exists: 'taken',
   weak_password: 'weak',
   invalid_credentials: 'wrong',
+  // New sign-ups turned off in the Supabase dashboard: accounts are the owner's only.
+  signup_disabled: 'closed',
+  email_provider_disabled: 'closed',
 };
 
 function check({ error }: { error: { code?: string } | null }) {
