@@ -2,7 +2,7 @@ import { describe, it, expect, afterAll } from 'vitest';
 import { AuthFailure, supabaseAuth } from '../../src/sync/auth';
 import { anon, removeTrackedUsers, track } from './helpers';
 
-// The app's own adapter against a local Supabase: a username account really works (D-032).
+// The app's own adapter against a local Supabase: a username account really works.
 const username = `rls_${crypto.randomUUID().slice(0, 8)}`;
 const password = 'correct horse';
 const ids: string[] = [];

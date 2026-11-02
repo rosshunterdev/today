@@ -24,7 +24,7 @@ export interface AuthApi {
 
 export const USERNAME = /^[a-z0-9_]{3,20}$/;
 
-// Supabase accounts need an email, so a username becomes an address nothing is ever sent to (D-032).
+// Supabase accounts need an email, so a username becomes an address nothing is ever sent to.
 // `.invalid` is reserved and can never receive mail, so no stranger's inbox gets anything.
 const DOMAIN = 'today.invalid';
 export const toEmail = (username: string) => `${username.trim().toLowerCase()}@${DOMAIN}`;
