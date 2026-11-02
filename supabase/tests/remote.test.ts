@@ -1,7 +1,7 @@
 import { describe, it, expect, beforeAll, afterAll } from 'vitest';
 import type { SupabaseClient } from '@supabase/supabase-js';
 import { supabaseRemote } from '../../src/sync/remote';
-import { newUser, removeUser, taskRow } from './helpers';
+import { newUser, removeTrackedUsers, taskRow } from './helpers';
 
 let user: { id: string; client: SupabaseClient };
 
@@ -9,9 +9,7 @@ beforeAll(async () => {
   user = await newUser();
 });
 
-afterAll(async () => {
-  if (user) await removeUser(user.id);
-});
+afterAll(removeTrackedUsers);
 
 describe('supabaseRemote', () => {
   it('pushes rows, then pulls them oldest first from a point in time, a page at a time', async () => {

@@ -3,7 +3,13 @@ import { createClient, type SupabaseClient } from '@supabase/supabase-js';
 const url = process.env.SUPABASE_TEST_URL;
 const publishable = process.env.SUPABASE_TEST_PUBLISHABLE_KEY;
 const secret = process.env.SUPABASE_TEST_SECRET_KEY;
-if (!url || !publishable || !secret) throw new Error('Fill .env.test.local (see .env.example) before npm run test:rls');
+if (!url || !publishable || !secret) throw new Error('Run `supabase start`, then fill .env.test.local (see .env.example) before npm run test:rls');
+
+// These tests make and delete users with the secret key, so they only ever run against a local Supabase.
+const host = new URL(url).hostname;
+if (!['127.0.0.1', 'localhost', '[::1]'].includes(host)) {
+  throw new Error(`Refusing to run row-level security tests against ${host}: start a local Supabase with \`supabase start\``);
+}
 
 const options = { auth: { persistSession: false, autoRefreshToken: false } };
 
@@ -11,12 +17,20 @@ const options = { auth: { persistSession: false, autoRefreshToken: false } };
 export const admin = () => createClient(url, secret, options);
 export const anon = () => createClient(url, publishable, options);
 
+// Every user a test makes, so afterAll can remove them even when a test fails part way.
+const made = new Set<string>();
+
+export function track(id: string): void {
+  made.add(id);
+}
+
 // A throwaway user, signed in the same way the app does (an email one-time code), without sending any email.
 export async function newUser(): Promise<{ id: string; client: SupabaseClient }> {
   const email = `rls-${crypto.randomUUID()}@example.com`;
   const a = admin();
   const { data: created, error } = await a.auth.admin.createUser({ email, email_confirm: true });
   if (error) throw error;
+  track(created.user.id);
   const { data: link, error: linkError } = await a.auth.admin.generateLink({ type: 'magiclink', email });
   if (linkError) throw linkError;
   const client = anon();
@@ -25,8 +39,18 @@ export async function newUser(): Promise<{ id: string; client: SupabaseClient }>
   return { id: created.user.id, client };
 }
 
+// A user that's already gone (say, after delete_account) counts as removed.
 export async function removeUser(id: string): Promise<void> {
-  await admin().auth.admin.deleteUser(id);
+  const { error } = await admin().auth.admin.deleteUser(id);
+  if (error && error.status !== 404) throw error;
+  made.delete(id);
+}
+
+// Tries every tracked user, then fails loudly if any couldn't be removed.
+export async function removeTrackedUsers(): Promise<void> {
+  const results = await Promise.allSettled([...made].map(removeUser));
+  const failed = results.filter((r): r is PromiseRejectedResult => r.status === 'rejected');
+  if (failed.length) throw new AggregateError(failed.map((f) => f.reason), `${failed.length} test user(s) not removed`);
 }
 
 export const T1 = '2026-10-25T01:00:00.000Z';

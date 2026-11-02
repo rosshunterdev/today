@@ -1,8 +1,8 @@
 import { describe, it, expect, afterAll } from 'vitest';
 import { AuthFailure, supabaseAuth } from '../../src/sync/auth';
-import { anon, removeUser } from './helpers';
+import { anon, removeTrackedUsers, track } from './helpers';
 
-// The app's own adapter against staging: a username account really works (D-032).
+// The app's own adapter against a local Supabase: a username account really works (D-032).
 const username = `rls_${crypto.randomUUID().slice(0, 8)}`;
 const password = 'correct horse';
 const ids: string[] = [];
@@ -12,9 +12,7 @@ async function signedInId(client: ReturnType<typeof anon>): Promise<string> {
   return data.user!.id;
 }
 
-afterAll(async () => {
-  await Promise.all(ids.map(removeUser));
-});
+afterAll(removeTrackedUsers);
 
 describe('username accounts', () => {
   it('signs up and is signed in straight away', async () => {
@@ -22,6 +20,7 @@ describe('username accounts', () => {
     await supabaseAuth(client).signUp(username, password);
     const id = await signedInId(client);
     ids.push(id);
+    track(id);
     const { data } = await client.auth.getUser();
     expect(data.user!.email).toBe(`${username}@today.invalid`);
   });
