@@ -101,4 +101,17 @@ describe('syncOnce', () => {
     await expect(syncOnce(remote)).rejects.toThrow('offline');
     expect(await countDirty()).toBe(1);
   });
+
+  it('writes nothing to the device once stopped part way', async () => {
+    remote.seed('tasks', toServer('tasks', makeTask({ id: 'other', day: DAY, text: 'from my phone' })));
+    let active = true;
+    const pull = remote.pull;
+    remote.pull = async (...args) => {
+      const page = await pull(...args);
+      active = false; // signed out while the page was on its way
+      return page;
+    };
+    await syncOnce(remote, { active: () => active });
+    expect(await db.tasks.count()).toBe(0);
+  });
 });
