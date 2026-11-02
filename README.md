@@ -2,70 +2,105 @@
 
 [![CI](https://github.com/rosshunterdev/today/actions/workflows/ci.yml/badge.svg)](https://github.com/rosshunterdev/today/actions/workflows/ci.yml)
 
-A today-only task list that feels like the pen-and-paper list you write each morning. It's an installable, offline-first web app (PWA) for phone and laptop.
+A task list for today only, built to feel like the list you write on paper each morning. It's an installable web app (PWA) for phone and laptop that works fully offline, with optional sync between devices. I built it because every task app I tried felt worse than paper, and planning one day at a time is the part that paper gets right.
 
-**Try it:** [today-seven-kappa.vercel.app](https://today-seven-kappa.vercel.app)
+**Live demo:** [today-seven-kappa.vercel.app](https://today-seven-kappa.vercel.app). Everything works without an account; your lines stay in your browser.
 
 <p>
-  <img src="docs/screenshots/desktop.png" alt="Today on desktop: a dot-grid journal lying open, today's list on the left page with 'reply to Sam' crossed off, This week on the right page" width="560">
+  <img src="docs/screenshots/desktop.png" alt="Today on desktop: a dot-grid journal lying open, today's list on the left page, this week's goal and an old page's unfinished task on the right" width="560">
   &nbsp;
-  <img src="docs/screenshots/phone.png" alt="Today on a phone: one dot-grid page with a folded corner at the bottom right" width="200">
+  <img src="docs/screenshots/phone.png" alt="Today on a phone: one dot-grid page with two headings, a folded Tomorrow section and a folded corner for the week" width="200">
 </p>
 <p>
-  <img src="docs/screenshots/desktop-night.png" alt="Night pages: the same journal with black pages and white ink" width="560">
+  <img src="docs/screenshots/desktop-night.png" alt="Night pages: the same journal with dark pages and light ink" width="560">
 </p>
 
-## Why
+## Status
 
-Task apps tend to feel worse than paper. Paper is always ready, crossing things off feels good, and writing the list is how the day gets planned. This app keeps those parts and drops everything else. It holds **today, plus a short note of this week's goals**: no backlog, projects, tags, due dates, priorities or streaks.
+Personal project, started in October 2026.
+
+- **Works:** everything in the feature list below, offline and installed, on desktop and phone browsers.
+- **Sync accounts are closed to new sign-ups.** Sync is limited to my own account, so the demo is offline-only for everyone else.
+- **Not built:** password reset (there's no email), reminders, browsing past days beyond old pages, a native app.
+- **Tested in CI on Chromium only** (desktop and a Pixel 7 profile). Safari and Firefox aren't covered by automated tests.
 
 ## Features
 
-- **Dot-grid journal:** dot-grid paper, a handwritten-style font and the date as a big numeral. On a wide screen the journal lies open and fills the screen: today on the left, the week and old pages on the right.
+- **Dot-grid journal:** a handwritten-style font and the date as a big numeral. On a wide screen the journal lies open: today on the left, the week and old pages on the right.
 - **Write line by line:** Enter for a new line, Tab / Shift+Tab for one level of sub-steps, Backspace on an empty line to delete it.
-- **Cross off with a stroke:** drag the mouse or swipe a finger across a line to turn its bullet into a cross and draw a pen stroke through it. Do it again to undo.
-- **Marks:** click or tap the margin to highlight a line, or mark it ! or ?.
-- **Reorder:** drag the dotted grip on desktop, or long-press and drag on a phone.
-- **Bin:** drag a line into the bin to throw it away, with five seconds to undo it (Ctrl+Z works too).
-- **Old pages:** unfinished tasks from earlier days stay listed under the week. Tap > to send a line to today, or drag it onto today or into the week, and bin the page once it's done.
-- **Tomorrow:** a folded heading on the bottom edge of today's page for writing tomorrow's list the evening before. Tap it to start writing, or drag lines into it from today, the week and old pages. At 4am its lines are today's.
-- **Notes:** tap the pencil at the end of a line to unfold a note under it, for the details behind a short task.
-- **This week:** goals for the week on the facing page (a folded corner away on a phone). Drag a task onto it, drag a goal back to today, and bring last week's unfinished goals forward.
-- **Night pages:** a moon in the header turns the journal dark, and it stays that way on that device.
-- **4am day boundary:** 02:30 Friday still counts as Thursday.
-- **Phone keyboard bar:** ⇥ / ⇤ buttons above the keyboard for sub-steps.
-- **Installable and offline:** works with no connection; data is stored on the device.
-- **Optional sync:** the cloud beside the moon signs in with a username and password, and the same pages show up on every device. Without an account, everything stays on the device.
+- **Cross off with a stroke:** drag or swipe across a line to cross it off. Do it again to undo.
+- **Headings:** start a line with `# ` or end it with `:` to make it a heading.
+- **Marks:** tap the margin to highlight a line, or mark it ! or ?.
+- **Reorder:** drag the grip on desktop, or long-press and drag on a phone.
+- **Bin:** drag a line into the bin, with five seconds to undo (Ctrl+Z works too).
+- **Old pages:** unfinished tasks from earlier days stay listed under the week until you move or bin them.
+- **Tomorrow:** a folded section at the bottom of today's page for writing tomorrow's list the evening before.
+- **Notes:** a pencil at the end of a line unfolds a note under it.
+- **This week:** a short list of goals for the week on the facing page.
+- **Night pages:** a dark journal, remembered per device.
+- **4am day boundary:** 02:30 on Friday still counts as Thursday.
+- **Optional sync:** sign in with a username and password and the same pages show up on every device.
 
-## Stack
+## How it works
+
+```
+ Browser (installed PWA)                                   Supabase (optional)
+┌──────────────────────────────────────────┐            ┌─────────────────────────┐
+│ Service worker: app shell and fonts      │            │ Auth (username accounts)│
+│ cached, so it opens with no connection   │            │ Postgres: tasks, goals, │
+│                                          │            │ days, weeks             │
+│ React UI                                 │            │ Row-level security:     │
+│   │ reads and writes only through        │            │ user_id = auth.uid()    │
+│   ▼                                      │            └─────────────────────────┘
+│ store (Dexie on IndexedDB)  ◄── sync ────┼──── HTTPS ───────────▲
+│                                          │   CSP: connect-src 'self'
+└──────────────────────────────────────────┘        https://*.supabase.co
+ Static files on Vercel
+```
+
+- **Offline first.** Every read and write goes to IndexedDB through Dexie in `src/store/`. The UI never talks to the network, so the app behaves the same with or without a connection.
+- **Sync is optional.** A build without Supabase keys has no sync at all: no cloud button and no network calls. With keys, `src/sync/` pulls rows changed on the server since the last pull, then pushes rows changed on the device. Sync runs when the app opens or regains focus, 2 seconds after the last edit, and when the connection comes back. Failures retry with a growing wait.
+- **Conflicts.** Every write sets `updatedAt`, and deletes are soft. For each row the newer `updatedAt` wins, and the server drops a write older than the row it holds.
+- **Row-level security.** Each table's policies limit every row to its owner (`user_id = auth.uid()`). Rows can't be hard deleted, and deleting an account removes its rows. The policies have their own tests (see Testing).
+- **Line order** uses fractional indexing: each line has a sortable string position, so moving a line never renumbers the others.
+- **PWA.** vite-plugin-pwa generates a Workbox service worker that caches the app and its fonts, and updates itself when a new version is deployed.
+- **Content Security Policy** (`vercel.json`): scripts, styles, fonts and images only from the app itself, network connections only to the app and Supabase, and no framing.
+
+## Tech stack
 
 | Area | Tools |
 |---|---|
-| App | React, TypeScript, Vite |
-| Storage | Dexie (IndexedDB) |
-| Sync and accounts | Supabase (Postgres, Auth, row-level security) |
-| Drag and drop | dnd-kit |
-| Offline / install | vite-plugin-pwa (Workbox service worker) |
-| Tests | Vitest, Testing Library, fake-indexeddb, Playwright |
-| CI | GitHub Actions |
+| App | React 19, TypeScript 7, Vite 8 |
+| Storage | Dexie 4 (IndexedDB) |
+| Sync and accounts | Supabase JS 2 (Postgres, Auth, row-level security) |
+| Drag and drop | dnd-kit 6 |
+| Offline and install | vite-plugin-pwa 1 (Workbox) |
+| Tests | Vitest 5, Testing Library, fake-indexeddb, Playwright 1.63 |
+| CI and hosting | GitHub Actions, Vercel |
 
-## How it's built
+## Running it locally
 
-- **The UI only talks to the store.** Components read and write through `src/store/*` and never touch the database directly, which leaves room for a sync layer later without changing the UI.
-- **Sync is optional and sits beside the store.** Signed-in devices sync through Supabase (Postgres with row-level security); a build without keys has no sync code paths at all. The UI reads sync state through one hook, `useSync()`.
-- **Pure logic is separate from React.** Day rollover, old page rules (`src/day/`) and line ordering (`src/order/`) are plain functions with their own unit tests.
-- **Fractional indexing for order.** Each line has a sortable string position, so moving a line between two others never renumbers the rest.
-- **Every write sets `updatedAt`, and deletes are soft.** This keeps the data ready for last-write-wins sync.
-
-## Getting started
-
-Built and tested on Node 24.
+Needs Node 24.
 
 ```bash
 npm ci
-npm run dev       # dev server
+npm run dev       # dev server (no sync unless .env.development.local has Supabase keys)
 npm run build     # type-check and production build
 npm run preview   # serve the production build
+```
+
+To try sync locally, start a local Supabase (needs Docker and the [Supabase CLI](https://supabase.com/docs/guides/cli)), which also applies the migrations in `supabase/migrations`:
+
+```bash
+supabase start
+supabase status   # shows the local API URL and keys
+```
+
+Then copy `.env.example` to `.env.development.local` and fill in the local values:
+
+```bash
+VITE_SUPABASE_URL=http://127.0.0.1:54321
+VITE_SUPABASE_PUBLISHABLE_KEY=<publishable or anon key from supabase status>
 ```
 
 ## Testing
@@ -73,13 +108,23 @@ npm run preview   # serve the production build
 ```bash
 npm test          # unit and component tests (Vitest)
 npm run e2e       # end-to-end tests (Playwright; builds and serves on port 4173)
-npm run test:rls  # row-level security and sign-in tests against a local Supabase (supabase start, then .env.test.local)
+npm run test:rls  # row-level security and sign-in tests (needs supabase start and .env.test.local)
 ```
 
-Unit tests run in the `Pacific/Auckland` time zone so the 4am rollover behaves the same on every machine. The end-to-end test writes two tasks, crosses one off, reloads, and checks that everything was saved, on both a desktop and a phone (Pixel 7) profile.
+| Suite | Tests | What it covers |
+|---|---|---|
+| Unit and component (Vitest) | 310 in 38 files | day rules, ordering, the store, the sync engine and loop, and the UI with Testing Library on fake-indexeddb |
+| Row-level security (Vitest) | 31 in 3 files | each table's policies against a real local Supabase: owners only, no hard deletes, signed-out visitors get nothing, account deletion |
+| End-to-end (Playwright) | 23 in 8 files, 30 runs across desktop Chrome and a Pixel 7 profile (some tests apply to one profile only) | writing, crossing off, reordering, the bin, notes, headings, the week, old pages, tomorrow, night pages, and data surviving a reload |
 
-CI runs both suites, plus the type-check and build, on every pull request and push to `main`.
+Unit tests run in the `Pacific/Auckland` time zone so the 4am rollover behaves the same on every machine.
 
-## License
+CI runs all three suites plus the type-check and build on every pull request and push to `main`. The row-level security job starts a throwaway Supabase in Docker from the migrations, so it needs no secrets and never touches a hosted project.
+
+## How I built it
+
+Built with Claude Code. I set the specs and acceptance criteria, reviewed every change, and tested it on my own phone and laptop.
+
+## Licence
 
 [MIT](LICENSE)
