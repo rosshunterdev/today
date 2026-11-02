@@ -144,6 +144,7 @@ const failures: Record<AuthFailureReason, string> = {
   taken: 'That username is taken. Pick another, or sign in.',
   weak: 'Use a password of at least 6 characters.',
   wrong: 'Wrong username or password.',
+  closed: 'Sync accounts are closed. The app works fully offline.',
   other: "Couldn't reach the cloud. Try again in a minute.",
 };
 
