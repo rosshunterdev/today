@@ -9,13 +9,13 @@ export default defineConfig({
       registerType: 'autoUpdate',
       includeAssets: ['favicon.ico', 'apple-touch-icon-180x180.png', 'icon.svg'],
       manifest: {
-        name: 'Today',
-        short_name: 'Today',
-        description: "Today's tasks, nothing else.",
+        name: 'FOCUS',
+        short_name: 'FOCUS',
+        description: "Today's tasks, and a calendar for the days ahead.",
         start_url: '/',
         display: 'standalone',
-        background_color: '#fafaf7',
-        theme_color: '#fafaf7',
+        background_color: '#fffdfa',
+        theme_color: '#fffdfa',
         icons: [
           { src: 'pwa-64x64.png', sizes: '64x64', type: 'image/png' },
           { src: 'pwa-192x192.png', sizes: '192x192', type: 'image/png' },

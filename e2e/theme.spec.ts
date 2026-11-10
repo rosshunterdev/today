@@ -37,7 +37,7 @@ test('night pages: marks, a sub-step and a crossed-off line in both inks, and ni
   await expect(html).not.toHaveAttribute('data-theme', 'night');
   await night.click();
   await expect(html).toHaveAttribute('data-theme', 'night');
-  await expect(page.locator('meta[name="theme-color"]')).toHaveAttribute('content', '#202329');
+  await expect(page.locator('meta[name="theme-color"]')).toHaveAttribute('content', '#1f1b17');
 
   await page.reload();
   await expect(html).toHaveAttribute('data-theme', 'night');
