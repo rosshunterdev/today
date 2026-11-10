@@ -4,11 +4,11 @@ import { neighboursAfterMove } from './reorder';
 export type ListId = 'today' | 'tomorrow' | 'week';
 // Where a dragged line can come from. Old page lines can be dragged out but never dropped onto.
 export type LineSource = ListId | 'old';
-// The folded corners turn between today's side and the week's side on phones. Tomorrow is on today's side, so it has none.
+// The corner buttons turn between today's side and the week's side on phones. Tomorrow is on today's side, so it has none.
 export type CornerList = 'today' | 'week';
 
 export const LIST_DROP_ID: Record<ListId, string> = { today: 'list:today', tomorrow: 'list:tomorrow', week: 'list:week' };
-// The folded page corners on phones. A line dropped on one goes to the end of that list.
+// The corner buttons on phones. A line dropped on one goes to the end of that list.
 export const CORNER_ID: Record<CornerList, string> = { today: 'corner:today', week: 'corner:week' };
 export const OLD_DROP_ID = 'list:old';
 // The bin. A line dropped in it is thrown away (a soft delete, with an undo).
@@ -68,7 +68,7 @@ export function resolveDrop(lists: Record<ListId, string[]>, activeId: string, o
 }
 
 // Pointer first, so the line under the finger wins over the list around it.
-// The bin and the folded corners float over the pages, so a drop on one means that, whatever lies underneath.
+// The bin and the corner buttons float over the pages, so a drop on one means that, whatever lies underneath.
 // Over the old pages there is no target: a drop there means nothing.
 // While the pointer is on Tomorrow or the week, only that list's targets count.
 // A Tomorrow line let go on today's paper below Tomorrow means nothing: on paper, everything under that heading is tomorrow's.

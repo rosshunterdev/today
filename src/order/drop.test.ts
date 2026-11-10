@@ -146,7 +146,7 @@ describe('collide', () => {
     expect(run('today', null)[0]).toBe('t1');
   });
 
-  // Phone pages: a folded corner floats over whatever is at the bottom of the screen.
+  // Phone pages: a corner button floats over whatever is at the bottom of the screen.
   const phoneToday: Box[] = [
     { id: LIST_DROP_ID.today, list: 'today', top: 0, left: 0, width: 400, height: 800 },
     { id: 't9', list: 'today', top: 740, left: 0, width: 400, height: 36 },

@@ -33,9 +33,6 @@ export function OldPages({ pages, today }: { pages: OldPage[]; today: string }) 
 
   return (
     <section className="old-pages" aria-label="Old pages" ref={setNodeRef}>
-      <svg className="rule" viewBox="0 0 180 14" preserveAspectRatio="none" aria-hidden="true">
-        <path d="M2 8 C30 4, 60 11, 90 7 S150 4, 178 8" />
-      </svg>
       {pages.map((page) => {
         const open = page.lines.filter((l) => !l.done && !isHeading(l.text)).length;
         const confirming = confirmDay === page.day;

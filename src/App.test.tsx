@@ -29,7 +29,7 @@ describe('App', () => {
     expect(screen.getByRole('heading', { level: 1 })).toHaveTextContent('2 Friday October');
   });
 
-  it('turns to the week from the folded corner and back, moving focus to each page’s heading', async () => {
+  it('turns to the week from the corner button and back, moving focus to each page’s heading', async () => {
     const user = userEvent.setup();
     const { container } = render(<App />);
     const book = container.querySelector('.book')!;

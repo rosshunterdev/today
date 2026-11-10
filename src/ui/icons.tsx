@@ -1,4 +1,4 @@
-// Drawn icons in the ink colour, so the app's own controls look like the rest of the page.
+// Line icons in the text colour, so the app's own controls look like the rest of the page.
 const PEN = { fill: 'none', stroke: 'currentColor', strokeWidth: 1.8, strokeLinecap: 'round', strokeLinejoin: 'round' } as const;
 
 export function MoonIcon() {
@@ -65,11 +65,12 @@ export function DragDotsIcon() {
   );
 }
 
-// The bullet once a line is crossed off. Stroked by CSS.
-export function CrossIcon() {
+// The ring once a line is crossed off: a tick on a filled round. Coloured by CSS.
+export function TickIcon() {
   return (
-    <svg viewBox="0 0 14 14" aria-hidden="true" focusable="false">
-      <path d="M2.5 2.2l9.1 9.6M11.4 2.6l-9 8.9" />
+    <svg viewBox="0 0 15 15" aria-hidden="true" focusable="false">
+      <circle cx="7.5" cy="7.5" r="7.5" />
+      <path d="M4.2 7.8l2.3 2.3 4.4-4.9" />
     </svg>
   );
 }

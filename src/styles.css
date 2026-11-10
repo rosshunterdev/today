@@ -526,18 +526,21 @@ body {
 }
 
 .bullet svg {
-  display: none;
-}
-
-.bullet[aria-pressed='true']::before {
-  content: '';
   width: 0.9375rem;
   height: 0.9375rem;
-  border-radius: 50%;
-  background: var(--sage)
-    url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 15 15'%3E%3Cpath d='M4.2 7.8l2.3 2.3 4.4-4.9' fill='none' stroke='%23fffdfa' stroke-width='1.6' stroke-linecap='round' stroke-linejoin='round'/%3E%3C/svg%3E")
-    center / contain no-repeat;
   animation: pop 180ms ease-out;
+}
+
+.bullet circle {
+  fill: var(--sage);
+}
+
+.bullet path {
+  fill: none;
+  stroke: var(--surface);
+  stroke-width: 1.6;
+  stroke-linecap: round;
+  stroke-linejoin: round;
 }
 
 .bullet:focus-visible,
@@ -599,7 +602,7 @@ body {
 
 @media (prefers-reduced-motion: reduce) {
   .strike,
-  .bullet[aria-pressed='true']::before {
+  .bullet svg {
     animation: none;
   }
 }
@@ -957,10 +960,6 @@ body {
   margin-top: 1.5rem;
 }
 
-.old-pages .rule {
-  display: none;
-}
-
 .old-page {
   margin-bottom: 0.625rem;
   overflow: hidden;
@@ -1057,7 +1056,6 @@ body {
   z-index: 3;
   display: flex;
   align-items: center;
-  gap: 0.5rem;
   min-height: 2.75rem;
   padding: 0 1.125rem;
   border: 1px solid var(--line-input);
@@ -1072,17 +1070,10 @@ body {
 
 .corner[data-to='week'] {
   right: 1rem;
-  text-align: right;
 }
 
 .corner[data-to='today'] {
   left: 1rem;
-  flex-direction: row-reverse;
-  text-align: left;
-}
-
-.corner-fold {
-  display: none;
 }
 
 /* While a line is being dragged, the corner shows it will take it. */

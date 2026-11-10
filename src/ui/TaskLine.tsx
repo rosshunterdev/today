@@ -7,7 +7,7 @@ import { isStrike } from './stroke';
 import { MARK_GLYPH } from '../marks';
 import { hasNotes } from '../day/leftovers';
 import { headingLabel } from '../heading';
-import { CrossIcon, DragDotsIcon, PencilIcon } from './icons';
+import { DragDotsIcon, PencilIcon, TickIcon } from './icons';
 
 export interface LineItem {
   id: string;
@@ -183,7 +183,7 @@ export function TaskLine(props: TaskLineProps) {
               inputRef.current?.blur();
             }}
           >
-            {task.done ? <CrossIcon /> : <span className="dot" />}
+            {task.done ? <TickIcon /> : <span className="dot" />}
           </button>
         )}
         {task.mark === 'star' && heading === null && <span className="star" style={{ width: textWidth + 6 }} aria-hidden="true" />}
