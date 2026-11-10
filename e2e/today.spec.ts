@@ -63,7 +63,7 @@ test('cross off and back with a click on the bullet', async ({ page }, testInfo)
 
 const rootPx = (page: Page) => page.evaluate(() => parseFloat(getComputedStyle(document.documentElement).fontSize));
 
-test('desktop: the open book fills the screen and grows with it', async ({ page }, testInfo) => {
+test('desktop: two panels sit side by side at a readable width, and type grows only a little with the window', async ({ page }, testInfo) => {
   test.skip(testInfo.project.name !== 'desktop', 'wide layout');
   await page.setViewportSize({ width: 1920, height: 1080 });
   await page.goto('/');
@@ -72,14 +72,18 @@ test('desktop: the open book fills the screen and grows with it', async ({ page 
   await page.keyboard.type('finish cloud assignment');
   await page.keyboard.press('Enter');
 
-  // About 1.2x at 1920px, and the book is only short of the window by the desk margin.
+  // A little over 1x at 1920px. The panels stop at 68rem and sit in the middle of the window.
   const root = await rootPx(page);
-  expect(root).toBeCloseTo(19.2, 0);
+  expect(root).toBeCloseTo(16.7, 0);
   const book = (await page.locator('.book').boundingBox())!;
-  expect(book.width).toBeGreaterThan(1920 - 4 * root);
+  expect(book.width).toBeCloseTo(68 * root, 0);
+  expect(book.x + book.width / 2).toBeCloseTo(960, 0);
+  // Today's panel is the wider one, on the left, and the two start level.
   const left = (await page.locator('main').boundingBox())!;
   const right = (await page.locator('.more-page').boundingBox())!;
-  expect(Math.abs(left.width - right.width)).toBeLessThan(2);
+  expect(left.x).toBeLessThan(right.x);
+  expect(left.width).toBeGreaterThan(right.width);
+  expect(left.y).toBeCloseTo(right.y, 0);
   await page.screenshot({ path: 'e2e/screenshots/desktop-wide.png', animations: 'disabled' });
 
   // Crossing off takes no longer a stroke than it did on the narrower page.
@@ -92,11 +96,11 @@ test('desktop: the open book fills the screen and grows with it', async ({ page 
   await page.mouse.up();
   await expect(first).toHaveAttribute('data-done', 'true');
 
-  // 1x at the breakpoint, so nothing jumps there, and no more than 1.5x on very wide screens.
+  // 1x at the breakpoint, so nothing jumps there, and no more than 1.125x on very wide screens.
   await page.setViewportSize({ width: 1024, height: 768 });
   expect(await rootPx(page)).toBeCloseTo(16, 0);
   await page.setViewportSize({ width: 3840, height: 2160 });
-  expect(await rootPx(page)).toBe(24);
+  expect(await rootPx(page)).toBe(18);
 });
 
 test('phone: text stays its normal size', async ({ page }, testInfo) => {

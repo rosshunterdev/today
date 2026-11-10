@@ -57,7 +57,7 @@ test('desktop: a goal dropped on blank paper moves to the end of today', async (
   await page.keyboard.press('Enter');
   await expect(goals(page)).toHaveCount(1);
 
-  // The middle of the page is empty dot-grid paper, well below the only task.
+  // The middle of the page is empty paper, well below the only task.
   await mouseDrag(page, lineOf(goals(page).nth(0)), page.locator('main'));
   await expect(goals(page)).toHaveCount(0);
   await expect(tasks(page)).toHaveCount(2);
