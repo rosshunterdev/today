@@ -1,6 +1,6 @@
-# Today: design spec
+# FOCUS: design spec
 
-Written 2026-10-02.
+Written 2026-10-02 as Today. Renamed and restyled as FOCUS, with a header and a calendar, on 2026-11-11.
 
 ## 1. Purpose
 
@@ -17,7 +17,7 @@ Plus: paper is a pleasant canvas with room for personal expression.
 
 **Success.** The user opens this each morning instead of reaching for paper, and keeps doing so after the novelty wears off.
 
-**Core rule.** The app holds today, and nothing else. No backlog, projects, tags, due dates, priorities, reminders, stats or streaks. Headings can group a page's lines the way they would on paper, but they are written words, not projects: nothing about them is kept between days.
+**Core rule.** The app opens on today, and today is where the work happens. A calendar holds lines written for coming days and shows the days gone by, and that is all it does. No projects, tags, due dates, priorities, reminders, stats or streaks: a line's date is the day it is written on, not a deadline. Headings can group a page's lines the way they would on paper, but they are written words, not projects: nothing about them is kept between days.
 
 ## 2. Platforms
 
@@ -25,11 +25,11 @@ Phone and laptop. Installable web app (PWA), one codebase, synced between device
 
 ## 3. Experience
 
-Layout: a dot-grid journal. Dot-grid paper, a handwritten-style font, the day's date as a large numeral at the top. Wide screens show the journal open: today on the left page, This week and old pages on the right. The open journal fills the window and grows with it (up to one and a half times its normal size on very wide screens). Phones show one page at a time, and a folded corner turns to the other. Parked alternatives: free page and desk scraps.
+Layout: the FOCUS design. Warm paper colours, a serif (Spectral) for headings and a sans (Karla) for lines, hairline rules and pill buttons. A header runs across the top: the FOCUS wordmark, links to the two views (Today and Calendar), and the cloud and moon. On Today the day's date is a large numeral at the top. Wide screens show two panels side by side, centred and at most 68rem across: today on the left, This week and old pages on the right. Type grows only a little with the window (up to 1.125 times on very wide screens). Phones show one page at a time, and a button in the corner turns to the other. Retired: the dot-grid journal the app began with. Parked alternatives: free page and desk scraps.
 
 | Action | Desktop | Phone |
 |---|---|---|
-| Open | Lands on today's page, cursor on first empty line. No splash, no menu. | Same |
+| Open | Lands on today's page, cursor on first empty line. No splash. | Same |
 | Write a task | Type, Enter for next line | Type, Return for next line |
 | Edit a task | Click the text | Tap the text |
 | Make a sub-step | Tab (Shift+Tab to undo) | ⇥ / ⇤ buttons in a bar above the keyboard while editing |
@@ -38,9 +38,9 @@ Layout: a dot-grid journal. Dot-grid paper, a handwritten-style font, the day's 
 | Margin mark | Click the margin to cycle: none, star (highlights the line), !, ? | Tap the margin |
 | Make a heading | Start the line with `# ` or end it with `:` | Same |
 | Delete | Backspace on an empty line, or drag the line into the bin at the bottom right of the week page | Backspace on an empty line, or long-press and drag the line into the bin that appears above the corners |
-| Night pages | Click the moon in today's header | Tap the moon |
+| Night pages | Click the moon in the header | Tap the moon |
 
-- Each line starts with a bullet dot. Crossing off turns the dot into a cross and draws a thin pen stroke across the text. Crossed-off tasks stay on the page, greyed.
+- Each line starts with a ring. Crossing off fills the ring with a tick and draws a thin stroke across the text. Crossed-off tasks stay on the page, greyed.
 - Sub-steps are one level deep only (indent 0 or 1).
 - ! and ? sit in the margin; a star highlights the line instead. Freehand drawing is not in v1.
 - Crossing off is a horizontal stroke across the line, like running a pen through it. The same stroke across a crossed-off task un-crosses it. Tap/click only ever places the cursor for editing.
@@ -53,19 +53,22 @@ Layout: a dot-grid journal. Dot-grid paper, a handwritten-style font, the day's 
 
 **Notes.** Any task or goal can hold a free-text note, like writing on the back of the card. A small pencil at the end of a line (shown while you're on the line, always when a note exists) unfolds the note in place under the line; Escape or the pencil folds it. Enter adds a new line inside the note. Notes move with their line everywhere and are read-only on old pages. A line with blank text but a note still counts as a real line.
 
-**Week goals.** This week holds a few bigger aims for the week, at the top of the right-hand page (the second page on phones). Type a goal in, or drag a task from today onto it (the task moves); on a phone, drop the task on the folded corner. Drag a goal back onto today's page to move it back; on a phone, drop it on the "back to today" corner. Goals cross off with the same stroke as tasks and can be reordered. A week runs Monday to Sunday on the same 4am boundary. When a new week starts, the week offers last week's unfinished goals with a Bring all / pick / dismiss note.
+**Week goals.** This week holds a few bigger aims for the week, at the top of the right-hand page (the second page on phones). Type a goal in, or drag a task from today onto it (the task moves); on a phone, drop the task on the corner button. Drag a goal back onto today's page to move it back; on a phone, drop it on the "back to today" corner. Goals cross off with the same stroke as tasks and can be reordered. A week runs Monday to Sunday on the same 4am boundary. When a new week starts, the week offers last week's unfinished goals with a Bring all / pick / dismiss note.
 
 **Bin.** Any line (a task, a goal or an old line) can be dragged into the bin to throw it away. A slip then shows the line's words with an undo for five seconds, held while the pointer or focus is on it. Undo, or Ctrl+Z while the slip shows, puts the line back where it was. Only the last bin can be undone.
 
-**Night pages.** A moon in today's header turns the journal dark: black pages, white ink, pink crossing off. The choice is remembered on the device.
+**Night pages.** A moon in the header turns the app dark: warm near-black panels and light text. The choice is remembered on the device.
 
-**Not in v1:** browsing past days beyond old pages, settings (the night switch is the only one), reminders/notifications, stats/streaks, themes beyond night pages, freehand drawing, sharing.
+**Calendar.** The second view. A month, Monday first, where each day shows a small copy of its list: one ring per line, filled when the line is crossed off, up to four marks ("+n" stands in for the rest). Arrows turn the month, "Go to today" comes back, and the arrow keys move the picked day. The picked day's lines show beside the month (under it on phones). Today or a coming day is a page to write on, with the same lines, sub-steps, marks, notes, reordering and bin as today's page. A past day shows its lines as they were left, read only: they can be crossed off, and an open line can be sent to the end of today with >. The view is kept in the address (`#calendar`), so a reload stays on it.
+
+**Not in v1:** a time of day on a line, settings (the night switch is the only one), reminders/notifications, stats/streaks, themes beyond night pages, freehand drawing, sharing.
 
 ## 4. Day rules
 
 - Logical day = date of (device local time minus 4 hours). 02:30 Friday belongs to Thursday.
 - The page shown is always the current logical day. If the app is left open across 04:00, it switches to the new day on next focus or interaction.
 - Tomorrow's lines are tasks dated the next logical day. At 04:00 they are the new day's lines, with nothing copied.
+- A line written on any coming day in the calendar is a task dated that day, the same as Tomorrow's lines. When that day arrives it is on today's page, with nothing copied.
 - A day ends at 04:00 on the next calendar day. An old page shows that day's lines that were unfinished when it ended: still open, or crossed off since (`done_at` after the day end). Blank and deleted lines never count.
 - An old page appears for every earlier day with at least one such line, unless its day record is `binned`.
 - Moving a line off an old page soft-deletes it there and creates it on today (same `text`, `indent`, `mark`) or as a goal, always open.
@@ -147,12 +150,12 @@ Stack: React + TypeScript + Vite, vite-plugin-pwa, Dexie, Supabase JS client, Ve
 
 | unit | job | depends on |
 |---|---|---|
-| `day` | pure functions: logical day from a Date, old page lines, week maths | nothing |
+| `day` | pure functions: logical day from a Date, old page lines, week maths, the calendar's month grid | nothing |
 | `order` | pure functions: fractional position between two positions | nothing |
 | `store` | local reads/writes of tasks and days; sets `updated_at`; exposes live queries to the UI | Dexie |
 | `sync` | push/pull between store and Supabase; conflict resolution | store, Supabase client |
 | `auth` | username and password sign-in, session state | Supabase client |
-| UI | notebook page, task line, old pages, sync card | store, day, order, auth |
+| UI | header, today's page, task line, old pages, calendar, sync card | store, day, order, auth |
 
 The UI never calls Supabase directly. It only reads and writes `store`.
 
@@ -175,9 +178,9 @@ Rule: nothing ever stops the user writing.
 
 ## 8. Testing
 
-1. **Unit (Vitest):** `day` (04:00 boundary both sides, old page lines either side of the day end), `order` (positions between, before first, after last, many inserts), `sync` merge (newer wins, deletes propagate), heading detection (`# ` and trailing `:`, a symbol alone is not a heading, `#1` is not a heading), old page lines with headings.
-2. **Component (Vitest + Testing Library):** Enter creates a line, Tab/Shift+Tab indents, Backspace on empty line deletes, horizontal drag/swipe toggles crossed-off, click places cursor, old pages cross off and bin.
-3. **End-to-end (Playwright):** write tasks, cross one off, reload, state persists. Also used for screenshot verification. To be added once there is UI (user to confirm).
+1. **Unit (Vitest):** `day` (04:00 boundary both sides, old page lines either side of the day end), `order` (positions between, before first, after last, many inserts), `sync` merge (newer wins, deletes propagate), heading detection (`# ` and trailing `:`, a symbol alone is not a heading, `#1` is not a heading), old page lines with headings, the calendar (whole weeks from Monday, each day's marks).
+2. **Component (Vitest + Testing Library):** Enter creates a line, Tab/Shift+Tab indents, Backspace on empty line deletes, horizontal drag/swipe toggles crossed-off, click places cursor, old pages cross off and bin, the calendar (pick a day, write on a coming day, past days read only, arrow keys).
+3. **End-to-end (Playwright):** write tasks, cross one off, reload, state persists; a line written in the calendar is on today's page when its day comes. Also used for screenshot verification. To be added once there is UI (user to confirm).
 4. **Manual device pass:** install on phone and laptop; airplane mode, edit, reconnect; both devices match.
 
 ## 9. Open questions

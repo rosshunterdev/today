@@ -1,34 +1,37 @@
-# Today
+# FOCUS
 
 [![CI](https://github.com/rosshunterdev/today/actions/workflows/ci.yml/badge.svg)](https://github.com/rosshunterdev/today/actions/workflows/ci.yml)
 
-A task list for today only, built to feel like the list you write on paper each morning. It's an installable web app (PWA) for phone and laptop that works fully offline, with optional sync between devices. I built it because every task app I tried felt worse than paper, and planning one day at a time is the part that paper gets right.
+A task list built around today, with a calendar for the days ahead. It's an installable web app (PWA) for phone and laptop that works fully offline, with optional sync between devices. I built it because every task app I tried felt worse than paper, and planning one day at a time is the part that paper gets right.
 
 **Live demo:** [today-seven-kappa.vercel.app](https://today-seven-kappa.vercel.app). Everything works without an account; your lines stay in your browser.
 
 <p>
-  <img src="docs/screenshots/desktop.png" alt="Today on desktop: a dot-grid journal lying open, today's list on the left page, this week's goal and an old page's unfinished task on the right" width="560">
+  <img src="docs/screenshots/desktop.png" alt="FOCUS on desktop: the header with Today and Calendar, today's list in the left panel under two headings, this week's goals and three old pages in the right panel" width="560">
   &nbsp;
-  <img src="docs/screenshots/phone.png" alt="Today on a phone: one dot-grid page with two headings, a folded Tomorrow section and a folded corner for the week" width="200">
+  <img src="docs/screenshots/phone.png" alt="FOCUS on a phone: today's list under the header, Tomorrow at the foot of the page and a button for the week" width="200">
 </p>
 <p>
-  <img src="docs/screenshots/desktop-night.png" alt="Night pages: the same journal with dark pages and light ink" width="560">
+  <img src="docs/screenshots/calendar.png" alt="The calendar: a month where each day shows a ring for every line, and the picked day's list beside it" width="560">
+</p>
+<p>
+  <img src="docs/screenshots/desktop-night.png" alt="Night pages: the same panels in dark colours" width="560">
 </p>
 
 ## Status
 
-Personal project, started in October 2026.
+Personal project, started in October 2026 as Today, a dot-grid journal. In November 2026 it took the name and look of FOCUS, a task manager I designed earlier as a study project. The repo, the device store and the hosted project keep the first name.
 
 - **Works:** everything in the feature list below, offline and installed, on desktop and phone browsers.
 - **Sync accounts are closed to new sign-ups.** Sync is limited to my own account, so the demo is offline-only for everyone else.
-- **Not built:** password reset (there's no email), reminders, browsing past days beyond old pages, a native app.
+- **Not built:** password reset (there's no email), reminders, a time of day on a task, a native app.
 - **Tested in CI on Chromium only** (desktop and a Pixel 7 profile). Safari and Firefox aren't covered by automated tests.
 
 ## Features
 
-- **Dot-grid journal:** a handwritten-style font and the date as a big numeral. On a wide screen the journal lies open: today on the left, the week and old pages on the right.
+- **Two panels:** today's list under the date as a big numeral, with the week and old pages beside it. Phones show one panel at a time.
 - **Write line by line:** Enter for a new line, Tab / Shift+Tab for one level of sub-steps, Backspace on an empty line to delete it.
-- **Cross off with a stroke:** drag or swipe across a line to cross it off. Do it again to undo.
+- **Cross off with a stroke:** drag or swipe across a line to cross it off, or click its ring. Do it again to undo.
 - **Headings:** start a line with `# ` or end it with `:` to make it a heading.
 - **Marks:** tap the margin to highlight a line, or mark it ! or ?.
 - **Reorder:** drag the grip on desktop, or long-press and drag on a phone.
@@ -36,8 +39,9 @@ Personal project, started in October 2026.
 - **Old pages:** unfinished tasks from earlier days stay listed under the week until you move or bin them.
 - **Tomorrow:** a folded section at the bottom of today's page for writing tomorrow's list the evening before.
 - **Notes:** a pencil at the end of a line unfolds a note under it.
-- **This week:** a short list of goals for the week on the facing page.
-- **Night pages:** a dark journal, remembered per device.
+- **This week:** a short list of goals for the week in the second panel.
+- **Calendar:** a month where each day shows one ring per line, open or done. Write on any coming day and the line is on today's page when that day arrives. Past days are read only.
+- **Night pages:** dark colours, remembered per device.
 - **4am day boundary:** 02:30 on Friday still counts as Thursday.
 - **Optional sync:** sign in with a username and password and the same pages show up on every device.
 
@@ -113,9 +117,9 @@ npm run test:rls  # row-level security and sign-in tests (needs supabase start a
 
 | Suite | Tests | What it covers |
 |---|---|---|
-| Unit and component (Vitest) | 310 in 38 files | day rules, ordering, the store, the sync engine and loop, and the UI with Testing Library on fake-indexeddb |
+| Unit and component (Vitest) | 331 in 40 files | day rules, the calendar's month maths, ordering, the store, the sync engine and loop, and the UI with Testing Library on fake-indexeddb |
 | Row-level security (Vitest) | 31 in 3 files | each table's policies against a real local Supabase: owners only, no hard deletes, signed-out visitors get nothing, account deletion |
-| End-to-end (Playwright) | 23 in 8 files, 30 runs across desktop Chrome and a Pixel 7 profile (some tests apply to one profile only) | writing, crossing off, reordering, the bin, notes, headings, the week, old pages, tomorrow, night pages, and data surviving a reload |
+| End-to-end (Playwright) | 25 in 9 files, 34 runs across desktop Chrome and a Pixel 7 profile (some tests apply to one profile only) | writing, crossing off, reordering, the bin, notes, headings, the week, old pages, tomorrow, the calendar, night pages, and data surviving a reload |
 
 Unit tests run in the `Pacific/Auckland` time zone so the 4am rollover behaves the same on every machine.
 
