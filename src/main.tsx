@@ -2,15 +2,11 @@ import { StrictMode } from 'react';
 import { createRoot } from 'react-dom/client';
 import { registerSW } from 'virtual:pwa-register';
 // Latin only: the app is English, and every font file is precached for offline use.
-import '@fontsource/shantell-sans/latin-400.css';
-import '@fontsource/shantell-sans/latin-600.css';
-import './styles.css';
-// The FOCUS look, tried on over the journal (prototype). Take these six lines out to get the journal back.
 import '@fontsource/spectral/latin-300.css';
 import '@fontsource/spectral/latin-400.css';
 import '@fontsource/karla/latin-400.css';
 import '@fontsource/karla/latin-500.css';
-import './focus.css';
+import './styles.css';
 import { App } from './App';
 import { requestPersistentStorage } from './store/persist';
 import { checkForUpdates } from './pwa/checkForUpdates';
