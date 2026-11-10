@@ -1,6 +1,6 @@
 import { describe, it, expect, beforeEach, afterEach, vi } from 'vitest';
 import { db } from './db';
-import { listDay, addTask, updateText, setIndent, setMark, setDone, setNotes, deleteTask, moveTask, restoreTask, taskToDay } from './tasks';
+import { listDay, listBetween, addTask, updateText, setIndent, setMark, setDone, setNotes, deleteTask, moveTask, restoreTask, taskToDay } from './tasks';
 
 const DAY = '2026-10-02';
 const texts = async () => (await listDay(DAY)).map((t) => t.text);
@@ -14,6 +14,17 @@ afterEach(() => {
 });
 
 describe('tasks store', () => {
+  it('lists the live lines between two days, both included', async () => {
+    await addTask('2026-10-01', { text: 'before' });
+    await addTask('2026-10-02', { text: 'first' });
+    const gone = await addTask('2026-10-03', { text: 'gone' });
+    await addTask('2026-10-04', { text: 'last' });
+    await addTask('2026-10-05', { text: 'after' });
+    await deleteTask(gone.id);
+    const rows = await listBetween('2026-10-02', '2026-10-04');
+    expect(rows.map((t) => t.text).sort()).toEqual(['first', 'last']);
+  });
+
   it('appends tasks in order', async () => {
     await addTask(DAY, { text: 'a' });
     await addTask(DAY, { text: 'b' });

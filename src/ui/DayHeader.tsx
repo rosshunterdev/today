@@ -1,6 +1,4 @@
 import { dayParts } from '../day/logicalDay';
-import { ThemeSwitch } from './ThemeSwitch';
-import { CloudButton } from './CloudButton';
 
 export function DayHeader({ day }: { day: string }) {
   const { number, weekday, month } = dayParts(day);
@@ -13,8 +11,6 @@ export function DayHeader({ day }: { day: string }) {
           <span>{weekday}</span> <span className="day-month">{month}</span>
         </span>
       </h1>
-      <CloudButton />
-      <ThemeSwitch />
     </header>
   );
 }
