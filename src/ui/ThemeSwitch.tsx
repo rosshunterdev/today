@@ -2,8 +2,8 @@ import { useEffect, useState } from 'react';
 import { getTheme, setTheme, type Theme } from '../store/theme';
 import { MoonIcon, SunIcon } from './icons';
 
-// The browser bar follows the paper, so night pages don't sit under a pale strip on a phone.
-const PAPER: Record<Theme, string> = { day: '#fafaf7', night: '#202329' };
+// The browser bar follows the page colour, so night pages don't sit under a pale strip on a phone.
+const PAPER: Record<Theme, string> = { day: '#fffdfa', night: '#1f1b17' };
 
 function applyTheme(theme: Theme) {
   const root = document.documentElement;

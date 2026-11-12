@@ -26,11 +26,13 @@ const tomorrowPlace = (page: Page) =>
     const line = main.querySelector('.lines > .line')!.getBoundingClientRect();
     const heading = main.querySelector('.tomorrow-heading')!.getBoundingClientRect();
     const section = main.querySelector('.tomorrow')!.getBoundingClientRect();
-    const writingBottom = main.getBoundingClientRect().bottom - parseFloat(getComputedStyle(main).paddingBottom);
+    // Inside the panel's border (wide screens draw one) and its bottom padding.
+    const style = getComputedStyle(main);
+    const writingBottom = main.getBoundingClientRect().bottom - parseFloat(style.borderBottomWidth) - parseFloat(style.paddingBottom);
     return { rows: (heading.top - line.top) / line.height, gap: writingBottom - section.bottom };
   });
 
-test('Tomorrow sits on the bottom edge of today’s page, on the dot grid, and grows upward', async ({ page }) => {
+test('Tomorrow sits at the foot of today’s page and grows upward', async ({ page }) => {
   await page.clock.setFixedTime(new Date(2026, 9, 22, 21, 0));
   await page.goto('/');
   await write(page, ['groceries']);
@@ -38,7 +40,6 @@ test('Tomorrow sits on the bottom edge of today’s page, on the dot grid, and g
 
   const folded = await tomorrowPlace(page);
   expect(folded.rows).toBeGreaterThan(5);
-  expect(folded.rows).toBeCloseTo(Math.round(folded.rows), 1);
   expect(folded.gap).toBeCloseTo(0, 0);
 
   await toggle(page).click();

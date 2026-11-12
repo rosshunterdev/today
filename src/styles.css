@@ -1,39 +1,59 @@
-/* Dot-grid journal: black fineliner by day, white gel pen on black pages at night. */
+/* FOCUS: warm paper, Spectral for headings, Karla for lines, hairline rules, pill buttons.
+   The colours, type and radii come from the FOCUS design. It has no dark design, so the night colours are derived here. */
 :root {
-  --desk: #c9c7c0;
-  --cover: #2a2c31;
-  --paper: #fafaf7;
-  --dot: #babec7;
-  --ink: #24262b;
-  --ink-soft: #5d6068;
-  --ink-faint: #a0a3aa;
-  --strike: #24262b;
-  --highlight: rgb(241 234 90 / 0.9);
-  --gutter: rgb(36 38 43 / 0.1);
-  --fold-under: #d6d5ce;
-  --fold-shade: #e9e9e3;
-  --shadow: rgb(36 38 43 / 0.25);
-  --row: 2.25rem;
-  --dot-step: 1.125rem;
-  --text-x: 4rem;
-  --indent: 1.875rem;
-  --hand: 'Shantell Sans', 'Segoe Print', 'Bradley Hand', cursive;
+  --bg: #fbf8f3;
+  --surface: #fffdfa;
+  --column: #f8f4ec;
+  --wash: #f1ebe1;
+  --ink: #211d18;
+  --title: #2b2620;
+  --secondary: #7c7266;
+  --muted: #9c9184;
+  --faint: #a2988a;
+  --meta: #b0a798;
+  --line: #e7dfd3;
+  --line-card: #ebe3d7;
+  --line-input: #e3dacd;
+  --divider: #ede5d9;
+  --clay: #a88c6c;
+  --sage: #9aa48f;
+  --danger: #8e5647;
+  --danger-line: #e4cdc4;
+  --ask: #7c6046;
+  --ask-line: #e6daca;
+  --star: rgb(168 140 108 / 0.24);
+  --shadow: rgb(33 29 24 / 0.14);
+  --serif: 'Spectral', Georgia, serif;
+  --sans: 'Karla', system-ui, sans-serif;
+  --row: 2.5rem;
+  --text-x: 3.75rem;
+  --indent: 1.5rem;
   color-scheme: light;
 }
 
-/* Night pages: set on <html> by the switch, and before first paint by index.html. */
+/* Night: set on <html> by the switch, and before first paint by theme.js. */
 :root[data-theme='night'] {
-  --desk: #3a3e46;
-  --cover: #17181c;
-  --paper: #202329;
-  --dot: #454a55;
-  --ink: #ecedef;
-  --ink-soft: #a9adb6;
-  --ink-faint: #767b86;
-  --strike: #f4a7c0;
-  --gutter: rgb(0 0 0 / 0.28);
-  --fold-under: #141519;
-  --fold-shade: #30343c;
+  --bg: #171411;
+  --surface: #1f1b17;
+  --column: #1b1814;
+  --wash: #2c2620;
+  --ink: #f1ebe1;
+  --title: #ebe4d8;
+  --secondary: #a69c8e;
+  --muted: #8c8274;
+  --faint: #7c7266;
+  --meta: #6f665b;
+  --line: #342d26;
+  --line-card: #342d26;
+  --line-input: #3b332b;
+  --divider: #2a251f;
+  --clay: #c2a583;
+  --sage: #8e9a82;
+  --danger: #d0907c;
+  --danger-line: #5a3a31;
+  --ask: #c9a986;
+  --ask-line: #4d3f30;
+  --star: rgb(194 165 131 / 0.22);
   --shadow: rgb(0 0 0 / 0.5);
   color-scheme: dark;
 }
@@ -45,122 +65,124 @@
 html,
 body {
   margin: 0;
-  background: var(--paper);
+  background: var(--surface);
 }
 
 body {
   color: var(--ink);
-  font-family: var(--hand);
-  font-size: 1.3rem;
+  font-family: var(--sans);
+  font-size: 1rem;
   -webkit-tap-highlight-color: transparent;
 }
 
-/* A page of dot grid. Dots sit every half row, so every row line falls on a row of dots. */
-.page {
-  position: relative;
-  min-height: 100dvh;
-  padding: env(safe-area-inset-top) 0.75rem calc(env(safe-area-inset-bottom) + 7rem) 0.25rem;
-  background-color: var(--paper);
-  background-image: radial-gradient(circle, var(--dot) 1.1px, transparent 1.5px);
-  background-size: var(--dot-step) var(--dot-step);
-  background-position: calc(var(--dot-step) / 2) calc(env(safe-area-inset-top) + var(--dot-step) / 2);
-}
-
-/* The day's date as a big numeral, the weekday and month stacked beside it. */
-.day-header {
-  display: flex;
-  align-items: flex-end;
-  height: calc(var(--row) * 3);
-  padding: 0 0 0.6rem 1rem;
-}
-
-.day-header h1 {
-  display: flex;
-  align-items: flex-end;
-  gap: 0.6rem;
-  margin: 0;
-  font-weight: 600;
-  outline: none;
-}
-
-.day-number {
-  font-size: 5.25rem;
-  line-height: 0.78;
-  letter-spacing: -0.04em;
-}
-
-.day-words {
+/* The header: the wordmark, then the views on the left and the switches on the right, over a rule. */
+.app {
   display: flex;
   flex-direction: column;
-  font-size: 1.35rem;
-  line-height: 1.1;
+  min-height: 100dvh;
 }
 
-.day-month {
-  color: var(--ink-soft);
-  font-weight: 400;
+.app-header {
+  flex: none;
+  padding: calc(env(safe-area-inset-top) + 0.875rem) 1rem 0;
 }
 
-.theme-switch {
-  align-self: flex-start;
+.wordmark {
+  margin: 0;
+  padding-left: 0.22em; /* the tracking adds a gap after the last letter; this centres the word again */
+  color: var(--ink);
+  font: 400 1.375rem/1 var(--serif);
+  letter-spacing: 0.22em;
+  text-align: center;
+}
+
+.navrow {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  margin-top: 0.25rem;
+  padding-bottom: 0.375rem;
+  border-bottom: 1px solid var(--line);
+}
+
+.navlinks {
+  display: flex;
+  gap: 1.75rem;
+  padding-left: 0.25rem;
+  font: 400 1rem/1.25 var(--serif);
+}
+
+.navlink {
+  padding: 0.75rem 0 0.3125rem;
+  border-bottom: 1px solid transparent;
+  color: var(--secondary);
+  text-decoration: none;
+}
+
+.navlink[aria-current='page'] {
+  border-bottom-color: var(--ink);
+  color: var(--ink);
+}
+
+.navlink:focus-visible {
+  outline: 2px solid var(--clay);
+  outline-offset: 4px;
+  border-radius: 2px;
+}
+
+@media (hover: hover) {
+  .navlink:hover {
+    color: var(--ink);
+  }
+}
+
+.nav-actions {
+  display: flex;
+  align-items: center;
+}
+
+/* The round switches in the header: the cloud and the moon. */
+.theme-switch,
+.sync-button {
   display: flex;
   align-items: center;
   justify-content: center;
   width: 2.75rem;
   height: 2.75rem;
-  margin: 0.75rem 0 0 auto;
   padding: 0;
   border: 0;
   border-radius: 50%;
   background: transparent;
-  color: var(--ink-soft);
+  color: var(--muted);
   cursor: pointer;
 }
 
-.theme-switch svg {
-  width: 1.4rem;
-  height: 1.4rem;
+.theme-switch svg,
+.sync-button svg {
+  width: 1.25rem;
+  height: 1.25rem;
 }
 
-.theme-switch:focus-visible {
+.theme-switch:focus-visible,
+.sync-button:focus-visible {
   outline: 2px solid var(--ink);
   outline-offset: 2px;
 }
 
-/* The cloud sits left of the moon and takes over pushing the pair to the right edge. */
-.sync {
-  position: relative;
-  align-self: flex-start;
-  margin: 0.75rem 0 0 auto;
+@media (hover: hover) {
+  .theme-switch:hover,
+  .sync-button:hover {
+    background: var(--wash);
+    color: var(--ink);
+  }
 }
 
-.sync + .theme-switch {
-  margin-left: 0;
+.sync {
+  position: relative;
 }
 
 .sync-button {
   position: relative;
-  display: flex;
-  align-items: center;
-  justify-content: center;
-  width: 2.75rem;
-  height: 2.75rem;
-  padding: 0;
-  border: 0;
-  border-radius: 50%;
-  background: transparent;
-  color: var(--ink-soft);
-  cursor: pointer;
-}
-
-.sync-button svg {
-  width: 1.4rem;
-  height: 1.4rem;
-}
-
-.sync-button:focus-visible {
-  outline: 2px solid var(--ink);
-  outline-offset: 2px;
 }
 
 .sync-dot {
@@ -170,22 +192,24 @@ body {
   width: 0.45rem;
   height: 0.45rem;
   border-radius: 50%;
-  background: var(--ink);
+  background: var(--clay);
 }
 
-/* A slip of the same paper, lying on the page under the cloud. */
+/* The sync card: a panel under the cloud, with labelled fields and pill buttons. */
 .sync-card {
   position: absolute;
   top: calc(100% + 0.25rem);
   right: 0;
   z-index: 20;
-  width: min(19rem, calc(100vw - 2rem));
-  padding: 0.9rem 1rem;
-  border-radius: 0.4rem;
-  background: var(--paper);
+  width: min(20rem, calc(100vw - 2rem));
+  padding: 1.25rem 1.25rem 1.125rem;
+  border: 1px solid var(--line);
+  border-radius: 14px;
+  background: var(--surface);
   color: var(--ink);
-  font-size: 1.05rem;
-  box-shadow: 0 0.4rem 1.2rem var(--shadow);
+  font-size: 0.875rem;
+  line-height: 1.5;
+  box-shadow: 0 14px 34px -14px var(--shadow);
 }
 
 .sync-card p {
@@ -193,64 +217,193 @@ body {
 }
 
 .sync-card .sync-status {
-  color: var(--ink-soft);
+  color: var(--secondary);
 }
 
 .sync-card label {
   display: grid;
-  gap: 0.25rem;
-  color: var(--ink-soft);
+  gap: 0.4375rem;
+  color: var(--muted);
+  font-size: 0.65625rem;
+  line-height: 0.875rem;
+  letter-spacing: 0.16em;
+  text-transform: uppercase;
 }
 
 .sync-card label + label {
-  margin-top: 0.6rem;
+  margin-top: 1rem;
 }
 
-/* Inputs size to the card: left alone they're 600px wide and push the card off the page. */
+/* Inputs size to the card: left alone they're 600px wide and push the card off the page.
+   1rem, not the design's 14.5px: iOS zooms the page on any input smaller than 16px. */
 .sync-card input {
   box-sizing: border-box;
   width: 100%;
   min-width: 0;
-  font: inherit;
+  padding: 0.625rem 0.8125rem;
+  border: 1px solid var(--line-input);
+  border-radius: 9px;
+  background: var(--bg);
   color: var(--ink);
-  background: transparent;
-  border: 0;
-  border-bottom: 1.5px solid var(--ink-faint);
-  padding: 0.2rem 0;
+  font: inherit;
+  font-size: 1rem;
+  letter-spacing: normal;
+  text-transform: none;
 }
 
 .sync-card input:focus {
   outline: none;
-  border-bottom-color: var(--ink);
+  border-color: var(--clay);
 }
 
 .sync-actions {
   display: flex;
   flex-wrap: wrap;
-  gap: 0.5rem 1rem;
-  margin-top: 0.75rem;
+  gap: 0.5rem;
+  margin-top: 1.125rem;
 }
 
 .sync-actions button {
-  font: inherit;
-  padding: 0.3rem 0;
-  border: 0;
+  padding: 0.5625rem 1.125rem;
+  border: 1px solid var(--line-input);
+  border-radius: 999px;
   background: transparent;
-  color: var(--ink);
-  text-decoration: underline;
-  text-underline-offset: 0.2em;
+  color: var(--secondary);
+  font: inherit;
+  font-size: 0.84375rem;
+  letter-spacing: 0.04em;
   cursor: pointer;
 }
 
 .sync-actions button:disabled {
-  color: var(--ink-faint);
+  color: var(--faint);
+  opacity: 0.5;
   cursor: default;
+}
+
+/* After :disabled, so a waiting Sign in keeps its light words on the ink. */
+.sync-actions button[type='submit'] {
+  border-color: var(--ink);
+  background: var(--ink);
+  color: var(--bg);
+}
+
+.sync-actions button:focus-visible {
+  outline: 2px solid var(--clay);
+  outline-offset: 2px;
 }
 
 .sync-card [role='alert'] {
   margin: 0.6rem 0 0;
-  color: var(--ink);
-  font-weight: 600;
+  color: var(--danger);
+  font-weight: 500;
+}
+
+/* A page: one panel of the app. Phones show one at a time, under the header. */
+.page {
+  position: relative;
+  min-height: 0;
+  padding: 0 1rem calc(env(safe-area-inset-bottom) + 5.5rem);
+  background-color: var(--surface);
+}
+
+@media (max-width: 63.99rem) {
+  .book {
+    flex: 1;
+    display: flex;
+    flex-direction: column;
+  }
+
+  .book > .page {
+    flex: 1 0 auto;
+  }
+}
+
+/* Today's page is a column, so Tomorrow can sit at its foot with blank paper above it. */
+.today-page {
+  display: flex;
+  flex-direction: column;
+}
+
+.today-page > * {
+  flex: none;
+}
+
+.today-page > .lines {
+  margin-bottom: var(--row);
+}
+
+.more-page {
+  background-color: var(--column);
+}
+
+/* A page's heading over a rule. Today's is the date: a light serif numeral with the weekday and month beside it. */
+.day-header,
+.week-header {
+  display: flex;
+  height: 6.75rem;
+  margin-bottom: 0.5rem;
+  padding: 0 0 1.125rem 0.25rem;
+  border-bottom: 1px solid var(--line);
+}
+
+/* The app header already gives the top of a phone screen its air. */
+@media (max-width: 63.99rem) {
+  .day-header,
+  .week-header {
+    height: 5.5rem;
+  }
+}
+
+.day-header {
+  align-items: flex-end;
+}
+
+.day-header h1 {
+  display: flex;
+  align-items: flex-end;
+  gap: 0.875rem;
+  margin: 0;
+  font-weight: 400;
+  outline: none;
+}
+
+.day-number {
+  font: 300 4.5rem/0.74 var(--serif);
+  font-variant-numeric: lining-nums;
+  letter-spacing: -0.02em;
+}
+
+.day-words {
+  display: flex;
+  flex-direction: column;
+  gap: 0.2rem;
+  font: 400 1.625rem/1 var(--serif);
+}
+
+.day-month {
+  color: var(--secondary);
+  font: 400 0.9375rem/1 var(--sans);
+}
+
+.week-header {
+  flex-wrap: wrap;
+  align-content: flex-end;
+  align-items: baseline;
+  gap: 0 0.75rem;
+  padding-right: 0.25rem;
+}
+
+.week-header h2 {
+  margin: 0;
+  font: 400 1.625rem/1 var(--serif);
+  outline: none;
+}
+
+.week-dates {
+  margin: 0;
+  color: var(--secondary);
+  font-size: 0.875rem;
 }
 
 .lines {
@@ -259,7 +412,7 @@ body {
   list-style: none;
 }
 
-/* A line, left to right: drag dots (on hover), mark slot, bullet, text, pencil. */
+/* A line, left to right: drag dots (on hover), mark slot, ring, text, pencil. A hairline runs under it. */
 .line {
   position: relative;
   display: flex;
@@ -267,6 +420,8 @@ body {
   flex-wrap: wrap;
   min-height: var(--row);
   padding-left: var(--text-x);
+  border-bottom: 1px solid var(--divider);
+  color: var(--title);
   touch-action: pan-y;
 }
 
@@ -274,18 +429,30 @@ body {
   padding-left: calc(var(--text-x) + var(--indent));
 }
 
-/* A heading: a label written out into the bullet column, underlined, still on the row. */
+/* A heading: a serif label starting in the ring's column, over a firmer rule. */
 .line[data-heading='true'] {
   padding-left: calc(var(--text-x) - 1.375rem);
+  border-bottom-color: var(--line);
+}
+
+.line[data-heading='true']:not(:first-child) {
+  margin-top: 0.875rem;
 }
 
 .line[data-heading='true'] .line-text {
-  font-size: 1.15em;
-  font-weight: 600;
-  text-decoration: underline;
-  text-decoration-color: var(--ink-soft);
-  text-decoration-thickness: 2px;
-  text-underline-offset: 0.2em; /* 0.3em fell below the input's fixed height and was clipped */
+  font: 400 1.125rem / var(--row) var(--serif);
+}
+
+/* The writing line: no rule, and a small plus where the next line's ring will be.
+   A background image, so it adds nothing to what a screen reader hears. */
+.line.ghost {
+  border-bottom: 0;
+  background: url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 12 12'%3E%3Cpath d='M6 1.5v9M1.5 6h9' fill='none' stroke='%23b0a798' stroke-width='1.3' stroke-linecap='round'/%3E%3C/svg%3E")
+    no-repeat calc(var(--text-x) - 1.25rem) center / 0.75rem;
+}
+
+.line.ghost[data-indent='1'] {
+  background-position-x: calc(var(--text-x) + var(--indent) - 1.25rem);
 }
 
 .ink {
@@ -311,12 +478,12 @@ body {
 }
 
 .line-text::placeholder {
-  color: var(--ink-faint);
+  color: var(--faint);
   opacity: 1;
 }
 
 .line[data-done='true'] .line-text {
-  color: var(--ink-faint);
+  color: var(--faint);
 }
 
 .measure {
@@ -326,8 +493,8 @@ body {
   pointer-events: none;
 }
 
-/* The bullet sits just left of the text: a dot, then a cross once the line is done. */
-/* It's a button wide enough to hit (24px), reaching a little over the mark slot's empty edge so the dot stays put. */
+/* The ring sits just left of the text: open, then a sage disc with a tick once the line is done. */
+/* It's a button wide enough to hit (24px), reaching a little over the mark slot's empty edge so the ring stays put. */
 .bullet {
   position: absolute;
   left: -1.625rem;
@@ -344,54 +511,57 @@ body {
   cursor: pointer;
 }
 
-.bullet:focus-visible {
-  outline: 2px solid var(--ink);
-  outline-offset: -4px;
+.bullet .dot {
+  width: 0.9375rem;
+  height: 0.9375rem;
+  border: 1.5px solid var(--meta);
+  border-radius: 50%;
 }
 
-/* With a mouse, the dot previews the cross it will become. */
 @media (hover: hover) {
   .bullet:hover .dot {
-    width: 0.75rem;
-    height: 0.75rem;
-    border-radius: 0;
-    background: var(--ink-faint);
-    mask: url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 14 14'%3E%3Cpath d='M2.5 2.2l9.1 9.6M11.4 2.6l-9 8.9' fill='none' stroke='black' stroke-width='2' stroke-linecap='round'/%3E%3C/svg%3E") center / contain no-repeat;
+    border-color: var(--sage);
+    background: var(--wash);
   }
 }
 
-.bullet .dot {
-  width: 0.375rem;
-  height: 0.375rem;
-  border-radius: 50%;
-  background: currentColor;
-}
-
 .bullet svg {
-  width: 0.75rem;
-  height: 0.75rem;
-  fill: none;
-  stroke: var(--strike);
-  stroke-width: 2;
-  stroke-linecap: round;
+  width: 0.9375rem;
+  height: 0.9375rem;
   animation: pop 180ms ease-out;
 }
 
-/* A starred line: a highlighter band by day. A band doesn't read on black paper, so night uses a wavy gel underline. */
-.star {
-  position: absolute;
-  left: -3px;
-  top: 18%;
-  height: 66%;
-  pointer-events: none;
-  background: linear-gradient(176deg, transparent 12%, var(--highlight) 12% 88%, transparent 88%);
+.bullet circle {
+  fill: var(--sage);
 }
 
-:root[data-theme='night'] .star {
-  top: auto;
-  bottom: 0.35rem;
-  height: 0.375rem;
-  background: url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='12' height='6' viewBox='0 0 12 6'%3E%3Cpath d='M0 3 Q3 0.5 6 3 T12 3' fill='none' stroke='%23f2e27a' stroke-width='1.6'/%3E%3C/svg%3E") repeat-x 0 0 / 0.75rem 0.375rem;
+.bullet path {
+  fill: none;
+  stroke: var(--surface);
+  stroke-width: 1.6;
+  stroke-linecap: round;
+  stroke-linejoin: round;
+}
+
+.bullet:focus-visible,
+.mark:focus-visible,
+.notes-toggle:focus-visible,
+.move-today:focus-visible {
+  outline: 2px solid var(--clay);
+  outline-offset: -4px;
+  border-radius: 6px;
+}
+
+/* A starred line: a soft clay band behind the words. */
+.star {
+  position: absolute;
+  left: -6px;
+  top: 20%;
+  height: 60%;
+  margin-right: -6px;
+  border-radius: 5px;
+  background: var(--star);
+  pointer-events: none;
 }
 
 .strike {
@@ -402,14 +572,14 @@ body {
   overflow: visible;
   pointer-events: none;
   translate: 0 -50%;
-  /* Wipe left to right, like the pen moving across. */
+  /* Wipe left to right, like a pen moving across. */
   animation: draw-strike 240ms ease-out;
 }
 
 .strike path {
   fill: none;
-  stroke: var(--strike);
-  stroke-width: 1.6px;
+  stroke: var(--faint);
+  stroke-width: 1px;
   stroke-linecap: round;
   vector-effect: non-scaling-stroke;
 }
@@ -437,25 +607,47 @@ body {
   }
 }
 
-/* The margin slot: tap to cycle marks. ! and ? show here; a star shows on the text. */
+/* The margin slot: tap to cycle marks. ! and ? show here as small outlined rounds; a star shows on the text. */
 .mark {
   position: absolute;
-  left: 0;
+  left: 0.625rem;
   top: 0;
-  width: 2.625rem;
+  width: 1.5rem;
   height: var(--row);
   padding: 0;
   border: 0;
   background: transparent;
   color: var(--ink);
-  font: 600 1.35rem/var(--row) var(--hand);
+  font: 500 0.8125rem / var(--row) var(--sans);
   text-align: center;
   cursor: pointer;
+  isolation: isolate;
 }
 
-.mark:focus-visible {
-  outline: 2px solid var(--ink);
-  outline-offset: -4px;
+.line[data-mark='bang'] .mark {
+  color: var(--danger);
+}
+
+.line[data-mark='question'] .mark {
+  color: var(--ask);
+}
+
+.line[data-mark='bang'] .mark::before,
+.line[data-mark='question'] .mark::before {
+  content: '';
+  position: absolute;
+  top: 50%;
+  left: 50%;
+  z-index: -1;
+  width: 1.125rem;
+  height: 1.125rem;
+  border: 1px solid var(--danger-line);
+  border-radius: 50%;
+  translate: -50% -50%;
+}
+
+.line[data-mark='question'] .mark::before {
+  border-color: var(--ask-line);
 }
 
 .handle {
@@ -470,7 +662,7 @@ body {
   padding: 0;
   border: 0;
   background: transparent;
-  color: var(--ink-soft);
+  color: var(--meta);
   cursor: grab;
   opacity: 0;
   transition: opacity 120ms ease-out;
@@ -501,15 +693,15 @@ body {
   padding: 0;
   border: 0;
   background: transparent;
-  color: var(--ink-soft);
+  color: var(--meta);
   cursor: pointer;
   opacity: 0;
   transition: opacity 120ms ease-out;
 }
 
 .notes-toggle svg {
-  width: 1.1rem;
-  height: 1.1rem;
+  width: 1rem;
+  height: 1rem;
 }
 
 .line:hover .notes-toggle,
@@ -520,7 +712,7 @@ body {
 }
 
 .notes-toggle[data-has='true'] {
-  color: var(--ink);
+  color: var(--clay);
 }
 
 /* On touch a hidden pencil mustn't catch taps meant for the line; it only answers while the line is being edited. */
@@ -532,11 +724,6 @@ body {
   .line:focus-within .notes-toggle {
     pointer-events: auto;
   }
-}
-
-.notes-toggle:focus-visible {
-  outline: 2px solid var(--ink);
-  outline-offset: -4px;
 }
 
 /* An old line's > sits at the end; the pencil steps left to make room for it. */
@@ -551,48 +738,47 @@ body {
   padding: 0;
   border: 0;
   background: transparent;
-  color: var(--ink-soft);
-  font: 600 1.3rem/var(--row) var(--hand);
+  color: var(--muted);
+  font: 400 1rem / var(--row) var(--sans);
   cursor: pointer;
 }
 
-.move-today:focus-visible {
-  outline: 2px solid var(--ink);
-  outline-offset: -4px;
+@media (hover: hover) {
+  .move-today:hover {
+    color: var(--ink);
+  }
 }
 
-/* The note unfolds under its line, a size smaller, with a dash in the gutter. */
+/* The note unfolds under its line, smaller and quieter, with a dash in front. */
 .notes-wrap {
   display: flex;
   flex-basis: 100%;
+  margin-top: -0.375rem;
   margin-right: 2.25rem;
+  padding-bottom: 0.5rem;
 }
 
 .notes-dash {
   flex: none;
-  width: 1.125rem;
-  color: var(--ink-soft);
-  font-size: 1.05rem;
-  line-height: var(--row);
+  width: 1rem;
+  color: var(--meta);
+  font-size: 0.875rem;
+  line-height: 1.375rem;
 }
 
 .notes {
   flex: 1;
   min-width: 0;
-  min-height: var(--row);
+  min-height: 1.375rem;
   margin: 0;
   padding: 0;
   border: 0;
   resize: none;
   overflow: hidden;
   background: transparent;
-  color: var(--ink-soft);
-  font: 1.05rem/var(--row) var(--hand);
+  color: var(--secondary);
+  font: 400 0.875rem/1.375rem var(--sans);
   outline: none;
-}
-
-.notes:focus-visible {
-  box-shadow: inset 2px 0 0 var(--dot);
 }
 
 /* The original stays put as a faint placeholder; the overlay is what follows the pointer. */
@@ -605,9 +791,11 @@ body {
 }
 
 .drag-overlay {
-  padding-left: 0.75rem;
-  background: var(--paper);
-  box-shadow: 0 2px 8px var(--shadow);
+  padding-left: 1rem;
+  border: 1px solid var(--line-card);
+  border-radius: 11px;
+  background: var(--surface);
+  box-shadow: 0 8px 22px -8px var(--shadow);
   cursor: grabbing;
 }
 
@@ -617,64 +805,22 @@ body {
   }
 }
 
-/* This week: the top of the right-hand page, or the second page on phones. */
-.week-header {
-  display: flex;
-  flex-wrap: wrap;
-  align-content: flex-end;
-  align-items: baseline;
-  gap: 0 0.75rem;
-  height: calc(var(--row) * 3);
-  padding: 0 0.5rem 0.6rem 1rem;
-}
-
-.week-header h2 {
-  margin: 0;
-  font-size: 2.4rem;
-  font-weight: 600;
-  line-height: 1.1;
-  outline: none;
-}
-
-.week-dates {
-  margin: 0;
-  color: var(--ink-soft);
-  font-size: 1rem;
-}
-
-/* Tomorrow: folded on the bottom edge of today's page until tapped, and growing upward as it fills.
-   Today's page is a column; Tomorrow takes the free space above it, with at least one blank row after today's lines. */
-.today-page {
-  display: flex;
-  flex-direction: column;
-  /* Whole rows of writing space, so Tomorrow on the bottom edge lands on the dot grid. The part row goes under it. */
-  padding-bottom: calc(
-    env(safe-area-inset-bottom) + 7rem +
-      mod(100dvh - env(safe-area-inset-top) - env(safe-area-inset-bottom) - 7rem, var(--row))
-  );
-}
-
-.today-page > * {
-  flex: none;
-}
-
-.today-page > .lines {
-  margin-bottom: var(--row);
-}
-
+/* Tomorrow: under a rule at the foot of today's page, folded until tapped. It takes the free space above it,
+   so it grows upward as it fills. */
 .tomorrow {
   margin-top: auto;
+  padding-top: 0.375rem;
+  border-top: 1px solid var(--line);
 }
 
 .tomorrow-heading {
   display: flex;
   align-items: center;
-  height: var(--row);
+  height: 2.75rem;
   margin: 0;
-  padding-left: 1rem;
-  color: var(--ink-soft);
-  font-size: 1.3rem;
-  font-weight: 600;
+  padding-left: 1.25rem;
+  color: var(--title);
+  font: 400 1.0625rem/1 var(--serif);
 }
 
 .tomorrow-toggle,
@@ -702,6 +848,8 @@ body {
 
 .tomorrow-fold {
   display: inline-block;
+  color: var(--meta);
+  font-size: 0.75rem;
   transition: rotate 150ms ease;
 }
 
@@ -727,9 +875,9 @@ body {
   flex-wrap: wrap;
   gap: 0.5rem;
   min-height: var(--row);
-  padding-left: 1rem;
-  color: var(--ink-soft);
-  font-size: 1.05rem;
+  padding-left: 0.25rem;
+  color: var(--secondary);
+  font-size: 0.875rem;
 }
 
 .leftovers button {
@@ -748,13 +896,13 @@ body {
 }
 
 .leftovers-open {
-  text-decoration: underline dotted;
+  text-decoration: underline dotted var(--meta);
   text-underline-offset: 0.2em;
 }
 
 .leftovers .leftovers-all {
   color: var(--ink);
-  font-weight: 600;
+  font-weight: 500;
 }
 
 .leftovers-panel {
@@ -785,11 +933,11 @@ body {
 }
 
 .leftovers-panel input[type='checkbox'] {
-  accent-color: var(--ink);
+  accent-color: var(--clay);
 }
 
 .leftovers-panel .leftovers-note {
-  color: var(--ink-soft);
+  color: var(--secondary);
 }
 
 .leftovers-actions {
@@ -799,7 +947,7 @@ body {
 
 .leftovers-actions button:first-child {
   color: var(--ink);
-  font-weight: 600;
+  font-weight: 500;
 }
 
 .leftovers-actions button:disabled {
@@ -807,39 +955,40 @@ body {
   cursor: default;
 }
 
-/* Old pages: earlier days' unfinished lines, under a hand-drawn rule, newest first. */
-.old-pages .rule {
-  display: block;
-  width: 11rem;
-  height: 0.875rem;
-  margin: 1.125rem 0 0.5rem 1rem;
-  fill: none;
-  stroke: var(--ink-soft);
-  stroke-width: 1.5;
-  stroke-linecap: round;
+/* Old pages: each earlier day's unfinished lines on a card in the week's column, newest first. */
+.old-pages {
+  margin-top: 1.5rem;
 }
 
 .old-page {
-  margin-bottom: 1.125rem;
+  margin-bottom: 0.625rem;
+  overflow: hidden;
+  border: 1px solid var(--line-card);
+  border-radius: 11px;
+  background: var(--surface);
 }
 
 .old-page header {
   display: flex;
   align-items: center;
   justify-content: space-between;
-  height: var(--row);
-  padding: 0 0.25rem 0 1rem;
+  height: 2.75rem;
+  padding: 0 0.5rem 0 1rem;
+  border-bottom: 1px solid var(--divider);
 }
 
 .old-page h3 {
   margin: 0;
-  color: var(--ink-soft);
-  font-size: 1.3rem;
-  font-weight: 600;
+  color: var(--title);
+  font: 400 1rem/1 var(--serif);
 }
 
 .old-page .line {
-  color: var(--ink-soft);
+  color: var(--secondary);
+}
+
+.old-page .line:last-child {
+  border-bottom: 0;
 }
 
 .old-bin {
@@ -848,27 +997,29 @@ body {
   padding: 0 0.5rem;
   border: 0;
   background: transparent;
-  color: var(--ink-soft);
-  font: 1rem var(--hand);
-  text-decoration: underline;
-  text-decoration-thickness: 1px;
-  text-underline-offset: 0.25em;
+  color: var(--danger);
+  font: 400 0.8125rem var(--sans);
   cursor: pointer;
 }
 
-.old-page[data-done='true'] .lines {
-  opacity: 0.55;
+.old-bin[data-confirm='true'] {
+  font-weight: 500;
 }
 
-.old-page[data-done='true'] .old-bin,
-.old-bin[data-confirm='true'] {
-  color: var(--ink);
-  font-weight: 600;
+@media (hover: hover) {
+  .old-bin:hover {
+    text-decoration: underline 1px;
+    text-underline-offset: 0.25em;
+  }
 }
 
 .old-bin:focus-visible {
   outline: 2px solid var(--ink);
   outline-offset: 2px;
+}
+
+.old-page[data-done='true'] .lines {
+  opacity: 0.55;
 }
 
 .kbd-bar {
@@ -880,8 +1031,8 @@ body {
   display: flex;
   gap: 0.5rem;
   padding: 0.25rem 0.75rem calc(env(safe-area-inset-bottom) + 0.25rem);
-  background: var(--paper);
-  border-top: 1px solid var(--dot);
+  background: var(--surface);
+  border-top: 1px solid var(--line);
 }
 
 .kbd-bar button {
@@ -895,95 +1046,51 @@ body {
 }
 
 .kbd-bar button:active {
-  background: var(--dot);
+  background: var(--wash);
 }
 
-/* The folded corner on phones: tap to turn the page, or drop a line on it to send it over. */
+/* The corner buttons on phones: tap one to turn to the other page, or drop a line on it to send the line over. */
 .corner {
   position: fixed;
-  bottom: env(safe-area-inset-bottom);
+  bottom: calc(env(safe-area-inset-bottom) + 1rem);
   z-index: 3;
   display: flex;
-  align-items: flex-end;
-  gap: 0.5rem;
-  padding: 0;
-  border: 0;
-  background: transparent;
-  color: var(--ink-soft);
-  font: 0.95rem/1.25 var(--hand);
+  align-items: center;
+  min-height: 2.75rem;
+  padding: 0 1.125rem;
+  border: 1px solid var(--line-input);
+  border-radius: 999px;
+  background: var(--surface);
+  color: var(--secondary);
+  font: 400 0.875rem/1.25 var(--sans);
+  letter-spacing: 0.02em;
+  box-shadow: 0 6px 16px -8px var(--shadow);
   cursor: pointer;
 }
 
 .corner[data-to='week'] {
-  right: 0;
-  text-align: right;
+  right: 1rem;
 }
 
 .corner[data-to='today'] {
-  left: 0;
-  flex-direction: row-reverse;
-  text-align: left;
-}
-
-.corner-label {
-  max-width: 9rem;
-  margin-bottom: 1.25rem;
-}
-
-/* The flap's two outer edges lie on the page, so its shadow falls along them. */
-.corner-fold {
-  position: relative;
-  flex: none;
-  width: 4.75rem;
-  height: 4.75rem;
-  filter: drop-shadow(-1px -1px 2px var(--shadow));
-}
-
-.corner[data-to='today'] .corner-fold {
-  filter: drop-shadow(1px -1px 2px var(--shadow));
-}
-
-.corner-fold::before,
-.corner-fold::after {
-  content: '';
-  position: absolute;
-  inset: 0;
-}
-
-/* Where the corner has folded up, the page underneath shows; the flap lies over the page. */
-.corner[data-to='week'] .corner-fold::before {
-  background: var(--fold-under);
-  clip-path: polygon(100% 0, 100% 100%, 0 100%);
-}
-
-.corner[data-to='week'] .corner-fold::after {
-  background: linear-gradient(135deg, var(--paper) 25%, var(--fold-shade) 50%);
-  clip-path: polygon(0 0, 100% 0, 0 100%);
-}
-
-.corner[data-to='today'] .corner-fold::before {
-  background: var(--fold-under);
-  clip-path: polygon(0 0, 0 100%, 100% 100%);
-}
-
-.corner[data-to='today'] .corner-fold::after {
-  background: linear-gradient(225deg, var(--paper) 25%, var(--fold-shade) 50%);
-  clip-path: polygon(0 0, 100% 0, 100% 100%);
+  left: 1rem;
 }
 
 /* While a line is being dragged, the corner shows it will take it. */
-.corner[data-target='true'] .corner-fold {
-  outline: 2px dashed var(--ink);
+.corner[data-target='true'] {
+  outline: 2px dashed var(--clay);
   outline-offset: 3px;
 }
 
-.corner[data-over='true'] .corner-fold::before {
-  background: var(--highlight);
+.corner[data-over='true'] {
+  border-color: var(--clay);
+  background: var(--wash);
+  color: var(--ink);
 }
 
 .corner:focus-visible {
-  outline: 2px solid var(--ink);
-  outline-offset: -4px;
+  outline: 2px solid var(--clay);
+  outline-offset: 2px;
 }
 
 /* Lifted above the keyboard bar while a line is being edited. */
@@ -996,30 +1103,33 @@ body:has(.kbd-bar) .corner {
   display: flex;
   align-items: center;
   justify-content: center;
-  width: 4.5rem;
-  height: 4.5rem;
+  width: 3.5rem;
+  height: 3.5rem;
+  border: 1px solid var(--line);
   border-radius: 50%;
-  color: var(--ink-soft);
+  background: var(--surface);
+  color: var(--muted);
   pointer-events: none;
 }
 
 .bin svg {
-  width: 2.25rem;
-  height: 2.25rem;
+  width: 1.5rem;
+  height: 1.5rem;
 }
 
 /* While a line is being dragged the bin shows it will take it, like the corners. */
 .bin[data-target='true'] {
-  outline: 2px dashed var(--ink);
+  outline: 2px dashed var(--clay);
   outline-offset: 3px;
 }
 
 .bin[data-over='true'] {
-  background: var(--highlight);
-  color: var(--ink);
+  border-color: var(--danger-line);
+  background: var(--wash);
+  color: var(--danger);
 }
 
-/* The slip after a bin: a scrap of paper with the line's words and an undo. */
+/* The slip after a bin: an ink pill with the line's words and an undo. */
 .slip-region {
   position: fixed;
   left: 50%;
@@ -1034,12 +1144,12 @@ body:has(.kbd-bar) .corner {
   gap: 0.5rem;
   max-width: min(22rem, calc(100vw - 2rem));
   margin: 0;
-  padding: 0 0.25rem 0 1rem;
-  background: var(--paper);
-  color: var(--ink-soft);
-  font-size: 1rem;
-  box-shadow: 0 2px 8px var(--shadow);
-  rotate: -1deg;
+  padding: 0 0.375rem 0 1.125rem;
+  border-radius: 999px;
+  background: var(--ink);
+  color: var(--bg);
+  font-size: 0.875rem;
+  box-shadow: 0 8px 22px -8px var(--shadow);
 }
 
 .slip-text {
@@ -1055,8 +1165,8 @@ body:has(.kbd-bar) .corner {
   padding: 0 0.5rem;
   border: 0;
   background: transparent;
-  color: var(--ink);
-  font: 600 1rem var(--hand);
+  color: inherit;
+  font: 500 0.875rem var(--sans);
   text-decoration: underline;
   text-decoration-thickness: 1px;
   text-underline-offset: 0.25em;
@@ -1064,8 +1174,9 @@ body:has(.kbd-bar) .corner {
 }
 
 .slip button:focus-visible {
-  outline: 2px solid var(--ink);
-  outline-offset: 2px;
+  outline: 2px solid var(--clay);
+  outline-offset: -4px;
+  border-radius: 999px;
 }
 
 /* Lifted above the keyboard bar while a line is being edited. */
@@ -1081,7 +1192,7 @@ body:has(.kbd-bar) .slip-region {
   }
 }
 
-/* On phones the bin floats above the folded corners, and only while a line is lifted. */
+/* On phones the bin floats above the corner buttons, and only while a line is lifted. */
 @media (max-width: 63.99rem) {
   .bin {
     position: fixed;
@@ -1089,7 +1200,6 @@ body:has(.kbd-bar) .slip-region {
     bottom: calc(env(safe-area-inset-bottom) + 5.5rem);
     z-index: 3;
     translate: -50% 0;
-    background: var(--paper);
     box-shadow: 0 2px 8px var(--shadow);
     visibility: hidden;
   }
@@ -1108,7 +1218,7 @@ body:has(.kbd-bar) .slip-region {
   }
 }
 
-/* A fade, not a slide: moving the page would also move its fixed corner mid-turn. */
+/* A fade, not a slide: moving the page would also move its fixed corner button mid-turn. */
 @media (max-width: 63.99rem) and (prefers-reduced-motion: no-preference) {
   .book[data-turned='true'] .page {
     animation: turn-in 200ms ease-out;
@@ -1121,74 +1231,73 @@ body:has(.kbd-bar) .slip-region {
   }
 }
 
-/* Wide screens: the journal lies open on the desk, today on the left and the week on the right. */
+/* Wide screens: two panels side by side under the header, the one you write on lighter and a little wider. */
 @media (min-width: 64rem) {
   html,
   body {
-    background: var(--desk);
+    background: var(--bg);
   }
 
-  /* The whole journal grows with the window: 1x at 1024px, about 1.2x at 1920px, at most 1.5x.
-     Everything is sized in rem, so text, rows and dots grow together. % and rem keep the browser's font size setting. */
+  /* Type grows a little with the window, and no more. Everything is sized in rem, so the browser's font size setting still counts. */
   html {
-    font-size: clamp(100%, calc(0.77rem + 0.36vw), 150%);
+    font-size: clamp(100%, calc(0.9rem + 0.12vw), 112.5%);
+  }
+
+  .app {
+    height: 100dvh;
+  }
+
+  .app-header {
+    width: min(calc(100% - 7rem), 68rem);
+    margin: 0 auto;
+    padding: 1.5rem 0 0;
+  }
+
+  .wordmark {
+    font-size: 2.125rem;
+  }
+
+  .navrow {
+    margin-top: 0.875rem;
+    padding-bottom: 0.875rem;
+  }
+
+  .navlinks {
+    gap: 2rem;
+  }
+
+  .navlink {
+    padding-top: 0.3125rem;
   }
 
   .book {
     position: relative;
+    flex: 1;
     display: flex;
     justify-content: center;
-    width: calc(100% - 3rem);
-    height: calc(100dvh - 3rem);
-    margin: 1.5rem auto;
-    padding: 0.5rem 1.75rem 0.5rem 0.5rem; /* room on the right for the elastic band */
-    border-radius: 0.75rem;
-    background: var(--cover);
-    box-shadow: 0 24px 50px -20px var(--shadow);
+    gap: 1.125rem;
+    width: min(calc(100% - 7rem), 68rem);
+    min-height: 0;
+    margin: 1.125rem auto 1.75rem;
   }
 
-  /* The elastic band, hanging off the back cover. */
-  .book::after {
-    content: '';
-    position: absolute;
-    top: 0;
-    bottom: 0;
-    right: 0.5rem;
-    width: 0.875rem;
-    background: linear-gradient(to right, rgb(0 0 0 / 0.5), rgb(255 255 255 / 0.08) 45%, rgb(0 0 0 / 0.5));
-  }
-
-  /* Each page scrolls on its own. The dots scroll with the writing; the gutter shadow stays at the fold. */
+  /* Each panel scrolls on its own. */
   .page {
     flex: 1 1 0;
     min-height: 0;
-    height: 100%;
     overflow-y: auto;
-    padding: 0 1rem 3rem;
-    background-image:
-      linear-gradient(to left, var(--gutter), transparent 2.875rem),
-      radial-gradient(circle, var(--dot) 1.1px, transparent 1.5px);
-    background-size: 100% 100%, var(--dot-step) var(--dot-step);
-    background-position: 0 0, calc(var(--dot-step) / 2) calc(var(--dot-step) / 2);
-    background-attachment: scroll, local;
+    padding: 0 1.5rem 1.5rem;
+    border: 1px solid var(--line);
+    border-radius: 14px;
   }
 
   .today-page {
-    /* As on phones: the page is the book's height (100dvh less 4rem), and 3rem stays free under the last row. */
-    padding-bottom: calc(3rem + mod(100dvh - 7rem, var(--row)));
-    border-radius: 0.375rem 0 0 0.375rem;
+    flex-grow: 1.3;
+    padding-bottom: 1.25rem;
   }
 
   .more-page {
     padding-bottom: 6rem; /* room under the last line for the bin */
-    border-radius: 0 0.375rem 0.375rem 0;
-    background-image:
-      linear-gradient(to right, var(--gutter), transparent 2.875rem),
-      radial-gradient(circle, var(--dot) 1.1px, transparent 1.5px);
-  }
-
-  .day-number {
-    font-size: 6rem;
   }
 
   .corner {
@@ -1199,11 +1308,264 @@ body:has(.kbd-bar) .slip-region {
     bottom: 1.5rem;
   }
 
-  /* In the week page's bottom-right corner, outside its scroll, so it stays put. */
+  /* In the right-hand panel's bottom corner, outside its scroll, so it stays put. */
   .bin {
     position: absolute;
-    right: 3rem;
-    bottom: 1.25rem;
+    right: 1.5rem;
+    bottom: 1.5rem;
     z-index: 2;
+  }
+}
+
+/* The calendar. A month of tiles; each tile is a small copy of its day's list, one ring per line. */
+.cal-head {
+  display: flex;
+  align-items: flex-end;
+  justify-content: space-between;
+  gap: 0.5rem;
+  height: 5rem;
+  margin-bottom: 0.25rem;
+  padding: 0 0 0.875rem 0.25rem;
+  border-bottom: 1px solid var(--line);
+}
+
+.cal-head h1 {
+  margin: 0;
+  font: 400 1.375rem/1 var(--serif);
+  white-space: nowrap;
+}
+
+.cal-turn {
+  display: flex;
+  align-items: center;
+  gap: 0.125rem;
+  margin-bottom: -0.625rem;
+}
+
+.cal-today {
+  min-height: 2.25rem;
+  margin-right: 0.375rem;
+  padding: 0 1rem;
+  border: 1px solid var(--line-input);
+  border-radius: 999px;
+  background: transparent;
+  color: var(--secondary);
+  font: 400 0.84375rem var(--sans);
+  letter-spacing: 0.04em;
+  white-space: nowrap;
+  cursor: pointer;
+}
+
+.cal-arrow {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  width: 2.75rem;
+  height: 2.75rem;
+  padding: 0;
+  border: 0;
+  border-radius: 50%;
+  background: transparent;
+  color: var(--muted);
+  cursor: pointer;
+}
+
+.cal-arrow svg {
+  width: 1.125rem;
+  height: 1.125rem;
+}
+
+.cal-arrow[data-dir='back'] svg {
+  rotate: 180deg;
+}
+
+@media (hover: hover) {
+  .cal-today:hover,
+  .cal-arrow:hover {
+    background: var(--wash);
+    color: var(--ink);
+  }
+}
+
+.cal-today:focus-visible,
+.cal-arrow:focus-visible,
+.cal-cell:focus-visible {
+  outline: 2px solid var(--clay);
+  outline-offset: 2px;
+}
+
+.cal-weekdays,
+.cal-grid {
+  display: grid;
+  grid-template-columns: repeat(7, minmax(0, 1fr));
+  gap: 0.25rem;
+}
+
+.cal-weekdays {
+  padding: 0.5rem 0 0.375rem;
+  color: var(--muted);
+  font-size: 0.75rem;
+  text-align: center;
+}
+
+.cal-grid {
+  grid-auto-rows: minmax(3.5rem, 1fr);
+}
+
+.cal-cell {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  gap: 0.3125rem;
+  min-width: 0;
+  padding: 0.375rem 0.125rem;
+  border: 1px solid transparent;
+  border-radius: 9px;
+  background: transparent;
+  color: var(--title);
+  font: 400 0.9375rem/1 var(--sans);
+  cursor: pointer;
+}
+
+.cal-cell[data-outside] {
+  color: var(--meta);
+}
+
+.cal-cell[aria-pressed='true'] {
+  border-color: var(--line);
+  background: var(--wash);
+}
+
+@media (hover: hover) {
+  .cal-cell:hover {
+    background: var(--wash);
+  }
+}
+
+.cal-number {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  width: 1.75rem;
+  height: 1.75rem;
+  border-radius: 50%;
+}
+
+/* Today: the number on an ink round. */
+.cal-cell[aria-current='date'] .cal-number {
+  background: var(--ink);
+  color: var(--bg);
+  font-weight: 500;
+}
+
+.cal-marks {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  gap: 0.1875rem;
+  min-height: 0.5rem;
+}
+
+.cal-mark {
+  width: 0.4375rem;
+  height: 0.4375rem;
+  border: 1.5px solid var(--muted);
+  border-radius: 50%;
+}
+
+.cal-mark[data-done='true'] {
+  border-color: var(--sage);
+  background: var(--sage);
+}
+
+.cal-cell[data-outside] .cal-marks {
+  opacity: 0.55;
+}
+
+.cal-more {
+  color: var(--muted);
+  font-size: 0.6875rem;
+  line-height: 0.5rem;
+}
+
+.cal-empty {
+  margin: 0;
+  padding: 0.75rem 0.25rem;
+  color: var(--muted);
+  font-size: 0.9375rem;
+}
+
+/* Nothing is dragged on a past day. */
+.cal-past .handle {
+  display: none;
+}
+
+.cal-past .line {
+  color: var(--secondary);
+}
+
+/* Phones: the month, then the picked day under it, in one scroll. */
+@media (max-width: 63.99rem) {
+  .calendar > .cal-month {
+    flex: none;
+    padding-bottom: 1rem;
+  }
+
+  .calendar > .cal-day {
+    padding-bottom: calc(env(safe-area-inset-bottom) + 2rem);
+    border-top: 1px solid var(--line);
+  }
+
+  .calendar .week-header {
+    height: 4.5rem;
+  }
+
+  .calendar .week-header h2 {
+    font-size: 1.375rem;
+  }
+}
+
+@media (min-width: 64rem) {
+  .cal-month {
+    display: flex;
+    flex-direction: column;
+    flex-grow: 1.3;
+  }
+
+  .cal-head {
+    flex: none;
+    height: 6.75rem;
+    margin-bottom: 0.5rem;
+    padding-bottom: 1.125rem;
+  }
+
+  .cal-head h1 {
+    font-size: 1.625rem;
+  }
+
+  .cal-turn {
+    margin-bottom: -0.5rem;
+  }
+
+  .cal-grid {
+    flex: 1;
+    grid-auto-rows: minmax(4rem, 1fr);
+    max-height: 34rem;
+  }
+
+  .cal-cell {
+    align-items: flex-start;
+    padding: 0.4375rem 0.5rem;
+  }
+
+  .cal-marks {
+    justify-content: flex-start;
+    gap: 0.25rem;
+    padding-left: 0.3125rem;
+  }
+
+  .cal-mark {
+    width: 0.5rem;
+    height: 0.5rem;
   }
 }

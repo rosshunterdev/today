@@ -12,6 +12,7 @@ beforeEach(async () => {
 
 afterEach(() => {
   vi.useRealTimers();
+  window.location.hash = '';
 });
 
 describe('App', () => {
@@ -28,7 +29,7 @@ describe('App', () => {
     expect(screen.getByRole('heading', { level: 1 })).toHaveTextContent('2 Friday October');
   });
 
-  it('turns to the week from the folded corner and back, moving focus to each page’s heading', async () => {
+  it('turns to the week from the corner button and back, moving focus to each page’s heading', async () => {
     const user = userEvent.setup();
     const { container } = render(<App />);
     const book = container.querySelector('.book')!;
@@ -41,6 +42,29 @@ describe('App', () => {
     await user.click(screen.getByRole('button', { name: 'back to today' }));
     expect(book).toHaveAttribute('data-side', 'today');
     await waitFor(() => expect(screen.getByRole('heading', { level: 1 })).toHaveFocus());
+  });
+
+  it('moves between today and the calendar from the header', async () => {
+    const user = userEvent.setup();
+    render(<App />);
+    const today = screen.getByRole('link', { name: 'Today' });
+    const calendar = screen.getByRole('link', { name: 'Calendar' });
+    expect(today).toHaveAttribute('aria-current', 'page');
+
+    await user.click(calendar);
+    expect(calendar).toHaveAttribute('aria-current', 'page');
+    expect(today).not.toHaveAttribute('aria-current');
+    expect(await screen.findByRole('button', { name: 'Go to today' })).toBeInTheDocument();
+    expect(screen.queryByRole('heading', { name: 'This week' })).not.toBeInTheDocument();
+
+    await user.click(today);
+    expect(await screen.findByRole('heading', { name: 'This week', level: 2 })).toBeInTheDocument();
+  });
+
+  it('opens on the calendar when the address says so', async () => {
+    window.location.hash = '#calendar';
+    render(<App />);
+    expect(screen.getByRole('link', { name: 'Calendar' })).toHaveAttribute('aria-current', 'page');
   });
 
   it('counts old pages on the corner', async () => {

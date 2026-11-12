@@ -9,6 +9,12 @@ export async function listDay(day: string): Promise<Task[]> {
   return rows.filter((t) => !t.deleted).sort(byPosition);
 }
 
+// Every live line from one day to another, both included: what the calendar counts.
+export async function listBetween(from: string, to: string): Promise<Task[]> {
+  const rows = await db.tasks.where('day').between(from, to, true, true).toArray();
+  return rows.filter((t) => !t.deleted);
+}
+
 // Read-then-write inside one rw transaction, so tasks added at the same moment
 // (fast typing, key repeat) queue up instead of claiming the same position.
 export function addTask(

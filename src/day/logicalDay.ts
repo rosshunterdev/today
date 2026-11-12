@@ -38,7 +38,7 @@ export function daysBetween(from: string, to: string): number {
   return Math.round((dayToDate(to).getTime() - dayToDate(from).getTime()) / 86_400_000);
 }
 
-// The parts of the journal header: "20", "Tuesday", "October".
+// The parts of today's heading: "20", "Tuesday", "October".
 export function dayParts(day: string): { number: number; weekday: string; month: string } {
   const date = dayToDate(day);
   return {

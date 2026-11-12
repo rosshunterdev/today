@@ -9,7 +9,7 @@ const themeColor = () => document.querySelector('meta[name="theme-color"]')!.get
 beforeEach(() => {
   localStorage.clear();
   delete document.documentElement.dataset.theme;
-  document.head.innerHTML = '<meta name="theme-color" content="#fafaf7">';
+  document.head.innerHTML = '<meta name="theme-color" content="#fffdfa">';
 });
 afterEach(() => vi.restoreAllMocks());
 
@@ -23,13 +23,13 @@ describe('ThemeSwitch', () => {
     await user.click(button);
     expect(button).toHaveAttribute('aria-pressed', 'true');
     expect(document.documentElement.dataset.theme).toBe('night');
-    expect(themeColor()).toBe('#202329');
+    expect(themeColor()).toBe('#1f1b17');
     expect(localStorage.getItem('today.theme')).toBe('night');
 
     await user.click(button);
     expect(button).toHaveAttribute('aria-pressed', 'false');
     expect(document.documentElement.dataset.theme).toBeUndefined();
-    expect(themeColor()).toBe('#fafaf7');
+    expect(themeColor()).toBe('#fffdfa');
     expect(localStorage.getItem('today.theme')).toBeNull();
   });
 
